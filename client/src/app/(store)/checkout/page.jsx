@@ -112,8 +112,8 @@ export default function CheckoutPage() {
     <div className="page-wrapper">
       <div className="container">
         <nav className="breadcrumb">
-          <a href="/">Home</a> <span>›</span>
-          <a href="/cart">Cart</a> <span>›</span>
+          <Link href="/">Home</Link> <span>&rsaquo;</span>
+          <Link href="/cart">Cart</Link> <span>&rsaquo;</span>
           <span>Checkout</span>
         </nav>
 

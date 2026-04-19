@@ -60,7 +60,7 @@ export default function ContactPage() {
       <section className={styles.hero}>
         <div className={styles.container}>
           <h1>Get in Touch</h1>
-          <p>Have questions? We'd love to hear from you.</p>
+          <p>Have questions? We&apos;d love to hear from you.</p>
         </div>
       </section>
 
@@ -88,12 +88,12 @@ export default function ContactPage() {
           <div className={styles.formWrapper}>
             <div className={styles.formTitle}>
               <h2>Send us a Message</h2>
-              <p>Fill out the form below and we'll get back to you as soon as possible.</p>
+              <p>Fill out the form below and we&apos;ll get back to you as soon as possible.</p>
             </div>
 
             {submitted && (
               <div className={styles.successMessage}>
-                ✓ Thank you for your message! We'll contact you soon.
+                ✓ Thank you for your message! We&apos;ll contact you soon.
               </div>
             )}
 

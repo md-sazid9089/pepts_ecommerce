@@ -1,14 +1,14 @@
 /* Footer.module.css */
 
 .footer {
-  background: #1A1A1A;
-  color: rgba(255,255,255,0.7);
+  background: #533638;
+  color: rgba(255,255,255,0.85);
   margin-top: auto;
 }
 
 /* Newsletter */
 .newsletter {
-  background: linear-gradient(135deg, var(--brand-primary) 0%, #D45500 100%);
+  background: linear-gradient(135deg, #3D2728 0%, #533638 100%);
   padding: 40px 0;
 }
 .newsletterInner {

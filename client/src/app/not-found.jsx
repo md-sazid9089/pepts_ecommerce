@@ -21,7 +21,7 @@ export default function NotFound() {
         <h1 className={styles.notFoundTitle}>Page Not Found</h1>
         
         <p className={styles.notFoundMessage}>
-          Sorry, the page you're looking for doesn't exist or has been moved.
+          Sorry, the page you&apos;re looking for doesn&apos;t exist or has been moved.
         </p>
 
         <div className={styles.notFoundIllustration}>

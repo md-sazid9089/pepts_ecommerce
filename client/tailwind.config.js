@@ -7,14 +7,36 @@ const config = {
   theme: {
     extend: {
       /* ─────────────────────────────────────────
-         COLOR PALETTE - HIGH-END WHITE SYSTEM
+         COLOR PALETTE - SOFT PREMIUM AESTHETIC
          ───────────────────────────────────────── */
       colors: {
-        // Primary & Base
+        // Primary Brand Colors
         white: '#FFFFFF',
         black: '#000000',
+        
+        // Soft Beige - Main Background
+        cream: {
+          50: '#FEFDFB',
+          100: '#F9F7F5',
+          200: '#F5EDEC', // Main background
+        },
+        
+        // Dark Brown - Primary Color for Buttons, Text, Footer
+        brown: {
+          700: '#533638', // Primary dark brown
+          800: '#3D2728',
+          900: '#2A1A1B',
+        },
+        
+        // Soft Pink - Accent Color for Highlights, Badges, Hover
+        rose: {
+          200: '#F7B9C4', // Main accent pink
+          300: '#F5A5B5',
+          400: '#F08FA8',
+          500: '#E67B99',
+        },
 
-        // White-Based System
+        // White-Based System for Cards
         ghost: {
           50: '#FAFBFC',
           100: '#F9FAFB',
@@ -29,19 +51,7 @@ const config = {
           400: '#94A3B8',
           600: '#475569',
           800: '#1E293B',
-          900: '#111827', // Deep Charcoal - Primary Text
-        },
-
-        // Midnight Cobalt (Primary Accent)
-        cobalt: {
-          50: '#F0F4F8',
-          100: '#E0E7FF',
-          200: '#C7D2FE',
-          400: '#818CF8',
-          600: '#1E3A8A',
-          700: '#1E293B', // Midnight Cobalt - Primary Accent
-          800: '#0F172A',
-          900: '#020617',
+          900: '#111827',
         },
 
         // Semantic Colors
@@ -156,22 +166,22 @@ const config = {
       },
 
       /* ─────────────────────────────────────────
-         SHADOWS - AMBIENT & PREMIUM
+         SHADOWS - SOFT PREMIUM (MINIMAL & DELICATE)
          ───────────────────────────────────────── */
       boxShadow: {
         none: 'none',
-        'xs': '0 2px 8px rgba(0, 0, 0, 0.04)',
-        'sm': '0 4px 12px rgba(0, 0, 0, 0.05)',
-        'md': '0 8px 16px rgba(0, 0, 0, 0.06)',
-        'lg': '0 12px 24px rgba(0, 0, 0, 0.08)',
-        'xl': '0 16px 32px rgba(0, 0, 0, 0.10)',
-        'premium': '0 20px 48px rgba(0, 0, 0, 0.12)',
-        '2xl': '0 25px 60px rgba(0, 0, 0, 0.15)',
-        'inner': 'inset 0 2px 4px rgba(0, 0, 0, 0.05)',
+        'xs': '0 1px 2px rgba(83, 54, 56, 0.05)',
+        'sm': '0 2px 4px rgba(83, 54, 56, 0.08)',
+        'md': '0 4px 8px rgba(83, 54, 56, 0.10)',
+        'lg': '0 8px 16px rgba(83, 54, 56, 0.12)',
+        'xl': '0 12px 24px rgba(83, 54, 56, 0.15)',
+        'premium': '0 16px 32px rgba(83, 54, 56, 0.18)',
+        '2xl': '0 20px 40px rgba(83, 54, 56, 0.20)',
+        'inner': 'inset 0 1px 2px rgba(83, 54, 56, 0.05)',
         
-        // Accent shadows (Midnight Cobalt)
-        'accent': '0 8px 20px rgba(30, 41, 59, 0.2)',
-        'accent-lg': '0 12px 32px rgba(30, 41, 59, 0.3)',
+        // Rose/Pink accent shadows
+        'rose': '0 8px 20px rgba(247, 185, 196, 0.25)',
+        'rose-lg': '0 12px 32px rgba(247, 185, 196, 0.30)',
       },
 
       /* ─────────────────────────────────────────

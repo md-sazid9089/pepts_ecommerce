@@ -1,127 +1,86 @@
-import Carousel from '@/components/Carousel/Carousel';
-import ProductGrid from '@/components/ProductGrid/ProductGrid';
-import FlashSale from '@/components/FlashSale/FlashSale';
+'use client';
+
+import dynamic from 'next/dynamic';
 import Link from 'next/link';
-import { products, getFeaturedProducts, getHotProducts, categories } from '@/data/products';
-import { 
-  FiChevronRight, FiUser, FiPackage, FiZap, FiTarget, FiBox, FiMenu, FiArrowRight, FiTag 
-} from 'react-icons/fi';
+import { products, getFeaturedProducts, categories } from '@/data/products';
 import styles from './page.module.css';
 
-export const metadata = {
-  title: 'Precious Play - #1 Doll Marketplace',
-  description: 'Premium doll marketplace. Exclusive collections, high-quality detailed craftsmanship, and best prices.',
-};
+const HeroSectionPremium = dynamic(() => import('@/components/HeroSection/HeroSection.premium'), { ssr: false });
+const ProductCardPremium = dynamic(() => import('@/components/ProductCard/ProductCard.premium'), { ssr: false });
+const FlashSalePremium = dynamic(() => import('@/components/FlashSale/FlashSale.premium'), { ssr: false });
+const CategoriesGridPremium = dynamic(() => import('@/components/CategoriesGrid/CategoriesGrid.premium'), { ssr: false });
 
 export default function HomePage() {
-  const featuredProducts = getFeaturedProducts();
-  const hotProducts = getHotProducts();
-  const newArrivals = products.filter(p => p.isNew);
+  const featuredProducts = getFeaturedProducts() || [];
+  const justForYouProducts = products?.slice(0, 8) || [];
+  const newArrivals = products?.filter(p => p.isNew).slice(0, 8) || [];
 
   return (
     <div className={styles.homePage}>
       
-      {/* TIER 1 HERO: THREE-PANE LAYOUT */}
-      <section className={styles.heroSection}>
+      {/* HERO SECTION - SOFT PREMIUM */}
+      <HeroSectionPremium />
+
+      {/* CATEGORIES GRID - SOFT PREMIUM */}
+      <section className={styles.premiumSection}>
         <div className="container">
-          <div className={styles.heroContainer}>
-            
-            {/* Left: Category Sidebar */}
-            <aside className={styles.categorySidebar}>
-              <div className={styles.sidebarTitle}>
-                <FiMenu size={16} /> Categories
-              </div>
-              <nav className={styles.sidebarNav}>
-                {categories.map(cat => (
-                  <Link key={cat.id} href={`/products?category=${cat.id}`} className={styles.sidebarItem}>
-                    {cat.name} <FiChevronRight size={14} />
-                  </Link>
-                ))}
-                <Link href="/categories" className={styles.sidebarItem} style={{fontWeight: 700}}>
-                  All Categories <FiChevronRight size={14} />
-                </Link>
-              </nav>
-            </aside>
+          <CategoriesGridPremium categories={categories} />
+        </div>
+      </section>
 
-            {/* Center: Main Carousel */}
-            <div className={styles.mainCarousel}>
-              <Carousel />
-            </div>
+      {/* FLASH SALE - SOFT PREMIUM */}
+      <section className={styles.premiumSection}>
+        <div className="container">
+          <FlashSalePremium products={products} />
+        </div>
+      </section>
 
+      {/* Featured Collections */}
+      <section className={styles.featuredSection}>
+        <div className="container">
+          <div className={styles.sectionHeader}>
+            <h2 className={styles.sectionTitle}>Featured Collections</h2>
+            <p className={styles.sectionSubtitle}>Handpicked pieces that define elegance</p>
+          </div>
+          <div className={styles.productGrid}>
+            {featuredProducts.map((product) => (
+              <ProductCardPremium key={product.id} product={product} />
+            ))}
           </div>
         </div>
       </section>
 
-      {/* SELECTION BAR: ICON SHORTCUTS */}
-      <section className={styles.selectionBar}>
+      {/* Trust Section */}
+      <section className={styles.trustSection}>
         <div className="container">
-          <div className={styles.selectionGrid}>
+          <div className={styles.trustGrid}>
             {[
-              { label: 'New Arrivals', icon: <FiZap />, color: '#FFF7E6', link: '/products?sort=new' },
-              { label: 'Top Rated', icon: <FiTarget />, color: '#E6F7FF', link: '/products?sort=rating' },
-              { label: 'Bulk Only', icon: <FiBox />, color: '#F6FFED', link: '/deals' },
-              { label: 'Supplier Hub', icon: <FiUser />, color: '#FFF1F0', link: '/verified-suppliers' },
-            ].map(item => (
-              <Link key={item.label} href={item.link} className={styles.selectionItem}>
-                <div className={styles.selectionIcon} style={{background: item.color}}>{item.icon}</div>
-                <span>{item.label}</span>
-              </Link>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Flash Deals - Retail Styled */}
-      <section className={`section-gap ${styles.flashSection}`}>
-        <div className="container">
-          <div className={styles.flashHeader}>
-            <div className={styles.flashLeft}>
-              <FiZap size={20} className={styles.flashIcon} />
-              <h2 className={styles.flashTitle}>Flash Sale</h2>
-              <FlashSale />
-            </div>
-            <Link href="/products" className="section-see-all">SHOP MORE <FiArrowRight size={14} /></Link>
-          </div>
-          <div className={styles.horizontalScroll}>
-            {hotProducts.slice(0, 8).map(p => (
-              <div key={p.id} className={styles.flashCard}>
-                <Link href={`/product/${p.id}`} className={styles.flashCardInner}>
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={p.image} alt={p.name} className={styles.flashImg} />
-                  <div className={styles.flashInfo}>
-                    <p className={styles.flashName}>{p.name}</p>
-                    <div className={styles.flashPriceRow}>
-                      <span className={styles.flashPrice}>${p.price.toLocaleString()}</span>
-                    </div>
-                  </div>
-                </Link>
+              {icon: '🛡️', title: '100% Authentic', desc: 'All products verified for authenticity'},
+              {icon: '📦', title: 'Free Shipping', desc: 'On orders over $50'},
+              {icon: '💬', title: '24/7 Support', desc: 'Dedicated customer service'},
+              {icon: '🔄', title: 'Easy Returns', desc: '30-day return policy'},
+            ].map((item, i) => (
+              <div key={i} className={styles.trustCard}>
+                <div className={styles.trustIcon}>{item.icon}</div>
+                <h3 className={styles.trustTitle}>{item.title}</h3>
+                <p className={styles.trustDesc}>{item.desc}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Main Grid: Just For You (Clean Marketplace) */}
-      <section className={`section-gap ${styles.greySection}`}>
+      {/* New Arrivals */}
+      <section className={`${styles.featuredSection} ${styles.beigeBg}`}>
         <div className="container">
-          <div className="section-header">
-            <h2 className="section-title">Just For You</h2>
-            <Link href="/products" className="section-see-all">See All →</Link>
+          <div className={styles.sectionHeader}>
+            <h2 className={styles.sectionTitle}>New Arrivals</h2>
+            <p className={styles.sectionSubtitle}>Fresh additions to our collection</p>
           </div>
-          <ProductGrid products={featuredProducts.slice(0, 12)} columns={6} />
-        </div>
-      </section>
-
-      {/* Bulk Sourcing CTA */}
-      <section className={styles.ctaSection}>
-        <div className="container">
-          <div className={styles.ctaInner}>
-            <h2 className={styles.ctaTitle}>Start Sourcing from Verified Factories</h2>
-            <p className={styles.ctaDesc}>Get multi-tier wholesale discounts, protected shipping, and verified factory direct pricing for your doll business.</p>
-            <div className={styles.ctaBtns}>
-              <Link href="/products" className="btn btn-primary btn-lg">Browse All Wholesale</Link>
-              <Link href="/register" className="btn btn-outline btn-lg">Register for Bulk Price</Link>
-            </div>
+          <div className={styles.productGrid}>
+            {newArrivals.map((product) => (
+              <ProductCardPremium key={product.id} product={product} />
+            ))}
           </div>
         </div>
       </section>

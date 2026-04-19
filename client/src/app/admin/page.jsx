@@ -8,10 +8,13 @@ import { dailySalesData, topProducts, orders, customers } from '@/data/adminData
 import styles from './Dashboard.module.css';
 
 export default function DashboardPage() {
+  const now = new Date();
+  const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+
   // Calculate stats
   const totalSales = dailySalesData.reduce((sum, d) => sum + d.revenue, 0);
   const totalOrders = orders.length;
-  const newCustomers = customers.filter(c => new Date(c.joinDate) > new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)).length;
+  const newCustomers = customers.filter(c => new Date(c.joinDate) > thirtyDaysAgo).length;
   const pendingShipments = orders.filter(o => o.status === 'Processing' || o.status === 'Pending').length;
 
   return (

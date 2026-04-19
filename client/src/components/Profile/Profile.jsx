@@ -110,7 +110,7 @@ export function ProfileView() {
             <div className={styles.emptyState}>
               <div className={styles.emptyIcon}><FiPackage size={48} /></div>
               <h3>No orders yet</h3>
-              <p>You haven't made any purchases. Start shopping now!</p>
+              <p>You haven&apos;t made any purchases. Start shopping now!</p>
               <a href="/products" className={styles.ctaBtn}>
                 Continue Shopping <FiArrowRight size={14} />
               </a>

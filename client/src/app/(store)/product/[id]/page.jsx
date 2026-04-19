@@ -88,10 +88,10 @@ export default function ProductDetailPage({ params }) {
       <div className="container">
         {/* Breadcrumb */}
         <nav className="breadcrumb">
-          <a href="/">Home</a>
-          <span>›</span>
-          {cat && <><a href={`/products?category=${cat.id}`}>{cat.name}</a><span>›</span></>}
-          <span>{product.name.substring(0, 30)}…</span>
+          <Link href="/">Home</Link>
+          <span>&rsaquo;</span>
+          {cat && <><Link href={`/products?category=${cat.id}`}>{cat.name}</Link><span>&rsaquo;</span></>}
+          <span>{product.name.substring(0, 30)}&hellip;</span>
         </nav>
 
         {/* Product main area */}

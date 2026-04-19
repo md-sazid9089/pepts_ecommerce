@@ -1,7 +1,5 @@
-'use client';
-
 import Link from 'next/link';
-import { categories } from '@/data/products';
+import { categories } from '@/data/constants/categories';
 import {
   FiSmartphone, FiShoppingBag, FiHome, FiBox,
 } from 'react-icons/fi';

@@ -7,12 +7,20 @@ const nextConfig = {
   images: {
     unoptimized: false, // Enable image optimization
     remotePatterns: [
-      // Add external image domains here if needed
+      {
+        protocol: 'https',
+        hostname: 'placehold.co',
+        port: '',
+        pathname: '/**',
+      },
+      // Add more external image domains as needed
       // {
       //   protocol: 'https',
       //   hostname: '**.example.com',
       // },
     ],
+    deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
+    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
   },
 
   // Powering up the build process

@@ -13,12 +13,19 @@ export function AuthProvider({ children }) {
     try {
       const saved = localStorage.getItem('precious_wholesale_user');
       if (saved) {
-        setUser(JSON.parse(saved));
+        const savedUser = JSON.parse(saved);
+        queueMicrotask(() => {
+          setUser(savedUser);
+          setIsLoading(false);
+        });
+        return;
       }
     } catch (e) {
       /* ignore */
     }
-    setIsLoading(false);
+    queueMicrotask(() => {
+      setIsLoading(false);
+    });
   }, []);
 
   const login = (email, password) => {

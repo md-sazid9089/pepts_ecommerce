@@ -1,5 +1,6 @@
 import { SearchResults } from '@/components/Search/Search';
 import { Suspense } from 'react';
+import { ProductGridSkeleton } from '@/components/UI/Skeleton';
 import styles from './page.module.css';
 
 export const metadata = {
@@ -10,7 +11,7 @@ export const metadata = {
 export default function SearchPage() {
   return (
     <div className={styles.searchPage}>
-      <Suspense fallback={<div style={{ textAlign: 'center', padding: '40px' }}>Loading...</div>}>
+      <Suspense fallback={<ProductGridSkeleton count={8} />}>
         <SearchResults />
       </Suspense>
     </div>

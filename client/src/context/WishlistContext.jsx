@@ -60,9 +60,20 @@ export function WishlistProvider({ children }) {
   const addItem = (product) => dispatch({ type: 'ADD_ITEM', payload: product });
   const removeItem = (id) => dispatch({ type: 'REMOVE_ITEM', payload: id });
   const clearWishlist = () => dispatch({ type: 'CLEAR_WISHLIST' });
+  const isInWishlist = (id) => state.items.some(item => item.id === id);
+
+  const value = {
+    items: state.items,
+    addItem,
+    removeItem,
+    clearWishlist,
+    addToWishlist: addItem,
+    removeFromWishlist: removeItem,
+    isInWishlist
+  };
 
   return (
-    <WishlistContext.Provider value={{ items: state.items, addItem, removeItem, clearWishlist }}>
+    <WishlistContext.Provider value={value}>
       {children}
     </WishlistContext.Provider>
   );

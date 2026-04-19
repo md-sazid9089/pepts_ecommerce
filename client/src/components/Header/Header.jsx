@@ -9,13 +9,8 @@ import {
   FiSearch, 
   FiShoppingCart, 
   FiUser, 
-  FiPackage, 
-  FiCheckCircle, 
-  FiTrendingUp,
   FiMenu,
-  FiX,
-  FiHelpCircle,
-  FiGlobe
+  FiX
 } from 'react-icons/fi';
 import styles from './Header.module.css';
 

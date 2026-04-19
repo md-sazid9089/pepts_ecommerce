@@ -91,7 +91,7 @@ export function LoginForm() {
         </button>
 
         <div className={styles.footer}>
-          Don't have an account? <a href="/register" className={styles.link}>Create one</a>
+          Don&apos;t have an account? <a href="/register" className={styles.link}>Create one</a>
         </div>
       </form>
     </div>

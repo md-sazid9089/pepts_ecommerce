@@ -1,10 +1,12 @@
 'use client';
 
 import { useState, useMemo, Suspense } from 'react';
+import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
-import { products } from '@/data/products';
+import { products } from '@/data/mock/products';
 import Filters from '@/components/Filters/Filters';
 import ProductGrid from '@/components/ProductGrid/ProductGrid';
+import { ProductGridSkeleton } from '@/components/UI/Skeleton';
 import { FiGrid, FiList, FiChevronDown } from 'react-icons/fi';
 import styles from './page.module.css';
 
@@ -97,10 +99,10 @@ function ProductsContent() {
       <div className="container">
         {/* Breadcrumb */}
         <nav className="breadcrumb">
-          <a href="/">Home</a>
+          <Link href="/">Home</Link>
           <span>›</span>
           <span>{categoryLabel}</span>
-          {filters.search && <><span>›</span><span>"{filters.search}"</span></>}
+          {filters.search && <><span>›</span><span>&quot;{filters.search}&quot;</span></>}
         </nav>
 
         <h1 className={styles.pageTitle}>
@@ -172,7 +174,7 @@ function ProductsContent() {
                 )}
                 {filters.search && (
                   <span className={styles.filterTag}>
-                    "{filters.search}"
+                    &quot;{filters.search}&quot;
                     <button onClick={() => handleFilterChange('search', '')}>×</button>
                   </span>
                 )}
@@ -243,7 +245,7 @@ function ProductsContent() {
 
 export default function ProductsPage() {
   return (
-    <Suspense fallback={<div>Loading...</div>}>
+    <Suspense fallback={<ProductGridSkeleton count={12} />}>
       <ProductsContent />
     </Suspense>
   );

@@ -1,7 +1,8 @@
-'use client';
-
 import Link from 'next/link';
-import { categories, products, brands, formatPrice } from '@/data/products';
+import { categories } from '@/data/constants/categories';
+import { brands } from '@/data/constants/brands';
+import { products } from '@/data/mock/products';
+import { formatPrice } from '@/data/utils/pricing';
 import { FiArrowRight, FiSmartphone, FiShoppingBag, FiHome, FiBox, FiStar } from 'react-icons/fi';
 import { FaPalette, FaFootballBall } from 'react-icons/fa';
 import styles from './Categories.module.css';

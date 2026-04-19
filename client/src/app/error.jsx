@@ -1,23 +1,14 @@
 'use client';
 
 import { useEffect } from 'react';
+import Link from 'next/link';
 import { logger } from '@/utils/logger';
 import styles from './error.module.css';
 
 export default function ErrorBoundary({ error, reset }) {
   useEffect(() => {
-    // Log the error to the console with full context
-    logger.critical(
-      'RootErrorBoundary',
-      'Uncaught error in component tree',
-      error,
-      undefined,
-      {
-        digest: error.digest,
-        url: typeof window !== 'undefined' ? window.location.href : 'unknown',
-        timestamp: new Date().toISOString(),
-      }
-    );
+    // Log the error to console
+    console.error('Error caught by boundary:', error);
   }, [error]);
 
   const isDevelopment = process.env.NODE_ENV === 'development';
@@ -65,9 +56,9 @@ export default function ErrorBoundary({ error, reset }) {
             Try Again
           </button>
           
-          <a href="/" className={styles.homeButton}>
+          <Link href="/" className={styles.homeButton}>
             Back to Home
-          </a>
+          </Link>
         </div>
 
         <div className={styles.supportInfo}>

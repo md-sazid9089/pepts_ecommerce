@@ -1,0 +1,220 @@
+.page {
+  min-height: 100vh;
+  background: #FFFFFF;
+}
+
+.sectionPadding {
+  padding: 0 24px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.section {
+  padding: 48px 24px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.sectionHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 32px;
+  gap: 24px;
+}
+
+.sectionTitle {
+  margin: 0 0 8px 0;
+  font-size: 36px;
+  font-weight: 700;
+  color: #533638;
+  letter-spacing: -0.5px;
+}
+
+.sectionSubtitle {
+  margin: 0;
+  font-size: 14px;
+  color: rgba(83, 54, 56, 0.6);
+  font-weight: 500;
+}
+
+.seeAll {
+  display: inline-flex;
+  align-items: center;
+  padding: 12px 24px;
+  background: #533638;
+  color: white;
+  border-radius: 12px;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+  border: 1px solid #533638;
+}
+
+.seeAll:hover {
+  background: #3D2728;
+  transform: translateX(4px);
+}
+
+/* Product Grid */
+.productGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 20px;
+}
+
+/* Trust Section */
+.trustSection {
+  background: #F5EDEC;
+  padding: 60px 24px;
+  margin: 40px 0;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.trustGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 24px;
+}
+
+.trustCard {
+  background: white;
+  padding: 32px 24px;
+  border-radius: 16px;
+  text-align: center;
+  box-shadow: 0 2px 8px rgba(83, 54, 56, 0.08);
+  transition: all 0.3s ease;
+  border: 1px solid transparent;
+}
+
+.trustCard:hover {
+  border-color: #F7B9C4;
+  box-shadow: 0 8px 24px rgba(247, 185, 196, 0.15);
+  transform: translateY(-4px);
+}
+
+.trustIcon {
+  font-size: 48px;
+  margin-bottom: 16px;
+  display: block;
+}
+
+.trustCard h3 {
+  margin: 0 0 12px 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #533638;
+}
+
+.trustCard p {
+  margin: 0;
+  font-size: 14px;
+  color: rgba(83, 54, 56, 0.6);
+  line-height: 1.6;
+}
+
+/* Responsive */
+@media (max-width: 1200px) {
+  .productGrid {
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 16px;
+  }
+
+  .section {
+    padding: 40px 16px;
+  }
+
+  .trustGrid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+  }
+}
+
+@media (max-width: 768px) {
+  .section {
+    padding: 32px 16px;
+  }
+
+  .sectionHeader {
+    flex-direction: column;
+    margin-bottom: 24px;
+  }
+
+  .sectionTitle {
+    font-size: 28px;
+  }
+
+  .seeAll {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .productGrid {
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 12px;
+  }
+
+  .trustSection {
+    padding: 40px 16px;
+    margin: 24px 0;
+  }
+
+  .trustGrid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .trustCard {
+    padding: 24px 20px;
+  }
+
+  .sectionPadding {
+    padding: 0 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .section {
+    padding: 24px 12px;
+  }
+
+  .sectionTitle {
+    font-size: 22px;
+  }
+
+  .sectionSubtitle {
+    font-size: 13px;
+  }
+
+  .productGrid {
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 8px;
+  }
+
+  .trustSection {
+    padding: 32px 12px;
+    margin: 16px 0;
+  }
+
+  .trustCard {
+    padding: 20px 16px;
+  }
+
+  .trustIcon {
+    font-size: 40px;
+  }
+
+  .trustCard h3 {
+    font-size: 16px;
+  }
+
+  .sectionPadding {
+    padding: 0 12px;
+  }
+}

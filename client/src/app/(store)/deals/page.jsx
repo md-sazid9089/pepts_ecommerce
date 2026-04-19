@@ -72,7 +72,7 @@ export default function DealsPage() {
         </section>
 
         <section className={styles.ctaSection}>
-          <h2>Don't Miss Out!</h2>
+          <h2>Don&apos;t Miss Out!</h2>
           <p>Browse all our products to find more amazing deals</p>
           <Link href="/products" className={styles.primaryBtn}>
             Browse All Products

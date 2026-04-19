@@ -1,6 +1,4 @@
-'use client';
-
-import { formatPrice, calculateBulkDiscount } from '@/data/products';
+import { formatPrice, calculateBulkDiscount } from '@/data/utils/pricing';
 import styles from './BulkPriceTable.module.css';
 
 /**
