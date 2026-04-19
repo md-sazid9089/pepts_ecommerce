@@ -1,0 +1,189 @@
+/* CategorySection.module.css - Bento Grid Premium */
+
+.section {
+  background: var(--bg-soft);
+  padding: var(--spacing-4xl) 0;
+}
+
+/* ─ BENTO GRID LAYOUT ─ */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: var(--spacing-xl);
+  auto-rows: auto;
+}
+
+/* Asymmetrical tile sizing */
+.grid .catCard:nth-child(1) {
+  grid-column: span 1;
+  grid-row: span 1;
+}
+
+.grid .catCard:nth-child(2) {
+  grid-column: span 1;
+  grid-row: span 1;
+}
+
+.grid .catCard:nth-child(3) {
+  grid-column: span 1;
+  grid-row: span 1;
+}
+
+@media (min-width: 768px) {
+  .grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--spacing-2xl);
+  }
+
+  .grid .catCard:nth-child(2) {
+    grid-column: span 1;
+  }
+
+  .grid .catCard:nth-child(5) {
+    grid-column: span 1;
+  }
+}
+
+@media (min-width: 1024px) {
+  .grid {
+    grid-template-columns: repeat(6, 1fr);
+    gap: var(--spacing-2xl);
+  }
+
+  .grid .catCard:nth-child(2) {
+    grid-column: span 1;
+  }
+
+  .grid .catCard:nth-child(4) {
+    grid-column: span 1;
+  }
+}
+
+/* ─ CATEGORY CARD - PREMIUM SOFT-UI ─ */
+.catCard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-md);
+  padding: var(--spacing-2xl) var(--spacing-lg);
+  background: var(--surface);
+  border-radius: var(--radius-2xl);
+  border: 1px solid var(--border-light);
+  text-decoration: none;
+  transition: all var(--transition);
+  position: relative;
+  overflow: hidden;
+  animation: fadeInUp 0.5s ease both;
+  cursor: pointer;
+  box-shadow: var(--shadow-xs);
+  min-height: 180px;
+}
+
+.catCard::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, var(--cat-color), rgba(var(--cat-color), 0.7));
+  opacity: 0;
+  transition: opacity var(--transition);
+  border-radius: inherit;
+  z-index: 0;
+}
+
+.catCard:hover {
+  border-color: var(--primary);
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: var(--shadow-lg);
+  background: linear-gradient(135deg, var(--surface), var(--bg-soft));
+}
+
+.catCard:hover::before {
+  opacity: 0.05;
+}
+
+.catCard:hover .catName {
+  color: var(--cat-color);
+  font-weight: 700;
+}
+
+.catCard:hover .catArrow {
+  opacity: 1;
+  transform: translateX(4px);
+}
+
+.catCard:hover .iconGlow {
+  opacity: 0.5;
+  transform: scale(1.8);
+}
+
+/* ─ ICON WRAPPER ─ */
+.iconWrap {
+  position: relative;
+  z-index: 1;
+}
+
+.icon {
+  font-size: 3rem;
+  display: block;
+  transition: all var(--transition);
+  position: relative;
+  z-index: 1;
+  color: var(--cat-color);
+}
+
+.catCard:hover .icon {
+  transform: scale(1.2) rotate(-5deg);
+}
+
+.iconGlow {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: var(--cat-color);
+  opacity: 0;
+  filter: blur(16px);
+  transition: all var(--transition);
+  z-index: 0;
+}
+
+/* ─ CATEGORY NAME & ARROW ─ */
+.catName {
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  text-align: center;
+  line-height: var(--leading-tight);
+  transition: all var(--transition-fast);
+  position: relative;
+  z-index: 1;
+  letter-spacing: var(--letter-wide);
+}
+
+.catArrow {
+  font-size: 0.85rem;
+  color: var(--primary);
+  font-weight: 700;
+  opacity: 0;
+  transform: translateX(-6px);
+  transition: all var(--transition-fast);
+  position: relative;
+  z-index: 1;
+}
+
+/* ─ ANIMATIONS ─ */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

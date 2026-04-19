@@ -1,0 +1,14 @@
+/* page.module.css - Auth Pages */
+
+.loginPage,
+.registerPage {
+  min-height: calc(100vh - var(--header-height));
+  background: linear-gradient(135deg, var(--primary-light), var(--surface));
+}
+
+@media (max-width: 768px) {
+  .loginPage,
+  .registerPage {
+    min-height: 100vh;
+  }
+}

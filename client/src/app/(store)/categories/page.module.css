@@ -1,0 +1,12 @@
+/* page.module.css - Categories Page */
+
+.categoriesPage {
+  min-height: calc(100vh - var(--header-height));
+  background: var(--bg);
+}
+
+@media (max-width: 768px) {
+  .categoriesPage {
+    min-height: 100vh;
+  }
+}

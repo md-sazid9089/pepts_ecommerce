@@ -1,0 +1,13 @@
+/* page.module.css - Search Page */
+
+.searchPage {
+  min-height: calc(100vh - var(--header-height));
+  background: var(--bg);
+  padding-top: 20px;
+}
+
+@media (max-width: 768px) {
+  .searchPage {
+    min-height: 100vh;
+  }
+}
