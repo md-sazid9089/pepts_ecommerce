@@ -234,8 +234,8 @@ function notifyUpdate() {
   if ('Notification' in window && Notification.permission === 'granted') {
     new Notification('Pepta Update Available', {
       body: 'A new version is available. Refresh to update.',
-      icon: '/images/icon-192x192.png',
-      badge: '/images/icon-192x192.png',
+      icon: '/favicon.png',
+      badge: '/favicon.png',
       tag: 'pwa-update',
       requireInteraction: false,
     });

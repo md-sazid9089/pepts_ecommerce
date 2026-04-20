@@ -21,14 +21,6 @@ export const footerLinksWholesale = {
     { label: 'Case Studies', href: '#' },
     { label: 'Partner Program', href: '#' },
   ],
-  'About Us': [
-    { label: 'About PreciousDolls', href: '#' },
-    { label: 'Our Suppliers', href: '#' },
-    { label: 'Quality Standards', href: '#' },
-    { label: 'Blog & Resources', href: '#' },
-    { label: 'Press', href: '#' },
-    { label: 'Contact Support', href: '#' },
-  ],
 };
 
 export const footerLinksPremium = {

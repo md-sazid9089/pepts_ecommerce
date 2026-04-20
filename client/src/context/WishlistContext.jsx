@@ -40,7 +40,7 @@ export function WishlistProvider({ children }) {
   // Persist to localStorage
   useEffect(() => {
     try {
-      const saved = localStorage.getItem('precious_wholesale_wishlist');
+      const saved = localStorage.getItem('pepta_wholesale_wishlist');
       if (saved) {
         dispatch({ type: 'LOAD_WISHLIST', payload: JSON.parse(saved) });
       }
@@ -51,7 +51,7 @@ export function WishlistProvider({ children }) {
 
   useEffect(() => {
     try {
-      localStorage.setItem('precious_wholesale_wishlist', JSON.stringify(state.items));
+      localStorage.setItem('pepta_wholesale_wishlist', JSON.stringify(state.items));
     } catch (e) {
       /* ignore */
     }

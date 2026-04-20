@@ -23,7 +23,7 @@ export function generateProductSchema(product) {
     manufacturer: {
       '@type': 'Organization',
       name: product.manufacturer || 'Pepta',
-      url: 'https://precious-play-wholesale.com',
+      url: 'https://pepta.com',
     },
     offers: {
       '@type': 'AggregateOffer',
@@ -47,13 +47,13 @@ export function generateProductSchema(product) {
       : undefined,
     sku: product.sku,
     availability: product.inStock ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
-    url: `https://precious-play-wholesale.com/product/${product.slug}`,
+    url: `https://pepta.com/product/${product.slug}`,
     category: product.category,
     potentialAction: {
       '@type': 'TradeAction',
       target: {
         '@type': 'EntryPoint',
-        urlTemplate: `https://precious-play-wholesale.com/cart?add=${product.id}`,
+        urlTemplate: `https://pepta.com/cart?add=${product.id}`,
         actionPlatform: ['http://schema.org/DesktopWebPlatform', 'http://schema.org/MobileWebPlatform'],
       },
     },
@@ -162,13 +162,13 @@ export function generateOrganizationSchema() {
     '@type': 'Organization',
     name: 'Pepta',
     url: 'https://pepta.com',
-    logo: 'https://pepta.com/images/logo.png',
+    logo: 'https://pepta.com/images/logo.jpeg',
     description: 'Premium doll wholesale supplier for boutiques and gift shops. Direct factory prices, tiered pricing, and verified manufacturers across Bangladesh.',
     sameAs: [
       'https://facebook.com/pepta',
       'https://instagram.com/pepta',
       'https://twitter.com/pepta',
-      'https://tiktok.com/@preciousplay',
+      'https://tiktok.com/@peptaltd',
     ],
     contactPoint: {
       '@type': 'ContactPoint',
@@ -176,7 +176,7 @@ export function generateOrganizationSchema() {
       contactType: 'Customer Service',
       areaServed: 'BD',
       availableLanguage: 'en',
-      email: 'support@precious-play-wholesale.com',
+      email: 'support@pepta.com',
     },
     address: {
       '@type': 'PostalAddress',
@@ -223,7 +223,7 @@ export function generateLocalBusinessSchema() {
     '@type': 'LocalBusiness',
     name: 'Pepta',
     url: 'https://pepta.com',
-    image: 'https://pepta.com/images/logo.png',
+    image: 'https://pepta.com/images/logo.jpeg',
     description: 'B2B doll wholesale marketplace',
     address: {
       '@type': 'PostalAddress',
@@ -234,7 +234,7 @@ export function generateLocalBusinessSchema() {
       addressCountry: 'BD',
     },
     telephone: '+880-1XXX-XXXXXX',
-    email: 'support@precious-play-wholesale.com',
+    email: 'support@pepta.com',
     areaServed: ['BD', 'Asia'],
     priceRange: '৳৳',
     aggregateRating: {

@@ -44,8 +44,8 @@ export default function ContactPage() {
     },
     {
       icon: FiMail,
-      title: 'Email',
-      content: 'bulk@precious-play-wholesale.com',
+      title: 'Bulk Email',
+      content: 'bulk@pepta.com',
     },
     {
       icon: FiClock,

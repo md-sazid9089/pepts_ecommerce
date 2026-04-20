@@ -71,7 +71,7 @@ export function CartProvider({ children }) {
   // Persist to localStorage
   useEffect(() => {
     try {
-      const saved = localStorage.getItem('precious_wholesale_cart');
+      const saved = localStorage.getItem('pepta_wholesale_cart');
       if (saved) {
         dispatch({ type: 'LOAD_CART', payload: JSON.parse(saved) });
       }
@@ -80,7 +80,7 @@ export function CartProvider({ children }) {
 
   useEffect(() => {
     try {
-      localStorage.setItem('precious_wholesale_cart', JSON.stringify(state.items));
+      localStorage.setItem('pepta_wholesale_cart', JSON.stringify(state.items));
     } catch (e) { /* ignore */ }
   }, [state.items]);
 

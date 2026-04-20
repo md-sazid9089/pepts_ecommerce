@@ -6,9 +6,6 @@ const nextConfig = {
   // Enable compression for faster delivery
   compress: true,
 
-  // Optimize fonts automatically
-  optimizeFonts: true,
-
   // Optimize images
   images: {
     unoptimized: false, // Enable image optimization

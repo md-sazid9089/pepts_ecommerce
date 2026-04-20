@@ -1,7 +1,7 @@
 {
   "name": "Pepta - Premium B2B Doll Marketplace",
-  "short_name": "Precious Play",
-  "description": "Premium wholesale platform for bulk doll purchases with tiered pricing and personalized inventory management",
+  "short_name": "Pepta",
+  "description": "Premium wholesale platform for bulk purchases with tiered pricing and personalized inventory management",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",

@@ -72,7 +72,7 @@ export default function FooterPremium() {
               <Link href="/" className={styles.logo}>
                 <Image
                   src="/logo.jpeg"
-                  alt="Dazzle"
+                  alt="Pepta"
                   width={140}
                   height={50}
                   style={{ filter: 'brightness(0) invert(1)' }}
@@ -112,7 +112,7 @@ export default function FooterPremium() {
                 </div>
                 <div className={styles.contactItem}>
                   <FiMail size={16} />
-                  <a href="mailto:hello@precious.com">hello@precious.com</a>
+                  <a href="mailto:hello@pepta.com">hello@pepta.com</a>
                 </div>
                 <div className={styles.contactItem}>
                   <FiMapPin size={16} className="shrink-0 mt-1" />
@@ -171,7 +171,7 @@ export default function FooterPremium() {
           {/* Bottom Footer */}
           <div className={styles.bottomFooter}>
             <p className={styles.copyright}>
-              &copy; 2024 Dazzle Premium Wholesale. All rights reserved.
+              &copy; 2024 Pepta Premium Wholesale. All rights reserved.
             </p>
             <div className={styles.legalLinks}>
               <Link href="/privacy">Privacy Policy</Link>

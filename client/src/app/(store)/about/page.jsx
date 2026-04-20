@@ -14,7 +14,7 @@ export default function AboutPage() {
   return (
     <main className="bg-white min-h-screen font-sans">
       {/* WELCOME SECTION */}
-      <section className="container mx-auto px-6 py-16 md:py-28 lg:px-12 lg:py-36 text-center">
+      <section className="container mx-auto px-6 pt-[80px] pb-[100px] md:pt-[120px] md:pb-[160px] lg:px-12 lg:pt-[160px] lg:pb-[200px] text-center">
         <span className="block text-xs md:text-sm font-bold tracking-[0.2em] text-gray-400 uppercase mb-6">
           WELCOME TO PEPTA
         </span>
@@ -32,7 +32,7 @@ export default function AboutPage() {
       </section>
 
       {/* 3. HERO IMAGE SHOWCASE */}
-      <section className="container mx-auto px-4 md:px-12 pt-24 md:pt-36 lg:pt-48 pb-32 lg:pb-48">
+      <section className="container mx-auto px-4 md:px-12 pt-[100px] pb-[100px] md:pt-[160px] md:pb-[160px] lg:pt-[200px] lg:pb-[200px]">
         <div className="relative w-full overflow-hidden rounded-[2.5rem] shadow-premium">
           <Image
             src="/aboutbatman.png"
@@ -46,7 +46,7 @@ export default function AboutPage() {
       </section>
 
       {/* 4. OUR PROCESS */}
-      <section className="w-full pt-24 md:pt-36 lg:pt-48 py-32 bg-gray-50 lg:py-40">
+      <section className="w-full pt-[100px] pb-[100px] md:pt-[160px] md:pb-[160px] lg:pt-[200px] lg:pb-[200px] bg-gray-50">
         <div className="container mx-auto px-6 lg:px-12">
           <div className="text-center mb-20">
             <span className="block text-xs md:text-sm font-bold tracking-[0.2em] text-gray-400 uppercase mb-4">

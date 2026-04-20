@@ -19,16 +19,16 @@ const plusJakarta = Plus_Jakarta_Sans({
 
 export const metadata = {
   title: {
-    default: 'Dazzle - #1 Tech & Gadget B2B Marketplace',
-    template: '%s | Dazzle',
+    default: 'Pepta - Our Perfect Store | #1 Tech & Gadget B2B Marketplace',
+    template: '%s | Pepta',
   },
-  description: 'Premium technology and gadget wholesale supplier for boutiques and showrooms. Direct factory prices, tiered pricing, and verified manufacturers across Bangladesh.',
-  keywords: ['wholesale electronics', 'bangladesh', 'b2b e-commerce', 'gadget supplier', 'bulk tech'],
+  description: 'Pepta is your #1 destination for premium technology and gadget wholesale. Serving boutiques and showrooms with factory-direct prices and verified quality across Bangladesh.',
+  keywords: ['pepta', 'wholesale electronics', 'bangladesh', 'b2b e-commerce', 'gadget supplier', 'bulk tech'],
   manifest: '/manifest.json',
   appleWebApp: {
     capable: true,
     statusBarStyle: 'black-translucent',
-    title: 'Dazzle',
+    title: 'Pepta',
   },
   formatDetection: {
     telephone: false,
@@ -36,24 +36,24 @@ export const metadata = {
   openGraph: {
     type: 'website',
     locale: 'en_BD',
-    siteName: 'Dazzle',
+    siteName: 'Pepta',
   },
   twitter: {
     card: 'summary_large_image',
-    creator: '@dazzle',
+    creator: '@pepta',
   },
 };
 
 const organizationSchema = {
   '@context': 'https://schema.org',
   '@type': 'Organization',
-  name: 'Dazzle',
-  url: 'https://dazzle.com',
-  logo: 'https://dazzle.com/logo.png',
+  name: 'Pepta',
+  url: 'https://pepta.com',
+  logo: 'https://pepta.com/logo.jpeg',
   description: 'Premium technology and gadget wholesale supplier for boutiques and showrooms',
   sameAs: [
-    'https://facebook.com/dazzlewholesale',
-    'https://instagram.com/dazzlewholesale',
+    'https://facebook.com/peptaltd',
+    'https://instagram.com/peptaltd',
   ],
   contactPoint: {
     '@type': 'ContactPoint',

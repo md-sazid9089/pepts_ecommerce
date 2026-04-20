@@ -1,5 +1,5 @@
 /**
- * Precious Play Service Worker
+ * Pepta Service Worker
  * Offline-first PWA with intelligent caching strategies
  * - Static assets: Cache-first (after SW update)
  * - API calls: Network-first with cache fallback
@@ -7,8 +7,8 @@
  * - HTML: Network-first with cache fallback
  */
 
-const CACHE_PREFIX = 'precious-play';
-const CURRENT_VERSION = 'v1';
+const CACHE_PREFIX = 'pepta';
+const CURRENT_VERSION = 'v2';
 const CACHE_NAME = `${CACHE_PREFIX}-${CURRENT_VERSION}`;
 
 // Cache configuration

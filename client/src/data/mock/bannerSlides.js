@@ -12,9 +12,9 @@ export const bannerSlides = [
     href: '/products?category=smartphones',
     bg: '#F1F5F9',
     accent: '#1E293B',
-    image: '/aboutbatman.png',
-    backgroundImage: 'url("/aboutbatman.png")',
-    backgroundOverlay: 'linear-gradient(135deg, rgba(241,245,249,0.9) 0%, rgba(30,41,59,0.1) 100%)',
+    image: '/barbiedoll.jpg',
+    backgroundImage: 'url("/barbiedoll.jpg")',
+    backgroundOverlay: 'linear-gradient(135deg, rgba(241,245,249,0.3) 0%, rgba(30,41,59,0) 100%)',
   },
   {
     id: 2,
@@ -24,9 +24,9 @@ export const bannerSlides = [
     href: '/products?category=laptops',
     bg: '#FDE9EC',
     accent: '#533638',
-    image: '/experience1.png',
-    backgroundImage: 'url("/experience1.png")',
-    backgroundOverlay: 'linear-gradient(135deg, rgba(253,233,236,0.85) 0%, rgba(83,54,56,0.1) 100%)',
+    image: '/batman.png',
+    backgroundImage: 'url("/batman.png")',
+    backgroundOverlay: 'linear-gradient(135deg, rgba(253,233,236,0.3) 0%, rgba(83,54,56,0) 100%)',
   },
   {
     id: 3,
@@ -36,9 +36,9 @@ export const bannerSlides = [
     href: '/products?category=smarthome',
     bg: '#F9FAFB',
     accent: '#1E293B',
-    image: '/experience2.png',
-    backgroundImage: 'url("/experience2.png")',
-    backgroundOverlay: 'linear-gradient(135deg, rgba(249,250,251,0.9) 0%, rgba(30,41,59,0.1) 100%)',
+    image: '/hotwheels.jpg',
+    backgroundImage: 'url("/hotwheels.jpg")',
+    backgroundOverlay: 'linear-gradient(135deg, rgba(249,250,251,0.3) 0%, rgba(30,41,59,0) 100%)',
   },
 ];
 

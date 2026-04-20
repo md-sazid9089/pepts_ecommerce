@@ -12,12 +12,12 @@ const ProductCardClient = dynamic(() => import('@/components/ProductCard/Product
 const CategorySection = dynamic(() => import('@/components/CategorySection/CategorySection'));
 
 export const metadata = {
-  title: 'Dazzle - Premium B2B Technology & Gadget Marketplace',
+  title: 'Pepta - Premium B2B Technology & Gadget Marketplace',
   description: 'Discover wholesale electronics and gadgets with tiered pricing, bulk discounts, and direct factory access. Perfect for boutiques and showrooms.',
   openGraph: {
-    title: 'Dazzle - Premium B2B Technology & Gadget Marketplace',
+    title: 'Pepta - Premium B2B Technology & Gadget Marketplace',
     description: 'Wholesale gadgets with tiered pricing and bulk discounts',
-    url: 'https://dazzle.com',
+    url: 'https://pepta.com',
     type: 'website',
   },
 };
@@ -32,7 +32,7 @@ export default function HomePage() {
     <div className={styles.homePage}>
       {/* SEO: Main Heading */}
       <h1 style={{ position: 'absolute', left: '-9999px', width: '1px', height: '1px', overflow: 'hidden' }}>
-        Dazzle - Premium B2B Technology & Gadget Marketplace
+        Pepta - Premium B2B Technology & Gadget Marketplace
       </h1>
 
       {/* 1. HERO CAROUSEL */}

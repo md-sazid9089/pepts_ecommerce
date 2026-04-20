@@ -6,7 +6,7 @@
 export const categories = [
   {
     id: 'smartphones',
-    name: 'Smartphones',
+    name: 'Action Figure',
     icon: 'FiSmartphone',
     image: '/catagoryactionfigure.png', // Reusing existing paths but with tech names
     color: '#1E293B',
@@ -14,7 +14,7 @@ export const categories = [
   },
   {
     id: 'laptops',
-    name: 'Laptops',
+    name: 'Toy',
     icon: 'FiMonitor',
     image: '/toycatagory.png',
     color: '#533638',
@@ -22,7 +22,7 @@ export const categories = [
   },
   {
     id: 'wearables',
-    name: 'Smart Wearables',
+    name: 'Barbie Dolls',
     icon: 'FiWatch',
     image: '/dollcatagory.png',
     color: '#F08FA8',
@@ -30,7 +30,7 @@ export const categories = [
   },
   {
     id: 'smarthome',
-    name: 'Smart Home',
+    name: 'RC Car',
     icon: 'FiZap',
     image: '/rccatagory.png',
     color: '#FF6B35',

@@ -76,7 +76,7 @@ export default function Footer() {
             {/* Brand column */}
             <div className={styles.brandCol}>
               <Link href="/" className={styles.footerLogo}>
-                <FiGift className={styles.logoIcon} style={{marginRight: '8px'}} /> <span>Dazzle</span>
+                <FiGift className={styles.logoIcon} style={{marginRight: '8px'}} /> <span>Pepta</span>
               </Link>
               <p className={styles.brandDesc}>
                 Premium technology and gadget wholesale supplier for boutiques and showrooms across Bangladesh. Direct factory prices, bulk discounts, and professional wholesale service.
@@ -86,7 +86,7 @@ export default function Footer() {
                   <FiPhone size={14} /> <span>+86 18168023963 (Global Wholesale)</span>
                 </div>
                 <div className={styles.contactItem}>
-                  <FiMail size={14} /> <span>wholesale@precious-play-wholesale.bd</span>
+                  <FiMail size={14} /> <span>wholesale@pepta.com.bd</span>
                 </div>
                 <div className={styles.contactItem} style={{ gap: '12px', alignItems: 'flex-start' }}>
                   <FiMapPin size={14} className="mt-1 flex-shrink-0" /> 
@@ -190,7 +190,7 @@ export default function Footer() {
       {/* Copyright */}
       <div className={styles.copyright}>
         <div className="container">
-          <p>© 2024 Dazzle Premium Wholesale. All rights reserved. Premium Tech Wholesale Platform for Retailers.</p>
+          <p>© 2024 Pepta Premium Wholesale. All rights reserved. Premium Tech Wholesale Platform for Retailers.</p>
           <div className={styles.copyrightLinks}>
             <Link href="#">Privacy Policy</Link>
             <Link href="#">Wholesale Terms</Link>

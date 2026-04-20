@@ -28,7 +28,7 @@
   content: '';
   position: absolute;
   inset: 0;
-  background: linear-gradient(135deg, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.05) 100%);
+  background: linear-gradient(135deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0) 100%);
   z-index: 1;
 }
 

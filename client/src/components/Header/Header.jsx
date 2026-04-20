@@ -53,7 +53,7 @@ export default function Header() {
           <Link href="/" className={styles.logo}>
             <Image
               src="/logo.jpeg"
-              alt="Dazzle Logo"
+              alt="Pepta Logo"
               width={130}
               height={45}
               priority
@@ -64,7 +64,7 @@ export default function Header() {
           <form onSubmit={handleSearch} className={styles.searchForm}>
             <input
               type="text"
-              placeholder="Search in Dazzle"
+              placeholder="Search in Pepta"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className={styles.searchInput}
@@ -112,9 +112,6 @@ export default function Header() {
             <Link href="/deals" className={styles.navLink}>
                Bulk Deals
             </Link>
-            <Link href="/about" className={styles.navLink}>
-               About Us
-            </Link>
           </nav>
         </div>
       </div>
@@ -125,7 +122,6 @@ export default function Header() {
           <Link href="/products" className={styles.mobileMenuLink}>All Products</Link>
           <Link href="/categories" className={styles.mobileMenuLink}>Categories</Link>
           <Link href="/deals" className={styles.mobileMenuLink}>Bulk Deals</Link>
-          <Link href="/about" className={styles.mobileMenuLink}>About Us</Link>
         </nav>
       )}
     </header>

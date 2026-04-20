@@ -11,7 +11,7 @@ export function AuthProvider({ children }) {
   // Load user from localStorage on mount
   useEffect(() => {
     try {
-      const saved = localStorage.getItem('precious_wholesale_user');
+      const saved = localStorage.getItem('pepta_wholesale_user');
       if (saved) {
         const savedUser = JSON.parse(saved);
         queueMicrotask(() => {
@@ -39,7 +39,7 @@ export function AuthProvider({ children }) {
     };
     setUser(userData);
     try {
-      localStorage.setItem('precious_wholesale_user', JSON.stringify(userData));
+      localStorage.setItem('pepta_wholesale_user', JSON.stringify(userData));
     } catch (e) {
       /* ignore */
     }
@@ -59,7 +59,7 @@ export function AuthProvider({ children }) {
     };
     setUser(userData);
     try {
-      localStorage.setItem('precious_wholesale_user', JSON.stringify(userData));
+      localStorage.setItem('pepta_wholesale_user', JSON.stringify(userData));
     } catch (e) {
       /* ignore */
     }
@@ -69,7 +69,7 @@ export function AuthProvider({ children }) {
   const logout = () => {
     setUser(null);
     try {
-      localStorage.removeItem('precious_wholesale_user');
+      localStorage.removeItem('pepta_wholesale_user');
     } catch (e) {
       /* ignore */
     }
@@ -79,7 +79,7 @@ export function AuthProvider({ children }) {
     const updated = { ...user, ...updates };
     setUser(updated);
     try {
-      localStorage.setItem('precious_wholesale_user', JSON.stringify(updated));
+      localStorage.setItem('pepta_wholesale_user', JSON.stringify(updated));
     } catch (e) {
       /* ignore */
     }

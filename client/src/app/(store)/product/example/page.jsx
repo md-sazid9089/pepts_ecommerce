@@ -1,5 +1,5 @@
 /**
- * Example Product Detail Page for Dazzle - Premium Tech & Gadget Marketplace
+ * Example Product Detail Page for Pepta - Premium Tech & Gadget Marketplace
  */
 
 import Image from 'next/image';
@@ -10,16 +10,16 @@ import { PageTransition } from '@/components/Animations/LayoutTransitions';
 // Sample product data - Gadget Focused
 const SAMPLE_PRODUCT = {
   id: 'phone-001',
-  name: 'Dazzle X1 - Pro Smartphone (Global Edition)',
-  slug: 'dazzle-x1-pro-smartphone',
+  name: 'Pepta X1 - Pro Smartphone (Global Edition)',
+  slug: 'pepta-x1-pro-smartphone',
   description: 'The pinnacle of mobile technology. Features a stunning 6.9-inch OLED display, custom oct-core processor, and a revolutionary triple-lens camera system with 100x zoom.',
   images: [
     'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=800',
     'https://images.unsplash.com/photo-1592899677977-9c10ca588bbd?w=800',
   ],
-  brand: 'Dazzle Elite',
-  manufacturer: 'Dazzle Tech',
-  sku: 'DZ-PHONE-X1PRO-001',
+  brand: 'Pepta Elite',
+  manufacturer: 'Pepta Tech',
+  sku: 'PP-PHONE-X1PRO-001',
   category: 'Smartphones > Flagship',
   price: 85000,
   rating: {
@@ -35,7 +35,7 @@ const SAMPLE_PRODUCT = {
     },
     {
       rating: 5,
-      comment: 'Direct factory support is second to none. Dazzle is our primary supplier now.',
+      comment: 'Direct factory support is second to none. Pepta is our primary supplier now.',
       author: 'Ahmed Zahid',
       date: '2026-04-12',
     },
@@ -216,11 +216,11 @@ export default function ProductDetailPage({ params }) {
 }
 
 export const metadata = {
-  title: `${SAMPLE_PRODUCT.name} - Buy Wholesale Gadgets | Dazzle`,
+  title: `${SAMPLE_PRODUCT.name} - Buy Wholesale Gadgets | Pepta`,
   description: SAMPLE_PRODUCT.description,
   keywords: [
     'wholesale smartphones',
-    'dazzle tech',
+    'pepta tech',
     'buy phones in bulk',
     'electronics supplier',
   ],
