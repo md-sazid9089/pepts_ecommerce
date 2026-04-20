@@ -1,3 +1,4 @@
+import Image from 'next/image';
 import Link from 'next/link';
 import { categories } from '@/data/constants/categories';
 import { brands } from '@/data/constants/brands';
@@ -22,11 +23,6 @@ export function CategoriesView() {
     return products.filter(p => p.category === categoryId).length;
   };
 
-  const getIcon = (iconName) => {
-    const IconComponent = iconMap[iconName];
-    return IconComponent ? <IconComponent size={32} /> : <span>{iconName}</span>;
-  };
-
   return (
     <div className={styles.container}>
       <div className={styles.header}>
@@ -46,7 +42,15 @@ export function CategoriesView() {
               '--text-color': category.color,
             }}
           >
-            <div className={styles.cardIcon}>{getIcon(category.icon)}</div>
+            <div className={styles.cardImage}>
+              <Image
+                src={category.image}
+                alt={category.name}
+                width={80}
+                height={80}
+                className={styles.catImage}
+              />
+            </div>
             <div className={styles.cardContent}>
               <h3 className={styles.categoryName}>{category.name}</h3>
               <p className={styles.productCount}>
@@ -70,8 +74,14 @@ export function CategoriesView() {
           <section key={category.id} className={styles.categorySection}>
             <div className={styles.sectionHeader}>
               <div className={styles.sectionHeaderMain}>
-                <div className={styles.sectionHeaderIcon}>
-                  {getIcon(category.icon)}
+                <div className={styles.sectionHeaderImage}>
+                  <Image
+                    src={category.image}
+                    alt={category.name}
+                    width={60}
+                    height={60}
+                    className={styles.catImage}
+                  />
                 </div>
                 <div>
                   <h2 className={styles.sectionTitle}>{category.name}</h2>
@@ -102,8 +112,7 @@ export function CategoriesView() {
                     className={styles.productTile}
                   >
                     <div className={styles.tileImage}>
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={product.image} alt={product.name} />
+                      <Image src={product.image} alt={product.name} width={200} height={200} loading="lazy" />
                       {product.moq && (
                         <div className={styles.tileBadge}>
                           MOQ: {product.moq}

@@ -1,15 +1,7 @@
+import Image from 'next/image';
 import Link from 'next/link';
 import { FiArrowRight } from 'react-icons/fi';
 import styles from './CategoriesGrid.premium.module.css';
-
-const categoryIcons = {
-  dolls: '🎀',
-  collectibles: '✨',
-  luxury: '👑',
-  vintage: '🕰️',
-  modern: '🌟',
-  limited: '🔐',
-};
 
 export default function CategoriesGridPremium({ categories = [] }) {
   if (!categories || categories.length === 0) return null;
@@ -42,8 +34,14 @@ export default function CategoriesGridPremium({ categories = [] }) {
               className={styles.categoryCard}
             >
               <div className={styles.cardContent}>
-                <div className={styles.icon}>
-                  {categoryIcons[category.slug] || '📦'}
+                <div className={styles.imageContainer}>
+                  <Image
+                    src={category.image}
+                    alt={category.name}
+                    width={80}
+                    height={80}
+                    className={styles.catImage}
+                  />
                 </div>
                 <h3 className={styles.categoryName}>{category.name}</h3>
                 <p className={styles.itemCount}>

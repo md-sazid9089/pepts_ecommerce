@@ -3,13 +3,26 @@ const nextConfig = {
   // Enable React strict mode for development
   reactStrictMode: true,
 
+  // Enable compression for faster delivery
+  compress: true,
+
+  // Optimize fonts automatically
+  optimizeFonts: true,
+
   // Optimize images
   images: {
     unoptimized: false, // Enable image optimization
+    formats: ['image/avif', 'image/webp'],
     remotePatterns: [
       {
         protocol: 'https',
         hostname: 'placehold.co',
+        port: '',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'images.unsplash.com',
         port: '',
         pathname: '/**',
       },
@@ -26,7 +39,7 @@ const nextConfig = {
   // Powering up the build process
   productionBrowserSourceMaps: false, // Disable source maps in production for smaller bundle
 
-  // Security headers
+  // Security headers and caching strategy
   async headers() {
     return [
       {
@@ -47,6 +60,88 @@ const nextConfig = {
           {
             key: 'Referrer-Policy',
             value: 'strict-origin-when-cross-origin',
+          },
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=3600, s-maxage=86400',
+          },
+        ],
+      },
+      // Next.js static assets - 1 year immutable cache
+      {
+        source: '/_next/static/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable',
+          },
+        ],
+      },
+      // Public directory assets - 1 year immutable cache
+      {
+        source: '/public/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable',
+          },
+        ],
+      },
+      // Static assets - long cache
+      {
+        source: '/static/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable',
+          },
+        ],
+      },
+      // Images - moderate cache
+      {
+        source: '/images/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=604800, s-maxage=2592000',
+          },
+        ],
+      },
+      // Service Worker - don't cache, always fresh
+      {
+        source: '/sw.js',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=0, must-revalidate',
+          },
+          {
+            key: 'Service-Worker-Allowed',
+            value: '/',
+          },
+        ],
+      },
+      // Web App Manifest - cache but check for updates
+      {
+        source: '/manifest.json',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=3600',
+          },
+          {
+            key: 'Content-Type',
+            value: 'application/manifest+json',
+          },
+        ],
+      },
+      // Offline page - don't cache, always fresh
+      {
+        source: '/offline.html',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=0, must-revalidate',
           },
         ],
       },

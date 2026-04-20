@@ -1,6 +1,8 @@
 'use client';
 
 import { useState, use } from 'react';
+import Image from 'next/image';
+import Script from 'next/script';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { getProductById, getRelatedProducts, categories, formatPrice } from '@/data/products';
@@ -9,7 +11,7 @@ import ProductGrid from '@/components/ProductGrid/ProductGrid';
 import {
   FiShoppingCart, FiHeart, FiShare2, FiStar,
   FiMinus, FiPlus, FiCheck, FiTruck, FiShield, FiRefreshCw,
-  FiTrendingUp, FiThumbsUp, FiThumbsDown
+  FiTrendingUp, FiThumbsUp, FiThumbsDown, FiUser
 } from 'react-icons/fi';
 import styles from './page.module.css';
 
@@ -34,10 +36,10 @@ function StarRating({ rating, size = 16, interactive = false, onRate }) {
 }
 
 const SAMPLE_REVIEWS = [
-  { id: 1, name: 'Rahim K.', avatar: '🧑', rating: 5, date: '2 days ago', comment: 'Excellent product! Exactly as described. Fast delivery and great packaging.', helpful: 24 },
-  { id: 2, name: 'Sunita M.', avatar: '👩', rating: 4, date: '1 week ago', comment: 'Very good quality. Slight delay in delivery but the product is worth it.', helpful: 18 },
-  { id: 3, name: 'Karim A.', avatar: '🧔', rating: 5, date: '2 weeks ago', comment: 'Perfect! Matches the description beautifully. Would definitely buy again!', helpful: 31 },
-  { id: 4, name: 'Fariha B.', avatar: '👱‍♀️', rating: 3, date: '3 weeks ago', comment: 'Product is okay but I expected a bit better quality for this price range.', helpful: 7 },
+  { id: 1, name: 'Rahim K.', icon: FiUser, rating: 5, date: '2 days ago', comment: 'Excellent product! Exactly as described. Fast delivery and great packaging.', helpful: 24 },
+  { id: 2, name: 'Sunita M.', icon: FiUser, rating: 4, date: '1 week ago', comment: 'Very good quality. Slight delay in delivery but the product is worth it.', helpful: 18 },
+  { id: 3, name: 'Karim A.', icon: FiUser, rating: 5, date: '2 weeks ago', comment: 'Perfect! Matches the description beautifully. Would definitely buy again!', helpful: 31 },
+  { id: 4, name: 'Fariha B.', icon: FiUser, rating: 3, date: '3 weeks ago', comment: 'Product is okay but I expected a bit better quality for this price range.', helpful: 7 },
 ];
 
 export default function ProductDetailPage({ params }) {
@@ -83,8 +85,42 @@ export default function ProductDetailPage({ params }) {
     { stars: 1, pct: 2 },
   ];
 
+  // Generate Product JSON-LD Schema
+  const productSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'Product',
+    name: product.name,
+    description: product.description || product.name,
+    image: images[0],
+    brand: {
+      '@type': 'Brand',
+      name: product.brand || 'Pepta',
+    },
+    offers: {
+      '@type': 'Offer',
+      price: product.price,
+      priceCurrency: 'USD',
+      availability: 'https://schema.org/InStock',
+      seller: {
+        '@type': 'Organization',
+        name: 'Pepta',
+      },
+    },
+    aggregateRating: {
+      '@type': 'AggregateRating',
+      ratingValue: product.rating,
+      reviewCount: product.reviews,
+    },
+    category: cat?.name || 'Dolls',
+  };
+
   return (
     <div className="page-wrapper">
+      <Script 
+        id="product-schema" 
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(productSchema) }}
+      />
       <div className="container">
         {/* Breadcrumb */}
         <nav className="breadcrumb">
@@ -103,8 +139,7 @@ export default function ProductDetailPage({ params }) {
               {images.map((img, i) => (
                 <button key={i} className={`${styles.thumb} ${i === activeImg ? styles.thumbActive : ''}`}
                   onClick={() => setActiveImg(i)}>
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={img} alt="" />
+                  <Image src={img} alt="" width={80} height={80} />
                 </button>
               ))}
             </div>
@@ -116,11 +151,13 @@ export default function ProductDetailPage({ params }) {
               onMouseLeave={() => setZoom(false)}
               onMouseMove={handleMouseMove}
             >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
+              <Image
                 src={images[activeImg]}
                 alt={product.name}
                 className={styles.mainImg}
+                width={500}
+                height={500}
+                priority
                 style={zoom ? {
                   transformOrigin: `${zoomPos.x}% ${zoomPos.y}%`,
                   transform: 'scale(2.2)',
@@ -204,7 +241,7 @@ export default function ProductDetailPage({ params }) {
             <div className={styles.deliveryInfo}>
               <div className={styles.deliveryItem}>
                 <FiTruck size={16} className={styles.deliveryIcon} />
-                <span><strong>Wholesale Logistics</strong> fulfillment by Precious Play. Estimated 3-5 business days.</span>
+                <span><strong>Wholesale Logistics</strong> fulfillment by Pepta. Estimated 3-5 business days.</span>
               </div>
               <div className={styles.deliveryItem}>
                 <FiShield size={16} className={styles.deliveryIcon} />
@@ -345,7 +382,7 @@ export default function ProductDetailPage({ params }) {
                   {SAMPLE_REVIEWS.map(r => (
                     <div key={r.id} className={styles.reviewCard}>
                       <div className={styles.reviewTop}>
-                        <span className={styles.reviewAvatar}>{r.avatar}</span>
+                        <span className={styles.reviewAvatar}><r.icon size={24} /></span>
                         <div>
                           <p className={styles.reviewName}>{r.name}</p>
                           <StarRating rating={r.rating} size={13} />

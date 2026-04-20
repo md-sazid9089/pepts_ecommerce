@@ -20,6 +20,16 @@
   height: 400px;
   position: relative;
   overflow: hidden;
+  background-size: cover;
+  background-position: center;
+}
+
+.slide::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.05) 100%);
+  z-index: 1;
 }
 
 
@@ -81,7 +91,7 @@
   align-items: center;
   gap: 6px;
   padding: 14px 28px;
-  border-radius: var(--radius-md);
+  border-radius: 50px;
   font-family: var(--font-display);
   font-weight: 700;
   font-size: 0.95rem;
@@ -99,7 +109,7 @@
   display: inline-flex;
   align-items: center;
   padding: 14px 24px;
-  border-radius: var(--radius-md);
+  border-radius: 50px;
   font-weight: 600;
   font-size: 0.9rem;
   color: white;

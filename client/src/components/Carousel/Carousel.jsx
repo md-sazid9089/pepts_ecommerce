@@ -1,18 +1,59 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { bannerSlides } from '@/data/products';
-import { FiChevronLeft, FiChevronRight, FiTag } from 'react-icons/fi';
+import { FiChevronLeft, FiChevronRight } from 'react-icons/fi';
 import styles from './Carousel.module.css';
 
 export default function Carousel() {
+  const router = useRouter();
   const [current, setCurrent] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStart, setDragStart] = useState(0);
+  const [wasDragged, setWasDragged] = useState(false);
   const total = bannerSlides.length;
 
   const next = useCallback(() => setCurrent(c => (c + 1) % total), [total]);
   const prev = useCallback(() => setCurrent(c => (c - 1 + total) % total), [total]);
+
+  const handleMouseDown = (e) => {
+    setIsDragging(true);
+    setDragStart(e.clientX);
+  };
+
+  const handleMouseMove = (e) => {
+    if (!isDragging) return;
+  };
+
+  const handleMouseUp = (e) => {
+    if (!isDragging) return;
+    setIsDragging(false);
+    
+    const dragEnd = e.clientX;
+    const dragDistance = dragStart - dragEnd;
+    
+    // If dragged more than 50px, navigate
+    if (Math.abs(dragDistance) > 50) {
+      setWasDragged(true);
+      if (dragDistance > 0) {
+        next();
+      } else {
+        prev();
+      }
+    } else {
+      setWasDragged(false);
+    }
+  };
+
+  const handleCarouselClick = (e) => {
+    // Only redirect if not dragging
+    if (!wasDragged) {
+      router.push('/categories');
+    }
+    setWasDragged(false);
+  };
 
   useEffect(() => {
     if (isPaused) return;
@@ -27,37 +68,41 @@ export default function Carousel() {
       onMouseLeave={() => setIsPaused(false)}
     >
       {/* Slides */}
-      <div className={styles.slidesTrack} style={{ transform: `translateX(-${current * 100}%)` }}>
+      <div 
+        className={styles.slidesTrack} 
+        style={{ transform: `translateX(-${current * 100}%)` }}
+        onMouseDown={handleMouseDown}
+        onMouseMove={handleMouseMove}
+        onMouseUp={handleMouseUp}
+        onClick={handleCarouselClick}
+      >
         {bannerSlides.map((slide, i) => (
-          <div key={slide.id} className={styles.slide} style={{ background: slide.bg }}>
-            <div className={styles.slideContent}>
-              <div className={styles.slideText}>
-                <p className={styles.slideTag} style={{ color: slide.accent }}>
-                  <FiTag size={14} /> Limited Time Offer
-                </p>
-                <h1 className={styles.slideTitle}>{slide.title}</h1>
-                <p className={styles.slideSubtitle}>{slide.subtitle}</p>
-                <div className={styles.slideBtns}>
-                  <Link href={slide.href} className={styles.slideCta}
-                    style={{ background: slide.accent, color: slide.accent === '#FFFFFF' ? '#1A1A2E' : 'white' }}>
-                    {slide.cta} →
-                  </Link>
-                  <Link href="/products" className={styles.slideSecondary}>
-                    Browse All
-                  </Link>
-                </div>
-              </div>
-              <div className={styles.slideImgWrap}>
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={slide.image}
-                  alt={slide.title}
-                  className={styles.slideImg}
-                  loading={i === 0 ? 'eager' : 'lazy'}
-                />
-                <div className={styles.slideImgGlow} style={{ background: slide.accent }} />
-              </div>
-            </div>
+          <div 
+            key={slide.id} 
+            className={styles.slide} 
+            style={{ 
+              backgroundColor: slide.bg,
+              backgroundImage: slide.backgroundImage,
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+              backgroundRepeat: 'no-repeat',
+              backgroundAttachment: 'fixed',
+              position: 'relative',
+            }}
+          >
+            {slide.backgroundOverlay && (
+              <div 
+                className={styles.slideOverlay}
+                style={{
+                  position: 'absolute',
+                  inset: 0,
+                  background: slide.backgroundOverlay,
+                  zIndex: 0,
+                  pointerEvents: 'none',
+                }}
+              />
+            )}
+
           </div>
         ))}
       </div>

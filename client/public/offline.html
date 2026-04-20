@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Offline - Pepta</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto',
+          'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans',
+          'Helvetica Neue', sans-serif;
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+      }
+
+      .container {
+        max-width: 500px;
+        text-align: center;
+        background: white;
+        border-radius: 16px;
+        padding: 40px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+      }
+
+      .icon {
+        font-size: 80px;
+        margin-bottom: 20px;
+        animation: bounce 2s infinite;
+      }
+
+      @keyframes bounce {
+        0%,
+        100% {
+          transform: translateY(0);
+        }
+        50% {
+          transform: translateY(-10px);
+        }
+      }
+
+      h1 {
+        color: #333;
+        font-size: 28px;
+        margin-bottom: 10px;
+        font-weight: 700;
+      }
+
+      p {
+        color: #666;
+        font-size: 16px;
+        line-height: 1.6;
+        margin-bottom: 30px;
+      }
+
+      .info {
+        background: #f5f7fa;
+        border-left: 4px solid #8B5CF6;
+        padding: 15px;
+        border-radius: 8px;
+        text-align: left;
+        margin-bottom: 30px;
+        font-size: 14px;
+        color: #555;
+      }
+
+      .actions {
+        display: flex;
+        gap: 12px;
+        flex-direction: column;
+      }
+
+      button {
+        padding: 12px 24px;
+        border: none;
+        border-radius: 8px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-block;
+      }
+
+      .btn-primary {
+        background: linear-gradient(135deg, #8B5CF6 0%, #7C3AED 100%);
+        color: white;
+      }
+
+      .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 20px rgba(139, 92, 246, 0.3);
+      }
+
+      .btn-secondary {
+        background: #e5e7eb;
+        color: #333;
+      }
+
+      .btn-secondary:hover {
+        background: #d1d5db;
+        transform: translateY(-2px);
+      }
+
+      .cached-pages {
+        margin-top: 30px;
+        padding-top: 30px;
+        border-top: 1px solid #e5e7eb;
+      }
+
+      .cached-pages h3 {
+        color: #333;
+        font-size: 14px;
+        margin-bottom: 15px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+      }
+
+      .cached-list {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+      }
+
+      .cached-link {
+        display: block;
+        padding: 10px;
+        background: #f5f7fa;
+        border-radius: 6px;
+        color: #8B5CF6;
+        text-decoration: none;
+        font-size: 14px;
+        font-weight: 500;
+        transition: all 0.2s ease;
+      }
+
+      .cached-link:hover {
+        background: #e0d9f5;
+        transform: translateX(4px);
+      }
+
+      .status-indicator {
+        display: inline-block;
+        width: 12px;
+        height: 12px;
+        background: #fbbf24;
+        border-radius: 50%;
+        margin-right: 8px;
+        animation: pulse 2s infinite;
+      }
+
+      @keyframes pulse {
+        0%,
+        100% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0.5;
+        }
+      }
+
+      @media (max-width: 600px) {
+        .container {
+          padding: 30px 20px;
+        }
+
+        h1 {
+          font-size: 24px;
+        }
+
+        .icon {
+          font-size: 60px;
+        }
+
+        .cached-list {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="icon">📡</div>
+      <h1>You're Offline</h1>
+      <p>
+        It looks like you've lost your internet connection. Don't worry—you can
+        still browse previously visited pages.
+      </p>
+
+      <div class="info">
+        <span class="status-indicator"></span>
+        <strong>Connection Status:</strong> No internet detected
+      </div>
+
+      <div class="actions">
+        <button class="btn-primary" onclick="window.location.href = '/'">
+          ← Back to Homepage
+        </button>
+        <button class="btn-secondary" onclick="checkConnection()">
+          🔄 Check Connection
+        </button>
+      </div>
+
+      <div class="cached-pages">
+        <h3>📦 Cached Pages Available</h3>
+        <div class="cached-list">
+          <a href="/" class="cached-link">🏠 Home</a>
+          <a href="/products" class="cached-link">📦 Products</a>
+          <a href="/about" class="cached-link">ℹ️ About</a>
+          <a href="/cart" class="cached-link">🛒 Cart</a>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // Check if connection is restored
+      function checkConnection() {
+        fetch('/ping', { method: 'HEAD', no_cors: true })
+          .then(() => {
+            alert('✅ Connection restored! Reloading page...');
+            window.location.reload();
+          })
+          .catch(() => {
+            alert('❌ Still offline. Please check your connection.');
+          });
+      }
+
+      // Auto-check connection periodically
+      setInterval(() => {
+        fetch('/ping', { method: 'HEAD', no_cors: true })
+          .then(() => {
+            // Connection restored
+            window.location.reload();
+          })
+          .catch(() => {
+            // Still offline
+          });
+      }, 5000);
+    </script>
+  </body>
+</html>

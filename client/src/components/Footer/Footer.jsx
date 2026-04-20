@@ -2,48 +2,12 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
-import { categories } from '@/data/products';
-import {
-  FaFacebook, FaInstagram, FaTwitter, FaYoutube, FaTiktok, FaApple, FaGooglePlay
-} from 'react-icons/fa';
-import { FiMail, FiPhone, FiMapPin, FiInstagram, FiTwitter, FiFacebook, FiLinkedin, FiSend, FiCheckCircle, FiChevronDown, FiChevronUp, FiGift } from 'react-icons/fi';
+import { categories } from '@/data/constants/categories';
+import { footerLinksWholesale, paymentMethods, socialLinksConfig } from '@/data/constants/footer';
+import { fontAwesomeIcons } from '@/utils/iconMap';
+import { FiMail, FiPhone, FiMapPin, FiSend, FiCheckCircle, FiChevronDown, FiChevronUp, FiGift } from 'react-icons/fi';
+import { FaApple, FaGooglePlay } from 'react-icons/fa';
 import styles from './Footer.module.css';
-
-const footerLinks = {
-  'Wholesale Info': [
-    { label: 'How to Buy Bulk', href: '#' },
-    { label: 'Tiered Pricing Guide', href: '#' },
-    { label: 'Bulk Order Process', href: '#' },
-    { label: 'MOQ Information', href: '#' },
-    { label: 'Wholesale FAQs', href: '#' },
-    { label: 'Order Tracking', href: '#' },
-  ],
-  'Retailers & Boutiques': [
-    { label: 'For Boutique Owners', href: '#' },
-    { label: 'Gift Shop Solutions', href: '#' },
-    { label: 'Franchise Opportunities', href: '#' },
-    { label: 'Wholesale Terms', href: '#' },
-    { label: 'Case Studies', href: '#' },
-    { label: 'Partner Program', href: '#' },
-  ],
-  'About Us': [
-    { label: 'About PreciousDolls', href: '#' },
-    { label: 'Our Suppliers', href: '#' },
-    { label: 'Quality Standards', href: '#' },
-    { label: 'Blog & Resources', href: '#' },
-    { label: 'Press', href: '#' },
-    { label: 'Contact Support', href: '#' },
-  ],
-};
-
-const paymentMethods = ['Visa', 'Mastercard', 'bKash', 'Nagad', 'Rocket', 'Cash on Delivery'];
-const socialLinks = [
-  { icon: FaFacebook, label: 'Facebook', href: '#', color: '#1877F2' },
-  { icon: FaInstagram, label: 'Instagram', href: '#', color: '#E1306C' },
-  { icon: FaTwitter, label: 'Twitter', href: '#', color: '#1DA1F2' },
-  { icon: FaYoutube, label: 'YouTube', href: '#', color: '#FF0000' },
-  { icon: FaTiktok, label: 'TikTok', href: '#', color: '#000000' },
-];
 
 function AccordionSection({ title, children }) {
   const [open, setOpen] = useState(false);
@@ -112,34 +76,41 @@ export default function Footer() {
             {/* Brand column */}
             <div className={styles.brandCol}>
               <Link href="/" className={styles.footerLogo}>
-                <FiGift className={styles.logoIcon} style={{marginRight: '8px'}} /> <span>Precious Play</span>
+                <FiGift className={styles.logoIcon} style={{marginRight: '8px'}} /> <span>Pepta</span>
               </Link>
               <p className={styles.brandDesc}>
                 Premium doll wholesale supplier for boutiques and gift shops across Bangladesh. Direct factory prices, bulk discounts, and professional wholesale service.
               </p>
               <div className={styles.contactInfo}>
                 <div className={styles.contactItem}>
-                  <FiPhone size={14} /> <span>+880 1800-DOLLS-1</span>
+                  <FiPhone size={14} /> <span>+86 18168023963 (Global Wholesale)</span>
                 </div>
                 <div className={styles.contactItem}>
                   <FiMail size={14} /> <span>wholesale@precious-play-wholesale.bd</span>
                 </div>
-                <div className={styles.contactItem}>
-                  <FiMapPin size={14} /> <span>Dhaka Fashion District, Bangladesh</span>
+                <div className={styles.contactItem} style={{ gap: '12px', alignItems: 'flex-start' }}>
+                  <FiMapPin size={14} className="mt-1" /> 
+                  <div className="flex flex-col gap-1">
+                      <span>Factory & Global HQ:</span>
+                    <span className="text-[10px] opacity-70">Gong Pai Wood Products, Entrance Building, Yangtian Road, Ganquan Town, Jiangyang District, Yangzhou City, Jiangsu Province.</span>
+                  </div>
                 </div>
               </div>
               <div className={styles.social}>
-                {socialLinks.map(s => (
-                  <Link key={s.label} href={s.href} className={styles.socialLink} aria-label={s.label}
-                    style={{ '--social-color': s.color }}>
-                    <s.icon size={18} />
-                  </Link>
-                ))}
+                {socialLinksConfig.map(s => {
+                  const IconComponent = fontAwesomeIcons[s.iconId];
+                  return (
+                    <Link key={s.label} href={s.href} className={styles.socialLink} aria-label={s.label}
+                      style={{ '--social-color': s.color }}>
+                      {IconComponent && <IconComponent size={18} />}
+                    </Link>
+                  );
+                })}
               </div>
             </div>
 
             {/* Link columns — desktop */}
-            {Object.entries(footerLinks).map(([title, links]) => (
+            {Object.entries(footerLinksWholesale).map(([title, links]) => (
               <div key={title} className={styles.linkCol}>
                 <h4 className={styles.colTitle}>{title}</h4>
                 <ul className={styles.linkList}>
@@ -169,7 +140,7 @@ export default function Footer() {
 
           {/* Mobile accordion */}
           <div className={styles.mobileAccordions}>
-            {Object.entries(footerLinks).map(([title, links]) => (
+            {Object.entries(footerLinksWholesale).map(([title, links]) => (
               <AccordionSection key={title} title={title}>
                 <ul className={styles.linkList}>
                   {links.map(l => (

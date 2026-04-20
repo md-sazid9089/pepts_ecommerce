@@ -8,7 +8,7 @@ import { products, categories } from '@/data/products';
 import styles from './page.premium.module.css';
 
 export const metadata = {
-  title: 'Precious Play Premium - Curated Collections',
+  title: 'Pepta Premium - Curated Collections',
   description: 'Discover premium doll collections with our soft, modern aesthetic marketplace.',
 };
 

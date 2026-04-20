@@ -34,7 +34,7 @@ export default function Header() {
       <div className={styles.utilityBar}>
         <div className={styles.container}>
           <div className={styles.utilityLeft}>
-            <Link href="#" className={styles.utilityLink}>SELL ON PRECIOUS PLAY</Link>
+            <Link href="#" className={styles.utilityLink}>SELL ON PEPTA</Link>
             <Link href="#" className={styles.utilityLink}>CUSTOMER CARE</Link>
             <Link href="#" className={styles.utilityLink}>TRACK MY ORDER</Link>
           </div>
@@ -53,7 +53,7 @@ export default function Header() {
           <Link href="/" className={styles.logo}>
             <Image
               src="/logo.jpeg"
-              alt="Precious Play Logo"
+              alt="Pepta Logo"
               width={130}
               height={45}
               priority
@@ -64,7 +64,7 @@ export default function Header() {
           <form onSubmit={handleSearch} className={styles.searchForm}>
             <input
               type="text"
-              placeholder="Search in Precious Play"
+              placeholder="Search in Pepta"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className={styles.searchInput}
@@ -76,13 +76,13 @@ export default function Header() {
 
           {/* Action Icons */}
           <div className={styles.headerActions}>
-            <Link href="/profile" className={styles.actionItem}>
+            <Link href="/profile" className={styles.actionItem} aria-label="Go to profile">
               <FiUser size={22} />
             </Link>
-            <button className={styles.actionItem} onClick={openCart}>
+            <button className={styles.actionItem} onClick={openCart} aria-label={`Open shopping cart with ${totalItems} items`}>
               <FiShoppingCart size={22} />
               {totalItems > 0 && (
-                <span className={styles.cartBadge}>{totalItems}</span>
+                <span className={styles.cartBadge} aria-label={`${totalItems} items in cart`}>{totalItems}</span>
               )}
             </button>
           </div>
@@ -91,6 +91,8 @@ export default function Header() {
           <button
             className={styles.mobileMenuToggle}
             onClick={() => setIsMenuOpen(!isMenuOpen)}
+            aria-label={isMenuOpen ? 'Close navigation menu' : 'Open navigation menu'}
+            aria-expanded={isMenuOpen}
           >
             {isMenuOpen ? <FiX size={24} /> : <FiMenu size={24} />}
           </button>

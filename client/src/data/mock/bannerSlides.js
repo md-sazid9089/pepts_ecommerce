@@ -13,6 +13,8 @@ export const bannerSlides = [
     bg: '#FFF1E8',
     accent: '#F36921',
     image: '/banner_fashion.png',
+    backgroundImage: 'url("/barbiedoll.jpg")',
+    backgroundOverlay: 'linear-gradient(135deg, rgba(255,241,232,0.75) 0%, rgba(243,105,33,0.1) 100%)',
   },
   {
     id: 2,
@@ -23,6 +25,8 @@ export const bannerSlides = [
     bg: '#F8F9FA',
     accent: '#0088FF',
     image: '/banner_porcelain.png',
+    backgroundImage: 'url("/batman.png")',
+    backgroundOverlay: 'linear-gradient(135deg, rgba(248,249,250,0.7) 0%, rgba(0,136,255,0.15) 100%)',
   },
   {
     id: 3,
@@ -33,6 +37,8 @@ export const bannerSlides = [
     bg: '#F5F5F5',
     accent: '#F36921',
     image: 'https://placehold.co/600x400?text=Dollhouses',
+    backgroundImage: 'url("/hotwheels.jpg")',
+    backgroundOverlay: 'linear-gradient(135deg, rgba(245,245,245,0.7) 0%, rgba(243,105,33,0.15) 100%)',
   },
 ];
 

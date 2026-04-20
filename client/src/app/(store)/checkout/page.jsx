@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { useCart } from '@/context/CartContext';
 import { formatPrice } from '@/data/products';
@@ -295,8 +296,7 @@ export default function CheckoutPage() {
                   <div className={styles.reviewItems}>
                     {items.map(item => (
                       <div key={item.id} className={styles.reviewItem}>
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src={item.image} alt={item.name} className={styles.reviewItemImg} />
+                        <Image src={item.image} alt={item.name} className={styles.reviewItemImg} width={80} height={80} loading="lazy" />
                         <div className={styles.reviewItemInfo}>
                           <p className={styles.reviewItemName}>{item.name}</p>
                           <p className={styles.reviewItemMeta}>Qty: {item.quantity} × {formatPrice(item.price)}</p>
@@ -337,8 +337,7 @@ export default function CheckoutPage() {
                 {items.slice(0, 3).map(item => (
                   <div key={item.id} className={styles.summaryItem}>
                     <div className={styles.summaryItemImgWrap}>
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={item.image} alt={item.name} className={styles.summaryItemImg} />
+                      <Image src={item.image} alt={item.name} className={styles.summaryItemImg} width={60} height={60} loading="lazy" />
                       <span className={styles.summaryItemQty}>{item.quantity}</span>
                     </div>
                     <span className={styles.summaryItemName}>{item.name.substring(0, 28)}…</span>

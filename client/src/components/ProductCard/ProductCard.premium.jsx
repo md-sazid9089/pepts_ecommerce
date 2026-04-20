@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { FiHeart, FiEye, FiShoppingCart } from 'react-icons/fi';
 import { useCart } from '@/context/CartContext';
 import { useWishlist } from '@/context/WishlistContext';
@@ -44,10 +45,14 @@ export default function ProductCardPremium({ product, showQuickView = true }) {
         <div className={styles.imageContainer}>
           <div className={styles.imagePlaceholder}>
             {product.image ? (
-              <img
+              <Image
                 src={product.image}
                 alt={product.name}
                 className={styles.image}
+                width={300}
+                height={300}
+                loading="lazy"
+                unoptimized={product.image.includes('placehold.co')}
               />
             ) : (
               <div className={styles.noImage}>No Image</div>

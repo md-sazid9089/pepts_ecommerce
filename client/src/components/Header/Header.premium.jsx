@@ -48,7 +48,7 @@ export default function HeaderPremium() {
         <Link href="/" className={styles.logo}>
           <Image
             src="/logo.jpeg"
-            alt="Precious Play"
+            alt="Pepta"
             width={140}
             height={50}
             priority

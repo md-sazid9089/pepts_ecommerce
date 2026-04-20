@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import Link from 'next/link';
 import { useWishlist } from '@/context/WishlistContext';
 import { useCart } from '@/context/CartContext';
@@ -49,7 +50,7 @@ export function WishlistView() {
         {items.map(product => (
           <div key={product.id} className={styles.wishCard}>
             <div className={styles.cardImage}>
-              <img src={product.image} alt={product.name} />
+              <Image src={product.image} alt={product.name} width={250} height={250} loading="lazy" />
               <div className={styles.overlay}>
                 <button
                   className={styles.addBtn}

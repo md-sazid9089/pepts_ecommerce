@@ -3,49 +3,11 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { useState } from 'react';
+import { footerLinksPremium, socialLinksConfigPremium } from '@/data/constants/footer';
+import { fontAwesomeIcons } from '@/utils/iconMap';
 import { FiMail, FiPhone, FiMapPin, FiSend, FiCheckCircle } from 'react-icons/fi';
-import {
-  FaFacebook,
-  FaInstagram,
-  FaTwitter,
-  FaYoutube,
-  FaTiktok,
-  FaApple,
-  FaGooglePlay,
-} from 'react-icons/fa';
+import { FaApple, FaGooglePlay } from 'react-icons/fa';
 import styles from './Footer.premium.module.css';
-
-const footerLinks = {
-  'Shop': [
-    { label: 'New Arrivals', href: '#' },
-    { label: 'Best Sellers', href: '#' },
-    { label: 'Collections', href: '#' },
-    { label: 'Gift Cards', href: '#' },
-    { label: 'Sale', href: '#' },
-  ],
-  'Support': [
-    { label: 'Contact Us', href: '#' },
-    { label: 'Help Center', href: '#' },
-    { label: 'Track Order', href: '#' },
-    { label: 'Returns', href: '#' },
-    { label: 'Shipping Info', href: '#' },
-  ],
-  'Company': [
-    { label: 'About Us', href: '#' },
-    { label: 'Careers', href: '#' },
-    { label: 'Blog', href: '#' },
-    { label: 'Press', href: '#' },
-    { label: 'Partnerships', href: '#' },
-  ],
-};
-
-const socialLinks = [
-  { icon: FaFacebook, label: 'Facebook', href: '#' },
-  { icon: FaInstagram, label: 'Instagram', href: '#' },
-  { icon: FaTwitter, label: 'Twitter', href: '#' },
-  { icon: FaYoutube, label: 'YouTube', href: '#' },
-  { icon: FaTiktok, label: 'TikTok', href: '#' },
-];
 
 export default function FooterPremium() {
   const [email, setEmail] = useState('');
@@ -110,7 +72,7 @@ export default function FooterPremium() {
               <Link href="/" className={styles.logo}>
                 <Image
                   src="/logo.jpeg"
-                  alt="Precious Play"
+                  alt="Pepta"
                   width={140}
                   height={50}
                   style={{ filter: 'brightness(0) invert(1)' }}
@@ -122,17 +84,20 @@ export default function FooterPremium() {
 
               {/* Social Links */}
               <div className={styles.socialLinks}>
-                {socialLinks.map((social) => (
-                  <a
-                    key={social.label}
-                    href={social.href}
-                    className={styles.socialLink}
-                    aria-label={social.label}
-                    title={social.label}
-                  >
-                    <social.icon size={18} />
-                  </a>
-                ))}
+                {socialLinksConfigPremium.map((social) => {
+                  const IconComponent = fontAwesomeIcons[social.iconId];
+                  return (
+                    <a
+                      key={social.label}
+                      href={social.href}
+                      className={styles.socialLink}
+                      aria-label={social.label}
+                      title={social.label}
+                    >
+                      {IconComponent && <IconComponent size={18} />}
+                    </a>
+                  );
+                })}
               </div>
 
               {/* Contact Info */}
@@ -142,18 +107,25 @@ export default function FooterPremium() {
                   <a href="tel:+1234567890">+1 (234) 567-890</a>
                 </div>
                 <div className={styles.contactItem}>
+                  <FiPhone size={16} />
+                  <a href="tel:+8618168023963">+86 18168023963</a>
+                </div>
+                <div className={styles.contactItem}>
                   <FiMail size={16} />
                   <a href="mailto:hello@precious.com">hello@precious.com</a>
                 </div>
                 <div className={styles.contactItem}>
-                  <FiMapPin size={16} />
-                  <span>123 Premium St, Luxury City</span>
+                  <FiMapPin size={16} className="shrink-0 mt-1" />
+                  <div className="flex flex-col">
+                    <span>123 Premium St, Luxury City</span>
+                    <span className="text-[10px] opacity-60 leading-tight mt-1">Gong Pai Wood Products, Entrance Building, Yangtian Road, Ganquan Town, Jiangyang District, Yangzhou City, Jiangsu Province.</span>
+                  </div>
                 </div>
               </div>
             </div>
 
             {/* Link Columns */}
-            {Object.entries(footerLinks).map(([section, links]) => (
+            {Object.entries(footerLinksPremium).map(([section, links]) => (
               <div key={section} className={styles.linkColumn}>
                 <h4 className={styles.columnTitle}>{section}</h4>
                 <nav className={styles.linkList}>
@@ -197,7 +169,7 @@ export default function FooterPremium() {
           {/* Bottom Footer */}
           <div className={styles.bottomFooter}>
             <p className={styles.copyright}>
-              &copy; 2024 Precious Play. All rights reserved.
+              &copy; 2024 Pepta. All rights reserved.
             </p>
             <div className={styles.legalLinks}>
               <Link href="/privacy">Privacy Policy</Link>

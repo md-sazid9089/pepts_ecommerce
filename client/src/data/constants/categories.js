@@ -5,39 +5,36 @@
 
 export const categories = [
   {
-    id: 'fashion',
-    name: 'Fashion Dolls',
+    id: 'doll',
+    name: 'Dolls',
     icon: 'FiShoppingBag',
+    image: '/dollcatagory.png',
     color: '#FF69B4',
     bg: '#FFE5F0',
-  },
-  {
-    id: 'porcelain',
-    name: 'Porcelain Collectibles',
-    icon: 'FiHome',
-    color: '#9370DB',
-    bg: '#E6D9F5',
   },
   {
     id: 'action',
     name: 'Action Figures',
     icon: 'FiSmartphone',
+    image: '/catagoryactionfigure.png',
     color: '#7B68B8',
     bg: '#E6D9F5',
   },
   {
-    id: 'dollhouses',
-    name: 'Dollhouses',
+    id: 'toy',
+    name: 'Toys',
     icon: 'FiBox',
+    image: '/toycatagory.png',
     color: '#FF69B4',
     bg: '#FFE5F0',
   },
   {
-    id: 'accessories',
-    name: 'Accessories',
-    icon: 'FiPalette',
-    color: '#9370DB',
-    bg: '#E6D9F5',
+    id: 'rccar',
+    name: 'RC Cars',
+    icon: 'FiSmartphone',
+    image: '/rccatagory.png',
+    color: '#FF6B35',
+    bg: '#FFE5D9',
   },
 ];
 

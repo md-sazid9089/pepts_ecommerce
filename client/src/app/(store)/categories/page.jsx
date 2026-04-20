@@ -3,8 +3,8 @@ import { CategoriesView } from '@/components/Categories/Categories';
 import styles from './page.module.css';
 
 export const metadata = {
-  title: 'Wholesale Categories | Precious Play Wholesale',
-  description: 'Browse bulk doll categories, verified manufacturers, and industrial sourcing options at Precious Play Wholesale.',
+  title: 'Wholesale Categories | Pepta',
+  description: 'Browse bulk doll categories, verified manufacturers, and industrial sourcing options at Pepta.',
 };
 
 export default function CategoriesPage() {

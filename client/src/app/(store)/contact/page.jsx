@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import styles from './contact.module.css';
-import { FiMapPin, FiPhone, FiMail, FiClock } from 'react-icons/fi';
+import { FiMapPin, FiPhone, FiMail, FiClock, FiCheckCircle } from 'react-icons/fi';
 
 export default function ContactPage() {
   const [formData, setFormData] = useState({
@@ -34,13 +34,13 @@ export default function ContactPage() {
   const contactInfo = [
     {
       icon: FiMapPin,
-      title: 'Address',
-      content: 'Dhaka, Bangladesh',
+      title: 'Global Headquarters',
+      content: 'Dhaka, BD / Yangzhou, Jiangsu (CN Factory)',
     },
     {
       icon: FiPhone,
-      title: 'Phone',
-      content: '+880 1XXX-XXXXXX',
+      title: 'Wholesale Support',
+      content: '+86 18168023963',
     },
     {
       icon: FiMail,
@@ -93,7 +93,7 @@ export default function ContactPage() {
 
             {submitted && (
               <div className={styles.successMessage}>
-                ✓ Thank you for your message! We&apos;ll contact you soon.
+                <FiCheckCircle size={20} /> Thank you for your message! We&apos;ll contact you soon.
               </div>
             )}
 

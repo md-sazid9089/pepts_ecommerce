@@ -1,5 +1,5 @@
-import HeaderPremium from '@/components/Header/Header.premium';
-import FooterPremium from '@/components/Footer/Footer.premium';
+import Header from '@/components/Header/Header';
+import Footer from '@/components/Footer/Footer';
 import CartSidebar from '@/components/CartSidebar/CartSidebar';
 import MobileNav from '@/components/MobileNav/MobileNav';
 
@@ -11,9 +11,9 @@ import MobileNav from '@/components/MobileNav/MobileNav';
 export default function StoreLayout({ children }) {
   return (
     <>
-      <HeaderPremium />
+      <Header />
       <main>{children}</main>
-      <FooterPremium />
+      <Footer />
       <CartSidebar />
       <MobileNav />
     </>

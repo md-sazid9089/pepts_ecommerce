@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { products, categories } from '@/data/products';
 import { useCart } from '@/context/CartContext';
 import { formatPrice } from '@/data/products';
@@ -70,11 +71,14 @@ export default function QuickViewModal({ product, onClose }) {
           {/* Gallery */}
           <div className={styles.gallery}>
             <div className={styles.mainImgWrap}>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img 
+              <Image
                 src={getDisplayImage(activeImg)} 
                 alt={product.name} 
                 className={styles.mainImg}
+                width={600}
+                height={600}
+                loading="eager"
+                unoptimized={images[activeImg]?.includes('placehold.co')}
                 onError={() => handleImageError(activeImg)}
               />
               {images.length > 1 && (
@@ -95,10 +99,12 @@ export default function QuickViewModal({ product, onClose }) {
                 {images.map((img, i) => (
                   <button key={i} className={`${styles.thumb} ${i === activeImg ? styles.thumbActive : ''}`}
                     onClick={() => setActiveImg(i)}>
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img 
+                    <Image
                       src={getDisplayImage(i)} 
                       alt="" 
+                      width={100}
+                      height={100}
+                      unoptimized={img?.includes('placehold.co')}
                       onError={() => handleImageError(i)}
                     />
                   </button>

@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import Link from 'next/link';
 import { useCart } from '@/context/CartContext';
 import { formatPrice } from '@/data/products';
@@ -54,8 +55,7 @@ export default function CartPage() {
             {items.map(item => (
               <div key={item.id} className={styles.cartItem}>
                 <Link href={`/product/${item.id}`} className={styles.itemImgWrap}>
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={item.image} alt={item.name} className={styles.itemImg} />
+                  <Image src={item.image} alt={item.name} className={styles.itemImg} width={120} height={120} loading="lazy" />
                 </Link>
 
                 <div className={styles.itemDetails}>

@@ -1,8 +1,9 @@
 'use client';
 
+import Image from 'next/image';
 import Link from 'next/link';
 import { useCart } from '@/context/CartContext';
-import { FiX, FiTrash2, FiShoppingBag, FiPlus, FiMinus } from 'react-icons/fi';
+import { FiX, FiTrash2, FiShoppingBag, FiPlus, FiMinus, FiAlertCircle, FiCheckCircle } from 'react-icons/fi';
 import { formatPrice } from '@/data/products';
 import styles from './CartSidebar.module.css';
 
@@ -31,7 +32,7 @@ export default function CartSidebar() {
         <div className={styles.itemsList}>
           {items.length === 0 ? (
             <div className="empty-state">
-              <div className="empty-state-icon">🛒</div>
+              <div className="empty-state-icon"><FiShoppingBag size={48} /></div>
               <p className="empty-state-title">Your cart is empty</p>
               <p className="empty-state-desc">Add products to your cart and they&apos;ll appear here.</p>
               <button onClick={closeCart} className="btn btn-primary">Start Shopping</button>
@@ -39,8 +40,7 @@ export default function CartSidebar() {
           ) : (
             items.map(item => (
               <div key={item.id} className={styles.cartItem}>
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={item.image} alt={item.name} className={styles.itemImg} />
+                <Image src={item.image} alt={item.name} className={styles.itemImg} width={100} height={100} loading="lazy" />
                 <div className={styles.itemInfo}>
                   <Link href={`/product/${item.id}`} onClick={closeCart} className={styles.itemName}>
                     {item.name}
@@ -95,7 +95,7 @@ export default function CartSidebar() {
             {/* MOQ Violation Alert - B2B */}
             {!isValidOrder && moqViolations.length > 0 && (
               <div className={styles.moqAlert}>
-                <span>🚨</span>
+                <FiAlertCircle size={20} />
                 <div>
                   <strong>MOQ Not Met</strong>
                   <p>Items: {moqViolations.map(v => v.name).join(', ')}</p>
@@ -105,10 +105,34 @@ export default function CartSidebar() {
             
             {savings > 0 && (
               <div className={styles.savingsRow}>
-                <span>🎉 You&apos;re saving</span>
+                <span><FiCheckCircle size={16} style={{marginRight: '4px'}} /> You&apos;re saving</span>
                 <span className={styles.savingsAmt}>{formatPrice(savings)}</span>
               </div>
             )}
+
+            {/* B2B: Next Tier Preview */}
+            {items.length > 0 && items.some(item => item.tieredPricing) && (
+              <div className={styles.nextTierPreview}>
+                <p className={styles.nextTierTitle}>Unlock Bulk Savings:</p>
+                {items
+                  .filter(item => item.tieredPricing)
+                  .map(item => {
+                    const nextTier = item.tieredPricing?.find(t => t.min > item.quantity);
+                    if (nextTier && item.quantity < nextTier.min) {
+                      const itemsNeeded = nextTier.min - item.quantity;
+                      const savingsAtNextTier = (item.price - nextTier.price) * nextTier.min;
+                      return (
+                        <div key={item.id} className={styles.tierInfo}>
+                          <small>Add {itemsNeeded} more {item.name.substring(0, 15)}... → ${nextTier.price}/unit</small>
+                          <small className={styles.tierSavings}>Save ${Math.round(savingsAtNextTier)}</small>
+                        </div>
+                      );
+                    }
+                    return null;
+                  })}
+              </div>
+            )}
+
             <div className={styles.totalRow}>
               <span>Subtotal ({totalItems} items)</span>
               <span className={styles.totalAmt}>{formatPrice(totalPrice)}</span>

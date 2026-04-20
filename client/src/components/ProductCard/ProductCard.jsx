@@ -1,10 +1,11 @@
 'use client';
 
 import { useState } from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { useCart } from '@/context/CartContext';
-import { formatPrice, calculateTieredPrice } from '@/data/products';
-import { FiShoppingCart, FiHeart, FiEye, FiCheckCircle, FiShield } from 'react-icons/fi';
+import { formatPrice, calculateTieredPrice, calculateBulkDiscount } from '@/data/products';
+import { FiShoppingCart, FiHeart, FiEye, FiCheckCircle, FiTrendingDown } from 'react-icons/fi';
 import styles from './ProductCard.module.css';
 
 export default function ProductCard({ product, onQuickView }) {
@@ -22,9 +23,13 @@ export default function ProductCard({ product, onQuickView }) {
 
   const displayImage = imageError ? FALLBACK_IMAGE : product.image;
 
-  // B2B: Calculate tiered price range
+  // B2B: Calculate tiered price range and bulk savings
   const minPrice = product.tieredPricing ? Math.min(...product.tieredPricing.map(t => t.price)) : product.price;
   const maxPrice = product.tieredPricing ? Math.max(...product.tieredPricing.map(t => t.price)) : product.price;
+  const bulkSavingsPercent = product.tieredPricing 
+    ? Math.round(((product.price - minPrice) / product.price) * 100)
+    : 0;
+  const nextTierQuantity = product.tieredPricing ? product.tieredPricing[0]?.min : null;
 
   const handleAddToCart = (e) => {
     e.preventDefault();
@@ -49,11 +54,12 @@ export default function ProductCard({ product, onQuickView }) {
       <Link href={`/product/${product.id}`} className={styles.linkWrapper}>
         {/* Image Section */}
         <div className={styles.imgWrap}>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img 
+          <Image 
             src={displayImage} 
             alt={product.name} 
             className={styles.img} 
+            width={300}
+            height={300}
             loading="lazy"
             onError={handleImageError}
           />
@@ -64,6 +70,11 @@ export default function ProductCard({ product, onQuickView }) {
               <span className={styles.discountBadge}>-{product.discount}%</span>
             )}
             {product.isNew && <span className={styles.newBadge}>NEW</span>}
+            {bulkSavingsPercent > 0 && (
+              <span className={styles.bulkBadge} title={`Save up to ${bulkSavingsPercent}% on bulk orders`}>
+                <FiTrendingDown size={12} /> BULK SAVE
+              </span>
+            )}
           </div>
 
           {/* Hover Actions */}
@@ -87,6 +98,15 @@ export default function ProductCard({ product, onQuickView }) {
               <div className={styles.oldPrice}>{formatPrice(maxPrice)}</div>
             )}
           </div>
+
+          {/* Bulk Pricing Indicator */}
+          {product.tieredPricing && (
+            <div className={styles.bulkInfo}>
+              <p className={styles.bulkText}>
+                Buy {nextTierQuantity}+ for {formatPrice(minPrice)}
+              </p>
+            </div>
+          )}
 
           <div className={styles.ratingRow}>
             <div className={styles.stars}>
