@@ -256,7 +256,7 @@ export function createJsonLdScript(schema) {
   };
 }
 
-export default {
+const schemaGenerator = {
   generateProductSchema,
   generateReviewSchema,
   generateAggregateRatingSchema,
@@ -266,3 +266,5 @@ export default {
   generateLocalBusinessSchema,
   createJsonLdScript,
 };
+
+export default schemaGenerator;
