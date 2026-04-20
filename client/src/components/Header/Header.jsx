@@ -53,7 +53,7 @@ export default function Header() {
           <Link href="/" className={styles.logo}>
             <Image
               src="/logo.jpeg"
-              alt="Pepta Logo"
+              alt="Dazzle Logo"
               width={130}
               height={45}
               priority
@@ -64,7 +64,7 @@ export default function Header() {
           <form onSubmit={handleSearch} className={styles.searchForm}>
             <input
               type="text"
-              placeholder="Search in Pepta"
+              placeholder="Search in Dazzle"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className={styles.searchInput}

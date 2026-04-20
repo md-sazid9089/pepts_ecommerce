@@ -72,14 +72,14 @@ export default function FooterPremium() {
               <Link href="/" className={styles.logo}>
                 <Image
                   src="/logo.jpeg"
-                  alt="Pepta"
+                  alt="Dazzle"
                   width={140}
                   height={50}
                   style={{ filter: 'brightness(0) invert(1)' }}
                 />
               </Link>
               <p className={styles.tagline}>
-                Premium collections for the most discerning collectors and gift-givers.
+                Premium technology and gadgets for the most discerning collectors and retailers.
               </p>
 
               {/* Social Links */}
@@ -116,9 +116,11 @@ export default function FooterPremium() {
                 </div>
                 <div className={styles.contactItem}>
                   <FiMapPin size={16} className="shrink-0 mt-1" />
-                  <div className="flex flex-col">
-                    <span>123 Premium St, Luxury City</span>
-                    <span className="text-[10px] opacity-60 leading-tight mt-1">Gong Pai Wood Products, Entrance Building, Yangtian Road, Ganquan Town, Jiangyang District, Yangzhou City, Jiangsu Province.</span>
+                  <div className="flex flex-col min-w-0">
+                    <span className="font-semibold text-xs text-white/90">Factory & Global HQ:</span>
+                    <span className="text-[10px] opacity-60 leading-relaxed mt-1 block max-w-[220px] break-words">
+                      Gong Pai Wood Products, Entrance Building, Yangtian Road, Ganquan Town, Jiangyang District, Yangzhou City, Jiangsu Province.
+                    </span>
                   </div>
                 </div>
               </div>
@@ -169,7 +171,7 @@ export default function FooterPremium() {
           {/* Bottom Footer */}
           <div className={styles.bottomFooter}>
             <p className={styles.copyright}>
-              &copy; 2024 Pepta. All rights reserved.
+              &copy; 2024 Dazzle Premium Wholesale. All rights reserved.
             </p>
             <div className={styles.legalLinks}>
               <Link href="/privacy">Privacy Policy</Link>

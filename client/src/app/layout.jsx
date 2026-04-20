@@ -19,16 +19,16 @@ const plusJakarta = Plus_Jakarta_Sans({
 
 export const metadata = {
   title: {
-    default: 'Pepta - #1 Doll B2B Marketplace',
-    template: '%s | Pepta',
+    default: 'Dazzle - #1 Tech & Gadget B2B Marketplace',
+    template: '%s | Dazzle',
   },
-  description: 'Premium doll wholesale supplier for boutiques and gift shops. Direct factory prices, tiered pricing, and verified manufacturers across Bangladesh.',
-  keywords: ['wholesale dolls', 'bangladesh', 'b2b e-commerce', 'doll supplier', 'bulk toys'],
+  description: 'Premium technology and gadget wholesale supplier for boutiques and showrooms. Direct factory prices, tiered pricing, and verified manufacturers across Bangladesh.',
+  keywords: ['wholesale electronics', 'bangladesh', 'b2b e-commerce', 'gadget supplier', 'bulk tech'],
   manifest: '/manifest.json',
   appleWebApp: {
     capable: true,
     statusBarStyle: 'black-translucent',
-    title: 'Pepta',
+    title: 'Dazzle',
   },
   formatDetection: {
     telephone: false,
@@ -36,25 +36,24 @@ export const metadata = {
   openGraph: {
     type: 'website',
     locale: 'en_BD',
-    siteName: 'Pepta',
+    siteName: 'Dazzle',
   },
   twitter: {
     card: 'summary_large_image',
-    creator: '@pepta',
+    creator: '@dazzle',
   },
 };
 
-// JSON-LD Schema for Organization
 const organizationSchema = {
   '@context': 'https://schema.org',
   '@type': 'Organization',
-  name: 'Pepta',
-  url: 'https://precious-play-wholesale.com',
-  logo: 'https://precious-play-wholesale.com/logo.png',
-  description: 'Premium doll wholesale supplier for boutiques and gift shops',
+  name: 'Dazzle',
+  url: 'https://dazzle.com',
+  logo: 'https://dazzle.com/logo.png',
+  description: 'Premium technology and gadget wholesale supplier for boutiques and showrooms',
   sameAs: [
-    'https://facebook.com/preciousplaywholesale',
-    'https://instagram.com/preciousplaywholesale',
+    'https://facebook.com/dazzlewholesale',
+    'https://instagram.com/dazzlewholesale',
   ],
   contactPoint: {
     '@type': 'ContactPoint',

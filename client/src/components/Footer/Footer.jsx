@@ -76,10 +76,10 @@ export default function Footer() {
             {/* Brand column */}
             <div className={styles.brandCol}>
               <Link href="/" className={styles.footerLogo}>
-                <FiGift className={styles.logoIcon} style={{marginRight: '8px'}} /> <span>Pepta</span>
+                <FiGift className={styles.logoIcon} style={{marginRight: '8px'}} /> <span>Dazzle</span>
               </Link>
               <p className={styles.brandDesc}>
-                Premium doll wholesale supplier for boutiques and gift shops across Bangladesh. Direct factory prices, bulk discounts, and professional wholesale service.
+                Premium technology and gadget wholesale supplier for boutiques and showrooms across Bangladesh. Direct factory prices, bulk discounts, and professional wholesale service.
               </p>
               <div className={styles.contactInfo}>
                 <div className={styles.contactItem}>
@@ -89,10 +89,12 @@ export default function Footer() {
                   <FiMail size={14} /> <span>wholesale@precious-play-wholesale.bd</span>
                 </div>
                 <div className={styles.contactItem} style={{ gap: '12px', alignItems: 'flex-start' }}>
-                  <FiMapPin size={14} className="mt-1" /> 
-                  <div className="flex flex-col gap-1">
-                      <span>Factory & Global HQ:</span>
-                    <span className="text-[10px] opacity-70">Gong Pai Wood Products, Entrance Building, Yangtian Road, Ganquan Town, Jiangyang District, Yangzhou City, Jiangsu Province.</span>
+                  <FiMapPin size={14} className="mt-1 flex-shrink-0" /> 
+                  <div className="flex flex-col gap-1 min-w-0">
+                      <span className="font-semibold text-xs">Factory & Global HQ:</span>
+                      <span className="text-[10px] opacity-70 leading-relaxed block max-w-[200px] break-words">
+                        Gong Pai Wood Products, Entrance Building, Yangtian Road, Ganquan Town, Jiangyang District, Yangzhou City, Jiangsu Province.
+                      </span>
                   </div>
                 </div>
               </div>
@@ -188,7 +190,7 @@ export default function Footer() {
       {/* Copyright */}
       <div className={styles.copyright}>
         <div className="container">
-          <p>© 2024 PreciousDolls Wholesale. All rights reserved. Premium Doll Wholesale Platform for Retailers.</p>
+          <p>© 2024 Dazzle Premium Wholesale. All rights reserved. Premium Tech Wholesale Platform for Retailers.</p>
           <div className={styles.copyrightLinks}>
             <Link href="#">Privacy Policy</Link>
             <Link href="#">Wholesale Terms</Link>
