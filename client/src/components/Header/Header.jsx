@@ -109,9 +109,6 @@ export default function Header() {
             <Link href="/categories" className={styles.navLink}>
                Categories
             </Link>
-            <Link href="/deals" className={styles.navLink}>
-               Bulk Deals
-            </Link>
           </nav>
         </div>
       </div>
@@ -121,7 +118,6 @@ export default function Header() {
         <nav className={styles.mobileMenu}>
           <Link href="/products" className={styles.mobileMenuLink}>All Products</Link>
           <Link href="/categories" className={styles.mobileMenuLink}>Categories</Link>
-          <Link href="/deals" className={styles.mobileMenuLink}>Bulk Deals</Link>
         </nav>
       )}
     </header>

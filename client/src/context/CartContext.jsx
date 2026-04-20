@@ -68,10 +68,22 @@ function cartReducer(state, action) {
 export function CartProvider({ children }) {
   const [state, dispatch] = useReducer(cartReducer, initialState);
 
-  // Persist to localStorage
+  // Persist to localStorage with migration from old "Precious Play" keys
   useEffect(() => {
     try {
-      const saved = localStorage.getItem('pepta_wholesale_cart');
+      let saved = localStorage.getItem('pepta_wholesale_cart');
+      
+      // If not found, check for old "Precious Play" key and migrate
+      if (!saved) {
+        const oldKey = localStorage.getItem('precious_wholesale_cart');
+        if (oldKey) {
+          // Migrate old key to new key
+          localStorage.setItem('pepta_wholesale_cart', oldKey);
+          localStorage.removeItem('precious_wholesale_cart');
+          saved = oldKey;
+        }
+      }
+
       if (saved) {
         dispatch({ type: 'LOAD_CART', payload: JSON.parse(saved) });
       }

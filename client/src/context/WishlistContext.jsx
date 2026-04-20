@@ -37,10 +37,22 @@ function wishlistReducer(state, action) {
 export function WishlistProvider({ children }) {
   const [state, dispatch] = useReducer(wishlistReducer, initialState);
 
-  // Persist to localStorage
+  // Persist to localStorage with migration from old "Precious Play" keys
   useEffect(() => {
     try {
-      const saved = localStorage.getItem('pepta_wholesale_wishlist');
+      let saved = localStorage.getItem('pepta_wholesale_wishlist');
+      
+      // If not found, check for old "Precious Play" key and migrate
+      if (!saved) {
+        const oldKey = localStorage.getItem('precious_wholesale_wishlist');
+        if (oldKey) {
+          // Migrate old key to new key
+          localStorage.setItem('pepta_wholesale_wishlist', oldKey);
+          localStorage.removeItem('precious_wholesale_wishlist');
+          saved = oldKey;
+        }
+      }
+
       if (saved) {
         dispatch({ type: 'LOAD_WISHLIST', payload: JSON.parse(saved) });
       }

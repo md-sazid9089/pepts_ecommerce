@@ -8,7 +8,7 @@
  */
 
 const CACHE_PREFIX = 'pepta';
-const CURRENT_VERSION = 'v2';
+const CURRENT_VERSION = 'v3'; // Bumped to clear old "Precious Play" caches
 const CACHE_NAME = `${CACHE_PREFIX}-${CURRENT_VERSION}`;
 
 // Cache configuration

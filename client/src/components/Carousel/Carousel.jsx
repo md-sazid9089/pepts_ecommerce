@@ -84,9 +84,8 @@ export default function Carousel() {
               backgroundColor: slide.bg,
               backgroundImage: slide.backgroundImage,
               backgroundSize: 'cover',
-              backgroundPosition: 'center',
+              backgroundPosition: 'center center',
               backgroundRepeat: 'no-repeat',
-              backgroundAttachment: 'fixed',
               position: 'relative',
             }}
           >

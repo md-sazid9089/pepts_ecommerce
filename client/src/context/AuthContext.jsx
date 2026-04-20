@@ -8,10 +8,23 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Load user from localStorage on mount
+  // Load user from localStorage on mount with migration from old "Precious Play" keys
   useEffect(() => {
     try {
-      const saved = localStorage.getItem('pepta_wholesale_user');
+      // Check for new Pepta key first
+      let saved = localStorage.getItem('pepta_wholesale_user');
+      
+      // If not found, check for old "Precious Play" key and migrate
+      if (!saved) {
+        const oldKey = localStorage.getItem('precious_wholesale_user');
+        if (oldKey) {
+          // Migrate old key to new key
+          localStorage.setItem('pepta_wholesale_user', oldKey);
+          localStorage.removeItem('precious_wholesale_user');
+          saved = oldKey;
+        }
+      }
+
       if (saved) {
         const savedUser = JSON.parse(saved);
         queueMicrotask(() => {
