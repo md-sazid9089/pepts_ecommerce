@@ -69,7 +69,7 @@ const styles = {
     gap: '20px',
   },
   filterCard: {
-    backgroundColor: 'white',
+    backgroundColor: '#F5EDEC',
     borderRadius: '8px',
     padding: '16px',
     boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',

@@ -6,32 +6,27 @@ import { FiHeart } from 'react-icons/fi';
 const styles = {
   card: {
     backgroundColor: 'white',
-    borderRadius: '8px',
+    borderRadius: '12px',
     overflow: 'hidden',
-    boxShadow: '0 1px 4px rgba(83, 54, 56, 0.1)',
+    boxShadow: '0 2px 12px rgba(83, 54, 56, 0.08)',
     border: '1px solid #F5EDEC',
     transition: 'all 0.3s ease',
-    cursor: 'pointer',
     display: 'flex',
     flexDirection: 'column',
     height: '100%',
   },
-  linkWrapper: {
-    display: 'block',
-    textDecoration: 'none',
-    color: 'inherit',
-    flex: 1,
-    display: 'flex',
-    flexDirection: 'column',
+  cardHover: {
+    boxShadow: '0 8px 24px rgba(83, 54, 56, 0.15)',
+    transform: 'translateY(-4px)',
   },
-  imgWrap: {
+  imageContainer: {
     position: 'relative',
     width: '100%',
     paddingBottom: '100%',
     backgroundColor: '#F5EDEC',
     overflow: 'hidden',
   },
-  img: {
+  image: {
     position: 'absolute',
     top: 0,
     left: 0,
@@ -40,145 +35,118 @@ const styles = {
     objectFit: 'cover',
     transition: 'transform 0.3s ease',
   },
-  badges: {
-    position: 'absolute',
-    top: '8px',
-    left: '8px',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '4px',
-    zIndex: 5,
+  imageHover: {
+    transform: 'scale(1.05)',
   },
-  discountBadge: {
-    backgroundColor: '#E53E3E',
+  productTag: {
+    position: 'absolute',
+    top: '12px',
+    left: '12px',
+    backgroundColor: '#533638',
     color: 'white',
-    padding: '4px 8px',
-    borderRadius: '4px',
+    padding: '6px 12px',
+    borderRadius: '20px',
     fontSize: '11px',
-    fontWeight: '700',
+    fontWeight: '600',
+    letterSpacing: '0.5px',
+    zIndex: 5,
+    textTransform: 'uppercase',
   },
-  newBadge: {
-    backgroundColor: '#F7B9C4',
-    color: '#533638',
-    padding: '4px 8px',
-    borderRadius: '4px',
-    fontSize: '10px',
-    fontWeight: '700',
-  },
-  bulkBadge: {
-    backgroundColor: '#F7B9C4',
-    color: '#533638',
-    padding: '4px 8px',
-    borderRadius: '4px',
-    fontSize: '10px',
-    fontWeight: '700',
-  },
-  hoverActions: {
+  wishlistBtn: {
     position: 'absolute',
-    bottom: '10px',
-    left: '50%',
-    transform: 'translateX(-50%)',
-    display: 'flex',
-    gap: '8px',
-    opacity: 0,
-    transition: 'opacity 0.3s ease',
-    zIndex: 10,
-  },
-  actionBtn: {
-    width: '36px',
-    height: '36px',
+    top: '12px',
+    right: '12px',
+    width: '40px',
+    height: '40px',
     borderRadius: '50%',
     backgroundColor: 'white',
-    border: '1px solid #F5EDEC',
+    border: 'none',
     cursor: 'pointer',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
-    transition: 'all 0.3s ease',
     color: '#533638',
+    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.12)',
+    transition: 'all 0.3s ease',
+    zIndex: 6,
   },
-  wished: {
+  wishlistBtnWished: {
     backgroundColor: '#F7B9C4',
     color: '#533638',
-    borderColor: '#F7B9C4',
   },
-  info: {
-    padding: '10px',
+  content: {
+    padding: '16px',
     display: 'flex',
     flexDirection: 'column',
-    gap: '6px',
+    gap: '12px',
     flex: 1,
   },
-  name: {
-    fontSize: '12px',
+  title: {
+    fontSize: '14px',
     fontWeight: '600',
     color: '#533638',
     margin: 0,
+    lineHeight: '1.4',
     display: '-webkit-box',
     WebkitLineClamp: 2,
     WebkitBoxOrient: 'vertical',
     overflow: 'hidden',
+    minHeight: '28px',
   },
-  brand: {
-    fontSize: '10px',
-    color: '#A0AEC0',
-    marginBottom: '2px',
-  },
-  priceContainer: {
+  priceSection: {
     display: 'flex',
     alignItems: 'center',
-    gap: '4px',
+    gap: '8px',
   },
   price: {
-    fontSize: '13px',
+    fontSize: '16px',
     fontWeight: '700',
     color: '#E53E3E',
   },
   oldPrice: {
-    fontSize: '11px',
+    fontSize: '12px',
     color: '#A0AEC0',
     textDecoration: 'line-through',
   },
-  moqInfo: {
-    fontSize: '10px',
-    color: '#533638',
-    fontWeight: '600',
-    backgroundColor: '#F5EDEC',
-    padding: '4px 6px',
-    borderRadius: '3px',
-  },
-  bulkPricing: {
-    fontSize: '10px',
-    color: '#667C7F',
-    padding: '4px 6px',
-    backgroundColor: '#F5EDEC',
-    borderRadius: '3px',
-  },
-  stockInfo: {
-    fontSize: '10px',
-    color: '#22863A',
-    fontWeight: '600',
-  },
-  rating: {
+  buttonsContainer: {
     display: 'flex',
-    alignItems: 'center',
-    gap: '2px',
-    fontSize: '10px',
-    color: '#718096',
-  },
-  addBtn: {
+    gap: '8px',
+    marginTop: 'auto',
     width: '100%',
-    padding: '8px',
-    backgroundColor: '#533638',
-    color: 'white',
+  },
+  btn: {
+    flex: 1,
+    padding: '12px 12px',
     border: 'none',
     borderRadius: '6px',
-    fontSize: '11px',
-    fontWeight: '600',
+    fontSize: '13px',
+    fontWeight: '700',
     cursor: 'pointer',
     transition: 'all 0.3s ease',
-    marginTop: 'auto',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    minHeight: '42px',
+    letterSpacing: '0.5px',
+  },
+  viewBtn: {
+    backgroundColor: '#1a1a1a',
+    color: 'white',
+    border: 'none',
+  },
+  viewBtnHover: {
+    backgroundColor: '#333333',
+  },
+  addBtn: {
+    backgroundColor: '#F5EDEC',
+    color: '#533638',
+    border: 'none',
+  },
+  addBtnHover: {
+    backgroundColor: '#E8D9D3',
   },
 };
 
@@ -186,16 +154,16 @@ export default function ProductCard({ product, onQuickView }) {
   const { addItem, items } = useCart();
   const [wished, setWished] = useState(false);
   const [imageError, setImageError] = useState(false);
-  const inCart = items.some(i => i.id === product.id);
+  const [isHovering, setIsHovering] = useState(false);
+  const [imageHovering, setImageHovering] = useState(false);
 
-  // Fallback image
+  const inCart = items.some(i => i.id === product.id);
   const FALLBACK_IMAGE = `https://via.placeholder.com/400x400?text=${encodeURIComponent(product.name || 'Product')}`;
+  const displayImage = imageError ? FALLBACK_IMAGE : (product.image || FALLBACK_IMAGE);
 
   const handleImageError = () => {
     setImageError(true);
   };
-
-  const displayImage = imageError ? FALLBACK_IMAGE : (product.image || FALLBACK_IMAGE);
 
   const handleAddToCart = (e) => {
     e.preventDefault();
@@ -215,88 +183,82 @@ export default function ProductCard({ product, onQuickView }) {
     onQuickView && onQuickView(product);
   };
 
+  const handleViewClick = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    window.location.href = `/product/${product.id}`;
+  };
+
   return (
-    <div style={styles.card}>
-      <a href={`/product/${product.id}`} style={styles.linkWrapper}>
-        {/* Image Section */}
-        <div style={styles.imgWrap}>
-          <img 
-            src={displayImage} 
-            alt={product.name} 
-            style={styles.img} 
-            loading="lazy"
-            onError={handleImageError}
-          />
-
-          {/* Badges */}
-          <div style={styles.badges}>
-            {product.discount > 0 && (
-              <span style={styles.discountBadge}>-{product.discount}%</span>
-            )}
-            {product.isNew && <span style={styles.newBadge}>NEW</span>}
-            {product.tieredPricing && <span style={styles.bulkBadge}>Bulk Save</span>}
-          </div>
-
-          {/* Hover Actions */}
-          <div style={styles.hoverActions}>
-            <button 
-              onClick={handleWish} 
-              style={{...styles.actionBtn, ...(wished ? styles.wished : {})}} 
-              aria-label="Add to wishlist"
-            >
-              <FiHeart size={14} fill={wished ? 'currentColor' : 'none'} />
-            </button>
-          </div>
-        </div>
-
-        {/* Content Section */}
-        <div style={styles.info}>
-          <div style={styles.brand}>{product.brand}</div>
-          <h3 style={styles.name} title={product.name}>{product.name}</h3>
-          
-          {/* Price */}
-          <div style={styles.priceContainer}>
-            <div style={styles.price}>{formatPrice(product.price)}</div>
-            {product.discount > 0 && product.originalPrice && (
-              <div style={styles.oldPrice}>{formatPrice(product.originalPrice)}</div>
-            )}
-          </div>
-
-          {/* MOQ */}
-          {product.moq && (
-            <div style={styles.moqInfo}>Min Order: {product.moq} pcs
-            </div>
-          )}
-
-          {/* Bulk Pricing */}
-          {product.tieredPricing && product.tieredPricing[product.tieredPricing.length - 1] && (
-            <div style={styles.bulkPricing}>
-              From {formatPrice(product.tieredPricing[product.tieredPricing.length - 1].price)}/unit
-            </div>
-          )}
-
-          {/* Stock Status */}
-          <div style={styles.stockInfo}>
-            {product.inStock ? '✓ In Stock' : 'Pre-order'}
-          </div>
-
-          {/* Rating */}
-          {product.rating && (
-            <div style={styles.rating}>
-              <span>{'★'.repeat(Math.floor(product.rating))}</span>
-              <span>({product.reviews || 0})</span>
-            </div>
-          )}
-        </div>
-      </a>
-
-      {/* Add to Cart Button */}
-      <button 
-        onClick={handleAddToCart} 
-        style={styles.addBtn}
+    <div 
+      style={{...styles.card, ...(isHovering ? styles.cardHover : {})}}
+      onMouseEnter={() => setIsHovering(true)}
+      onMouseLeave={() => setIsHovering(false)}
+    >
+      {/* Image Section */}
+      <div 
+        style={styles.imageContainer}
+        onMouseEnter={() => setImageHovering(true)}
+        onMouseLeave={() => setImageHovering(false)}
       >
-        {inCart ? '✓ In Cart' : 'Add to Cart'}
-      </button>
+        <img 
+          src={displayImage} 
+          alt={product.name} 
+          style={{...styles.image, ...(imageHovering ? styles.imageHover : {})}}
+          loading="lazy"
+          onError={handleImageError}
+        />
+
+        {/* "Product" Tag Badge - Top Left */}
+        <div style={styles.productTag}>Product</div>
+
+        {/* Wishlist Button - Top Right */}
+        <button
+          onClick={handleWish}
+          style={{...styles.wishlistBtn, ...(wished ? styles.wishlistBtnWished : {})}}
+          aria-label={wished ? "Remove from wishlist" : "Add to wishlist"}
+        >
+          <FiHeart size={18} fill={wished ? 'currentColor' : 'none'} />
+        </button>
+      </div>
+
+      {/* Content Section */}
+      <div style={styles.content}>
+        {/* Title */}
+        <h3 style={styles.title} title={product.name}>
+          {product.name}
+        </h3>
+
+        {/* Price */}
+        <div style={styles.priceSection}>
+          <div style={styles.price}>{formatPrice(product.price)}</div>
+          {product.discount > 0 && product.originalPrice && (
+            <div style={styles.oldPrice}>{formatPrice(product.originalPrice)}</div>
+          )}
+        </div>
+
+        {/* Buttons Section */}
+        <div style={styles.buttonsContainer}>
+          <button 
+            onClick={handleViewClick}
+            style={styles.viewBtn}
+            onMouseEnter={(e) => Object.assign(e.target.style, styles.viewBtnHover)}
+            onMouseLeave={(e) => Object.assign(e.target.style, {backgroundColor: '#1a1a1a'})}
+            aria-label="View product details"
+          >
+            VIEW
+          </button>
+          <button 
+            onClick={handleAddToCart}
+            style={styles.addBtn}
+            onMouseEnter={(e) => Object.assign(e.target.style, styles.addBtnHover)}
+            onMouseLeave={(e) => Object.assign(e.target.style, {backgroundColor: '#F5EDEC'})}
+            aria-label={inCart ? "Already in cart" : "Add to cart"}
+          >
+            {inCart ? 'IN CART' : 'ADD TO CART'}
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
