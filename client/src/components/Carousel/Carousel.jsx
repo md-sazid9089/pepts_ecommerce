@@ -1,13 +1,99 @@
-'use client';
-
-import { useState, useEffect, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
+﻿import { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom'
 import { bannerSlides } from '@/data/products';
 import { FiChevronLeft, FiChevronRight } from 'react-icons/fi';
-import styles from './Carousel.module.css';
+
+const styles = {
+  carousel: {
+    position: 'relative',
+    width: '100%',
+    height: '500px',
+    backgroundColor: '#f5f5f5',
+    overflow: 'hidden',
+    cursor: 'grab',
+  },
+  slidesTrack: {
+    display: 'flex',
+    transition: 'transform 0.5s ease-in-out',
+    height: '100%',
+  },
+  slide: {
+    flex: '0 0 100%',
+    height: '100%',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  slideOverlay: {
+    position: 'absolute',
+    inset: 0,
+    zIndex: 1,
+    pointerEvents: 'none',
+  },
+  arrow: {
+    position: 'absolute',
+    top: '50%',
+    transform: 'translateY(-50%)',
+    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+    color: '#111827',
+    border: 'none',
+    width: '44px',
+    height: '44px',
+    borderRadius: '8px',
+    cursor: 'pointer',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 10,
+    transition: 'all 0.3s ease',
+  },
+  arrowLeft: {
+    left: '20px',
+  },
+  arrowRight: {
+    right: '20px',
+  },
+  dots: {
+    position: 'absolute',
+    bottom: '20px',
+    left: '50%',
+    transform: 'translateX(-50%)',
+    display: 'flex',
+    gap: '8px',
+    zIndex: 10,
+  },
+  dot: {
+    width: '8px',
+    height: '8px',
+    borderRadius: '50%',
+    backgroundColor: 'rgba(255, 255, 255, 0.5)',
+    border: 'none',
+    cursor: 'pointer',
+    transition: 'all 0.3s ease',
+  },
+  dotActive: {
+    backgroundColor: 'white',
+    width: '24px',
+    borderRadius: '4px',
+  },
+  progressBar: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    width: '100%',
+    height: '3px',
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    zIndex: 9,
+  },
+  progressFill: {
+    height: '100%',
+    backgroundColor: 'white',
+    animation: 'slideProgress linear forwards',
+  },
+};
 
 export default function Carousel() {
-  const router = useRouter();
+  const navigate = useNavigate();
   const [current, setCurrent] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
@@ -50,7 +136,7 @@ export default function Carousel() {
   const handleCarouselClick = (e) => {
     // Only redirect if not dragging
     if (!wasDragged) {
-      router.push('/categories');
+      navigate('/categories');
     }
     setWasDragged(false);
   };
@@ -136,3 +222,5 @@ export default function Carousel() {
     </div>
   );
 }
+
+

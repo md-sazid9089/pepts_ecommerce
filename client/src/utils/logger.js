@@ -5,7 +5,7 @@
 
 class Logger {
   constructor() {
-    this.isDevelopment = typeof window !== 'undefined' && process.env.NODE_ENV === 'development';
+    this.isDevelopment = typeof window !== 'undefined' && import.meta.env.MODE === 'development';
   }
 
   /**

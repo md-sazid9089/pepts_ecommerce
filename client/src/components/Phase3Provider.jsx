@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Phase 3 Provider Component
  * Initializes PWA, Web Vitals monitoring, and analytics
  * Should be wrapped around the app in layout.jsx
@@ -25,3 +25,5 @@ export function Phase3Provider({ children }) {
 }
 
 export default Phase3Provider;
+
+

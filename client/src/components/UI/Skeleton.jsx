@@ -1,11 +1,11 @@
-/**
+﻿/**
  * src/components/UI/Skeleton.jsx
  * Reusable Skeleton loader component with shimmer animation
  */
 
 'use client';
 
-import styles from './Skeleton.module.css';
+
 
 /**
  * Skeleton - Base skeleton component
@@ -95,3 +95,5 @@ export function BannerSkeleton() {
 }
 
 export default Skeleton;
+
+

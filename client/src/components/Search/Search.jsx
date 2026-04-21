@@ -1,12 +1,10 @@
-'use client';
-
-import { useMemo, useState } from 'react';
-import { useSearchParams } from 'next/navigation';
-import Link from 'next/link';
+﻿import { useMemo, useState } from 'react';
+import { useSearchParams } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { products, categories } from '@/data/products';
 import { FiFilter, FiArrowLeft, FiX, FiStar, FiSearch } from 'react-icons/fi';
 import ProductCard from '@/components/ProductCard/ProductCard';
-import styles from './Search.module.css';
+
 
 export function SearchResults() {
   const searchParams = useSearchParams();
@@ -215,3 +213,4 @@ export function SearchResults() {
     </div>
   );
 }
+

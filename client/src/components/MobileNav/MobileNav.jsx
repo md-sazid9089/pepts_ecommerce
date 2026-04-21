@@ -1,12 +1,10 @@
-'use client';
-
-import { useState } from 'react';
-import Link from 'next/link';
+﻿import { useState } from 'react';
+import { Link } from 'react-router-dom'
 import { useAuth } from '@/context/AuthContext';
 import { useCart } from '@/context/CartContext';
 import { useWishlist } from '@/context/WishlistContext';
 import { FiHome, FiGrid, FiShoppingCart, FiUser } from 'react-icons/fi';
-import styles from './MobileNav.module.css';
+
 
 export default function MobileNav() {
   const { user } = useAuth();
@@ -54,3 +52,4 @@ export default function MobileNav() {
     </nav>
   );
 }
+

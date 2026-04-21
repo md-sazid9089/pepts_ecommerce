@@ -1,13 +1,11 @@
-'use client';
-
-import { useState, useEffect } from 'react';
-import Link from 'next/link';
-import Image from 'next/image';
+﻿import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom'
+// // import Image from 'next/image'; // Use <img> instead // Use <img> instead
 import { products, categories } from '@/data/products';
 import { useCart } from '@/context/CartContext';
 import { formatPrice } from '@/data/products';
 import { FiX, FiShoppingCart, FiHeart, FiShare2, FiChevronLeft, FiChevronRight, FiStar, FiCheck, FiArrowRight } from 'react-icons/fi';
-import styles from './QuickViewModal.module.css';
+
 
 function StarRating({ rating }) {
   return (
@@ -152,7 +150,7 @@ export default function QuickViewModal({ product, onClose }) {
             <div className={styles.qtyRow}>
               <span className={styles.qtyLabel}>Quantity:</span>
               <div className={styles.qtyControl}>
-                <button onClick={() => setQty(q => Math.max(1, q - 1))} className={styles.qtyBtn}>−</button>
+                <button onClick={() => setQty(q => Math.max(1, q - 1))} className={styles.qtyBtn}>âˆ’</button>
                 <span className={styles.qty}>{qty}</span>
                 <button onClick={() => setQty(q => Math.min(product.stock, q + 1))} className={styles.qtyBtn}>+</button>
               </div>
@@ -182,3 +180,7 @@ export default function QuickViewModal({ product, onClose }) {
     </>
   );
 }
+
+
+
+

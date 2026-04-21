@@ -1,11 +1,9 @@
-'use client';
-
-import Image from 'next/image';
-import Link from 'next/link';
+﻿// // import Image from 'next/image'; // Use <img> instead // Use <img> instead
+import { Link } from 'react-router-dom'
 import { useCart } from '@/context/CartContext';
 import { FiX, FiTrash2, FiShoppingBag, FiPlus, FiMinus, FiAlertCircle, FiCheckCircle } from 'react-icons/fi';
 import { formatPrice } from '@/data/products';
-import styles from './CartSidebar.module.css';
+
 
 export default function CartSidebar() {
   const { items, isOpen, closeCart, removeItem, updateQuantity, totalItems, totalPrice, savings, moqViolations, isValidOrder } = useCart();
@@ -49,7 +47,7 @@ export default function CartSidebar() {
                   {/* MOQ Warning - B2B */}
                   {item.moq && item.quantity < item.moq && (
                     <div className={styles.moqWarning}>
-                      ⚠️ Need {item.moq - item.quantity} more units (MOQ: {item.moq})
+                      âš ï¸ Need {item.moq - item.quantity} more units (MOQ: {item.moq})
                     </div>
                   )}
                   
@@ -123,7 +121,7 @@ export default function CartSidebar() {
                       const savingsAtNextTier = (item.price - nextTier.price) * nextTier.min;
                       return (
                         <div key={item.id} className={styles.tierInfo}>
-                          <small>Add {itemsNeeded} more {item.name.substring(0, 15)}... → ${nextTier.price}/unit</small>
+                          <small>Add {itemsNeeded} more {item.name.substring(0, 15)}... â†’ ${nextTier.price}/unit</small>
                           <small className={styles.tierSavings}>Save ${Math.round(savingsAtNextTier)}</small>
                         </div>
                       );
@@ -153,7 +151,7 @@ export default function CartSidebar() {
                 }}
                 className={`btn btn-primary btn-full ${!isValidOrder ? styles.checkoutDisabled : ''}`}
               >
-                {isValidOrder ? 'Checkout →' : 'Increase Quantities'}
+                {isValidOrder ? 'Checkout â†’' : 'Increase Quantities'}
               </Link>
             </div>
           </div>
@@ -162,3 +160,7 @@ export default function CartSidebar() {
     </>
   );
 }
+
+
+
+

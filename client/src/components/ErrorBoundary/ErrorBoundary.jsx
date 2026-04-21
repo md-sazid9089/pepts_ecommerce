@@ -1,8 +1,6 @@
-'use client';
-
-import { Component } from 'react';
+﻿import { Component } from 'react';
 import { FiRefreshCw, FiAlertTriangle } from 'react-icons/fi';
-import styles from './ErrorBoundary.module.css';
+
 
 /**
  * Error Boundary with Soft Recovery
@@ -169,3 +167,4 @@ class ErrorBoundary extends Component {
 }
 
 export default ErrorBoundary;
+

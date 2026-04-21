@@ -1,8 +1,6 @@
-'use client';
-
-import { useEffect, useState } from 'react';
+﻿import { useEffect, useState } from 'react';
 import { FiZap } from 'react-icons/fi';
-import styles from './FlashSale.module.css';
+
 
 export default function FlashSale() {
   const [timeLeft, setTimeLeft] = useState({
@@ -63,3 +61,4 @@ export default function FlashSale() {
     </div>
   );
 }
+

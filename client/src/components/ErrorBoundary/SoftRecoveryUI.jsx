@@ -1,8 +1,6 @@
-'use client';
-
-import { useState, useCallback } from 'react';
+﻿import { useState, useCallback } from 'react';
 import { FiRefreshCw, FiX, FiAlertCircle } from 'react-icons/fi';
-import styles from './SoftRecoveryUI.module.css';
+
 
 /**
  * Soft Recovery UI Component
@@ -111,3 +109,4 @@ export default function SoftRecoveryUI({
     </div>
   );
 }
+

@@ -1,14 +1,12 @@
-'use client';
-
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
-import { useRouter } from 'next/navigation';
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { FiLogOut, FiUser, FiMapPin, FiShoppingBag, FiEdit2, FiLock, FiPackage, FiArrowRight } from 'react-icons/fi';
-import styles from './Profile.module.css';
+
 
 export function ProfileView() {
   const { user, logout, updateProfile } = useAuth();
-  const router = useRouter();
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('orders');
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
@@ -25,7 +23,7 @@ export function ProfileView() {
           <div className={styles.notLoggedInIcon}><FiLock size={48} /></div>
           <h2>Please sign in to view your profile</h2>
           <button
-            onClick={() => router.push('/login')}
+            onClick={() => navigate('/login')}
             className={styles.signInBtn}
           >
             Go to Login
@@ -37,7 +35,7 @@ export function ProfileView() {
 
   const handleLogout = () => {
     logout();
-    router.push('/');
+    navigate('/');
   };
 
   const handleEditToggle = () => {
@@ -220,3 +218,4 @@ export function ProfileView() {
     </div>
   );
 }
+

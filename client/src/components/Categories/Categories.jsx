@@ -1,12 +1,12 @@
-import Image from 'next/image';
-import Link from 'next/link';
+﻿// // import Image from 'next/image'; // Use <img> instead // Use <img> instead
+import { Link } from 'react-router-dom'
 import { categories } from '@/data/constants/categories';
 import { brands } from '@/data/constants/brands';
 import { products } from '@/data/mock/products';
 import { formatPrice } from '@/data/utils/pricing';
 import { FiArrowRight, FiSmartphone, FiShoppingBag, FiHome, FiBox, FiStar } from 'react-icons/fi';
 import { FaPalette, FaFootballBall } from 'react-icons/fa';
-import styles from './Categories.module.css';
+
 
 // Map icon names to actual icon components
 const iconMap = {
@@ -94,7 +94,7 @@ export function CategoriesView() {
                 href={`/search?category=${category.id}`}
                 className={styles.seeAllLink}
               >
-                View Catalog →
+                View Catalog â†’
               </Link>
             </div>
 
@@ -157,3 +157,6 @@ export function CategoriesView() {
     </div>
   );
 }
+
+
+

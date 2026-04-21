@@ -1,0 +1,204 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================================================
+// USERS MODEL
+// ============================================================================
+// Stores admin and customer user accounts
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String   // Hashed password
+  firstName String?
+  lastName  String?
+  role      String   @default("customer") // customer, admin, vendor
+  isActive  Boolean  @default(true)
+  
+  // Relations
+  inquiries Inquiry[]
+  orders    Order[]
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ============================================================================
+// PRODUCT MODEL
+// ============================================================================
+// Stores product information
+model Product {
+  id          String   @id @default(cuid())
+  title       String
+  description String
+  price       Float    // Retail price
+  stock       Int      @default(0)
+  
+  // Foreign keys
+  categoryId  String
+  category    Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  
+  // Relations
+  bulkPrices  BulkPrice[]
+  orderItems  OrderItem[]
+  reviews     Review[]
+  
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// ============================================================================
+// CATEGORY MODEL
+// ============================================================================
+// Stores product categories
+model Category {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  description String?
+  icon        String?  // Icon/image filename
+  
+  // Relations
+  products    Product[]
+  
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// ============================================================================
+// BULK PRICING MODEL (B2B CRITICAL)
+// ============================================================================
+// Stores tiered pricing for wholesale/bulk orders
+model BulkPrice {
+  id          String   @id @default(cuid())
+  productId   String
+  product     Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  
+  minQuantity Int      // Minimum quantity for this price tier
+  price       Float    // Price per unit at this tier
+  discount    Float?   // Discount percentage (optional)
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@unique([productId, minQuantity])
+}
+
+// ============================================================================
+// ORDER MODEL
+// ============================================================================
+// Stores customer orders
+model Order {
+  id          String   @id @default(cuid())
+  orderNumber String   @unique
+  
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  status      String   @default("pending") // pending, processing, shipped, completed, cancelled
+  totalAmount Float
+  
+  // Relations
+  items       OrderItem[]
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// ============================================================================
+// ORDER ITEM MODEL
+// ============================================================================
+// Individual items in an order
+model OrderItem {
+  id        String   @id @default(cuid())
+  orderId   String
+  order     Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  
+  productId String
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Restrict)
+  
+  quantity  Int
+  unitPrice Float
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ============================================================================
+// INQUIRY MODEL (B2B CRITICAL)
+// ============================================================================
+// Stores wholesale/B2B inquiries and lead generation
+model Inquiry {
+  id        String   @id @default(cuid())
+  
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  
+  companyName   String
+  contactEmail  String
+  contactPhone  String?
+  
+  // Product inquiry details
+  productId     String?
+  productName   String
+  requestedQuantity Int
+  
+  // Inquiry metadata
+  message       String?
+  status        String   @default("new") // new, replied, converted, lost
+  
+  // Admin notes
+  notes         String?
+  assignedTo    String?  // Admin user ID
+  
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+// ============================================================================
+// REVIEW MODEL
+// ============================================================================
+// Stores product reviews
+model Review {
+  id        String   @id @default(cuid())
+  productId String
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  
+  rating    Int      // 1-5
+  title     String
+  comment   String
+  
+  email     String?  // Reviewer email
+  status    String   @default("pending") // pending, approved, rejected
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ============================================================================
+// PROMO CODE MODEL (Optional - for future use)
+// ============================================================================
+model PromoCode {
+  id        String   @id @default(cuid())
+  code      String   @unique
+  discount  Float    // Discount percentage or amount
+  discountType String @default("percentage") // percentage, fixed
+  
+  maxUses   Int?     // Maximum times code can be used
+  usedCount Int      @default(0)
+  
+  expiresAt DateTime?
+  isActive  Boolean  @default(true)
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

@@ -1,10 +1,8 @@
-'use client';
-
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import ProductCard from '@/components/ProductCard/ProductCard';
 import QuickViewModal from '@/components/QuickViewModal/QuickViewModal';
 import { FiPackage } from 'react-icons/fi';
-import styles from './ProductGrid.module.css';
+
 
 export default function ProductGrid({ products, columns = 4 }) {
   const [quickViewProduct, setQuickViewProduct] = useState(null);
@@ -45,3 +43,4 @@ export default function ProductGrid({ products, columns = 4 }) {
     </>
   );
 }
+

@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Layout Transition Component with 60fps Animations
  * Uses framer-motion for hardware-accelerated animations
  * Implements Soft Premium design system
@@ -221,7 +221,7 @@ export const AccordionItem = ({ isOpen, title, children }) => {
           animate={{ rotate: isOpen ? 180 : 0 }}
           transition={{ duration: 0.2 }}
         >
-          ▼
+          â–¼
         </motion.span>
       </motion.button>
       <motion.div
@@ -282,3 +282,5 @@ export default {
   AccordionItem,
   ModalTransition,
 };
+
+

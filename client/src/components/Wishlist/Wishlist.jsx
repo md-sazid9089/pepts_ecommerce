@@ -1,11 +1,9 @@
-'use client';
-
-import Image from 'next/image';
-import Link from 'next/link';
+﻿// // import Image from 'next/image'; // Use <img> instead // Use <img> instead
+import { Link } from 'react-router-dom'
 import { useWishlist } from '@/context/WishlistContext';
 import { useCart } from '@/context/CartContext';
 import { FiTrash2, FiShoppingCart, FiArrowLeft, FiHeart, FiStar } from 'react-icons/fi';
-import styles from './Wishlist.module.css';
+
 
 export function WishlistView() {
   const { items, removeItem, clearWishlist } = useWishlist();
@@ -97,3 +95,7 @@ export function WishlistView() {
     </div>
   );
 }
+
+
+
+

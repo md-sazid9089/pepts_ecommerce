@@ -97,9 +97,9 @@ export function useHydrationMismatchDetector(componentName, serverRenderedHTML, 
  *   // error is automatically logged
  * }
  */
-export function useErrorHandler(componentName: string) {
+export function useErrorHandler(componentName) {
   return useCallback(
-    <T,>(fn: () => T, operationName: string = 'Render'): T => {
+    (fn, operationName = 'Render') => {
       try {
         return fn();
       } catch (error) {
@@ -126,12 +126,12 @@ export function useErrorHandler(componentName: string) {
  * // ... do work ...
  * performanceTracker.measure('operation-name', 'Start of operation');
  */
-export function usePerformanceTracker(componentName: string) {
+export function usePerformanceTracker(componentName) {
   return {
-    mark: (markName: string) => {
+    mark: (markName) => {
       performance.mark(`${componentName}-${markName}`);
     },
-    measure: (markName: string, description: string) => {
+    measure: (markName, description) => {
       try {
         performance.measure(
           `${componentName}-${markName}`,

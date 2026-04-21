@@ -4,26 +4,27 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
     "lint": "eslint"
   },
   "dependencies": {
-    "next": "16.2.4",
+    "axios": "^1.7.0",
+    "framer-motion": "^11.0.0",
     "react": "19.2.4",
     "react-dom": "19.2.4",
     "react-icons": "^5.6.0",
-    "framer-motion": "^11.0.0"
+    "react-router-dom": "^7.0.0"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
-    "@types/node": "^20",
-    "@types/react": "^19",
-    "@types/react-dom": "^19",
+    "@vitejs/plugin-react": "^4.3.0",
     "eslint": "^9",
-    "eslint-config-next": "16.2.4",
+    "eslint-plugin-react": "^7.37.0",
+    "eslint-plugin-react-hooks": "^4.6.0",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "terser": "^5.46.1",
+    "vite": "^8.0.9"
   }
 }

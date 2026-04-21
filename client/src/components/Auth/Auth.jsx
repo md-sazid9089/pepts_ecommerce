@@ -1,13 +1,125 @@
-'use client';
-
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+﻿import { useState } from 'react';
+import { useNavigate } from 'react-router-dom'
 import { useAuth } from '@/context/AuthContext';
 import { FiSmartphone } from 'react-icons/fi';
-import styles from './Auth.module.css';
+
+const styles = {
+  formContainer: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: '100vh',
+    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+    padding: '20px',
+  },
+  form: {
+    background: 'white',
+    borderRadius: '12px',
+    boxShadow: '0 20px 60px rgba(0, 0, 0, 0.15)',
+    padding: '40px',
+    width: '100%',
+    maxWidth: '420px',
+  },
+  title: {
+    fontSize: '28px',
+    fontWeight: '700',
+    color: '#111827',
+    marginBottom: '8px',
+    textAlign: 'center',
+  },
+  subtitle: {
+    fontSize: '14px',
+    color: '#6b7280',
+    textAlign: 'center',
+    marginBottom: '30px',
+  },
+  group: {
+    marginBottom: '20px',
+  },
+  label: {
+    display: 'block',
+    fontSize: '14px',
+    fontWeight: '600',
+    color: '#111827',
+    marginBottom: '8px',
+  },
+  input: {
+    width: '100%',
+    padding: '12px 14px',
+    fontSize: '14px',
+    border: '1px solid #d1d5db',
+    borderRadius: '8px',
+    transition: 'all 0.3s ease',
+    boxSizing: 'border-box',
+    fontFamily: 'inherit',
+  },
+  submitBtn: {
+    width: '100%',
+    padding: '12px',
+    fontSize: '16px',
+    fontWeight: '600',
+    color: 'white',
+    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+    border: 'none',
+    borderRadius: '8px',
+    cursor: 'pointer',
+    transition: 'all 0.3s ease',
+    marginTop: '20px',
+  },
+  divider: {
+    textAlign: 'center',
+    margin: '24px 0',
+    fontSize: '14px',
+    color: '#9ca3af',
+  },
+  socialBtn: {
+    width: '100%',
+    padding: '12px',
+    fontSize: '14px',
+    fontWeight: '600',
+    color: '#667eea',
+    background: 'white',
+    border: '2px solid #e5e7eb',
+    borderRadius: '8px',
+    cursor: 'pointer',
+    transition: 'all 0.3s ease',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '8px',
+  },
+  footer: {
+    textAlign: 'center',
+    marginTop: '24px',
+    fontSize: '14px',
+    color: '#6b7280',
+  },
+  link: {
+    color: '#667eea',
+    textDecoration: 'none',
+    fontWeight: '600',
+    cursor: 'pointer',
+  },
+  errorBox: {
+    background: '#fee2e2',
+    color: '#991b1b',
+    padding: '12px 14px',
+    borderRadius: '8px',
+    marginBottom: '20px',
+    fontSize: '14px',
+    border: '1px solid #fecaca',
+  },
+  terms: {
+    fontSize: '12px',
+    color: '#6b7280',
+    textAlign: 'center',
+    marginTop: '16px',
+    lineHeight: '1.5',
+  },
+};
 
 export function LoginForm() {
-  const router = useRouter();
+  const navigate = useNavigate();
   const { login } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -37,9 +149,9 @@ export function LoginForm() {
     try {
       login(email, password);
       setTimeout(() => {
-        router.push('/');
+        navigate('/');
       }, 500);
-    } catch (err) {
+    } catch {
       setError('Login failed. Please try again.');
     } finally {
       setLoading(false);
@@ -99,7 +211,7 @@ export function LoginForm() {
 }
 
 export function RegisterForm() {
-  const router = useRouter();
+  const navigate = useNavigate();
   const { register } = useAuth();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -136,9 +248,9 @@ export function RegisterForm() {
     try {
       register(name, email, password);
       setTimeout(() => {
-        router.push('/');
+        navigate('/');
       }, 500);
-    } catch (err) {
+    } catch {
       setError('Registration failed. Please try again.');
     } finally {
       setLoading(false);
@@ -220,3 +332,5 @@ export function RegisterForm() {
     </div>
   );
 }
+
+
