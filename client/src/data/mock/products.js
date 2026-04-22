@@ -21,6 +21,7 @@ export const products = [
     reviews: 342,
     image: '/images/products/product1/producta.jpeg',
     images: [
+      '/images/products/product1/producta.jpeg',
       '/images/products/product1/productb.jpeg',
       '/images/products/product1/productc.jpeg',
       '/images/products/product1/productd.jpeg',
