@@ -15,6 +15,7 @@ import {
   FaChevronDown,
   FaChevronUp,
 } from "react-icons/fa"
+import { getProductById } from "@/data/queries/productQueries"
 
 const styles = {
   pageContainer: {
@@ -591,72 +592,75 @@ const styles = {
 }
 
 // Mock product data
-const mockProduct = {
-  id: 1,
-  code: "PFD-2024-001",
-  brand: "PreciousPlay",
-  name: "Premium Fashion Doll Collection - Assorted Series A",
-  price: 850,
-  originalPrice: 1200,
-  discount: 29,
-  rating: 4.8,
-  reviews: 342,
-  description: "Collectible fashion dolls with premium articulation and detailed accessories. Perfect for retailers stocking trendy dolls. Each doll features beautiful hand-painted features and comes with matching outfit and accessories.",
-  images: [
-    "https://placehold.co/600?text=Fashion+Doll+Series+A",
-    "https://placehold.co/600?text=Fashion+Doll+Back",
-    "https://placehold.co/600?text=Fashion+Doll+Accessories",
-    "https://placehold.co/600?text=Fashion+Doll+Package",
-  ],
-  stock: 250,
-  moq: 10,
-  inStock: true,
-  specs: {
-    Height: "30cm",
-    Material: "Premium Vinyl & Plastic",
-    Articulation: "Full Body Poseable",
-    Package: "50 units per case",
-    "Recommended For": "Gift Shops, Toy Boutiques",
-  },
-  tieredPricing: [
-    { min: 10, max: 50, price: 850 },
-    { min: 51, max: 200, price: 720 },
-    { min: 201, max: 500, price: 650 },
-    { min: 501, max: null, price: 580 },
-  ],
-}
-
 export default function ProductDetailPage() {
   const { id } = useParams()
   const navigate = useNavigate()
+  const [product, setProduct] = useState(null)
+  const [loading, setLoading] = useState(true)
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
-  const [quantity, setQuantity] = useState(mockProduct.moq)
+  const [quantity, setQuantity] = useState(1)
   const [expandedSection, setExpandedSection] = useState(null)
   const [hoveredBtn, setHoveredBtn] = useState(null)
   const isMobile = window.innerWidth < 768
 
+  useEffect(() => {
+    setLoading(true)
+    const data = getProductById(id)
+    if (data) {
+      setProduct(data)
+      setQuantity(data.moq || 1)
+    }
+    setLoading(false)
+    window.scrollTo(0, 0)
+  }, [id])
+
   const handleNextImage = () => {
-    setCurrentImageIndex((prev) => (prev + 1) % mockProduct.images.length)
+    if (!product?.images) return
+    setCurrentImageIndex((prev) => (prev + 1) % product.images.length)
   }
 
   const handlePrevImage = () => {
-    setCurrentImageIndex((prev) => (prev - 1 + mockProduct.images.length) % mockProduct.images.length)
+    if (!product?.images) return
+    setCurrentImageIndex((prev) => (prev - 1 + product.images.length) % product.images.length)
   }
 
   const handleQuantityChange = (e) => {
-    const value = parseInt(e.target.value) || mockProduct.moq
-    if (value >= mockProduct.moq) {
+    const value = parseInt(e.target.value) || (product?.moq || 1)
+    if (value >= (product?.moq || 1)) {
       setQuantity(value)
     }
   }
 
   const handleAddToCart = () => {
-    if (quantity >= mockProduct.moq) {
+    if (quantity >= (product?.moq || 1)) {
       alert(`Added ${quantity} units to cart`)
     }
   }
 
-  const currentTierPrice = mockProduct.tieredPricing.find((tier) => {
+  if (loading) {
+    return (
+      <div style={{ ...styles.pageContainer, display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh' }}>
+        <p style={{ fontSize: '1.2rem', color: '#6b7280' }}>Loading product details...</p>
+      </div>
+    )
+  }
+
+  if (!product) {
+    return (
+      <div style={{ ...styles.pageContainer, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100vh', gap: '1rem' }}>
+        <h2 style={{ color: '#111827' }}>Product Not Found</h2>
+        <p style={{ color: '#6b7280' }}>The product you are looking for does not exist or has been removed.</p>
+        <button 
+          onClick={() => navigate('/products')}
+          style={{ ...styles.addToCartBtn, width: 'auto', padding: '0.75rem 2rem' }}
+        >
+          Back to Products
+        </button>
+      </div>
+    )
+  }
+
+  const currentTierPrice = (product.tieredPricing || []).find((tier) => {
     if (tier.max === null) {
       return quantity >= tier.min
     }
@@ -685,7 +689,7 @@ export default function ProductDetailPage() {
           Categories
         </span>
         <span style={{ color: "#d1d5db" }}>›</span>
-        <span style={styles.breadcrumbActive}>{mockProduct.name}</span>
+        <span style={styles.breadcrumbActive}>{product.name}</span>
       </div>
 
       {/* Main Container */}
@@ -693,9 +697,9 @@ export default function ProductDetailPage() {
         {/* Image Gallery */}
         <div style={styles.gallerySection}>
           <div style={styles.mainImageWrapper}>
-            <img src={mockProduct.images[currentImageIndex]} alt="Product" style={styles.mainImage} />
-            {mockProduct.discount > 0 && (
-              <div style={styles.imageBadge}>-{mockProduct.discount}%</div>
+            <img src={product.images[currentImageIndex]} alt="Product" style={styles.mainImage} />
+            {product.discount > 0 && (
+              <div style={styles.imageBadge}>-{product.discount}%</div>
             )}
 
             {/* Previous Button */}
@@ -721,7 +725,7 @@ export default function ProductDetailPage() {
 
           {/* Thumbnails */}
           <div style={{ ...styles.thumbnailGallery, ...(isMobile ? styles.thumbnailGalleryMobile : {}) }}>
-            {mockProduct.images.map((img, idx) => (
+            {product.images.map((img, idx) => (
               <div
                 key={idx}
                 style={{
@@ -756,9 +760,9 @@ export default function ProductDetailPage() {
 
           {/* Header */}
           <div style={styles.header}>
-            <p style={styles.brand}>{mockProduct.brand}</p>
-            <h1 style={styles.title}>{mockProduct.name}</h1>
-            <p style={styles.productCode}>Product Code: {mockProduct.code}</p>
+            <p style={styles.brand}>{product.brand}</p>
+            <h1 style={styles.title}>{product.name}</h1>
+            <p style={styles.productCode}>Product Code: {product.code}</p>
           </div>
 
           {/* Rating */}
@@ -769,34 +773,34 @@ export default function ProductDetailPage() {
                   key={i}
                   style={{
                     ...styles.starIcon,
-                    color: i < Math.floor(mockProduct.rating) ? "#fbbf24" : "#e5e7eb",
+                    color: i < Math.floor(product.rating) ? "#fbbf24" : "#e5e7eb",
                   }}
                 />
               ))}
             </div>
-            <span style={styles.ratingValue}>{mockProduct.rating}</span>
-            <span style={styles.reviewCount}>({mockProduct.reviews} reviews)</span>
+            <span style={styles.ratingValue}>{product.rating}</span>
+            <span style={styles.reviewCount}>({product.reviews} reviews)</span>
           </div>
 
           {/* Price */}
           <div style={styles.priceSection}>
-            <span style={styles.currentPrice}>${mockProduct.price}</span>
-            {mockProduct.originalPrice > mockProduct.price && (
-              <span style={styles.originalPrice}>${mockProduct.originalPrice}</span>
+            <span style={styles.currentPrice}>${product.price}</span>
+            {product.originalPrice > product.price && (
+              <span style={styles.originalPrice}>${product.originalPrice}</span>
             )}
-            {mockProduct.discount > 0 && (
-              <span style={styles.discountBadge}>Save {mockProduct.discount}%</span>
+            {product.discount > 0 && (
+              <span style={styles.discountBadge}>Save {product.discount}%</span>
             )}
           </div>
 
           {/* Description */}
-          <p style={styles.description}>{mockProduct.description}</p>
+          <p style={styles.description}>{product.description}</p>
 
           {/* Specifications */}
           <div style={styles.specsSection}>
             <h3 style={styles.specsTitle}>Product Specifications</h3>
             <div style={{ ...styles.specsGrid, ...(isMobile ? styles.specsGridMobile : {}) }}>
-              {Object.entries(mockProduct.specs).map(([key, value]) => (
+              {Object.entries(product.specs).map(([key, value]) => (
                 <div key={key} style={styles.specItem}>
                   <span style={styles.specLabel}>{key}</span>
                   <span style={styles.specValue}>{value}</span>
@@ -806,9 +810,9 @@ export default function ProductDetailPage() {
           </div>
 
           {/* MOQ Warning */}
-          {quantity < mockProduct.moq && (
+          {quantity < product.moq && (
             <div style={styles.moqWarning}>
-              Minimum order quantity is {mockProduct.moq} units
+              Minimum order quantity is {product.moq} units
             </div>
           )}
 
@@ -821,8 +825,8 @@ export default function ProductDetailPage() {
                 <div style={styles.tieredTableHeaderCell}>Price</div>
                 <div style={styles.tieredTableHeaderCell}>Savings</div>
               </div>
-              {mockProduct.tieredPricing.map((tier, idx) => {
-                const savings = ((mockProduct.price - tier.price) / mockProduct.price * 100).toFixed(0)
+              {product.tieredPricing.map((tier, idx) => {
+                const savings = ((product.price - tier.price) / product.price * 100).toFixed(0)
                 return (
                   <div key={idx} style={styles.tieredTableRow}>
                     <div style={styles.tieredTableCell}>
@@ -837,10 +841,10 @@ export default function ProductDetailPage() {
           </div>
 
           {/* Stock Info */}
-          {mockProduct.inStock ? (
+          {product.inStock ? (
             <div style={styles.stockInfo}>
               <FaCheck style={styles.stockIcon} />
-              <span style={styles.stockText}>In Stock - {mockProduct.stock} units available</span>
+              <span style={styles.stockText}>In Stock - {product.stock} units available</span>
             </div>
           ) : (
             <div style={{ ...styles.stockInfo, backgroundColor: "#fee2e2", borderColor: "#fecaca" }}>
@@ -850,11 +854,11 @@ export default function ProductDetailPage() {
 
           {/* Quantity Selector */}
           <div style={styles.quantitySection}>
-            <label style={styles.quantityLabel}>Quantity (Minimum: {mockProduct.moq})</label>
+            <label style={styles.quantityLabel}>Quantity (Minimum: {product.moq})</label>
             <div style={styles.quantitySelector}>
               <button
                 style={styles.quantityButton}
-                onClick={() => setQuantity(Math.max(mockProduct.moq, quantity - 1))}
+                onClick={() => setQuantity(Math.max(product.moq, quantity - 1))}
                 onMouseEnter={(e) => Object.assign(e.target.style, styles.quantityButtonHover)}
                 onMouseLeave={(e) => Object.assign(e.target.style, { borderColor: "#e5e7eb", backgroundColor: "#f3f4f6", color: "#111827" })}
               >
@@ -862,7 +866,7 @@ export default function ProductDetailPage() {
               </button>
               <input
                 type="number"
-                min={mockProduct.moq}
+                min={product.moq}
                 value={quantity}
                 onChange={handleQuantityChange}
                 style={styles.quantityInput}
@@ -878,7 +882,7 @@ export default function ProductDetailPage() {
                 +
               </button>
               <span style={{ fontSize: "0.875rem", color: "#6b7280" }}>
-                Current: ${currentTierPrice?.price || mockProduct.price}/unit
+                Current: ${currentTierPrice?.price || product.price}/unit
               </span>
             </div>
           </div>
@@ -889,7 +893,7 @@ export default function ProductDetailPage() {
               style={styles.addToCartBtn}
               onClick={handleAddToCart}
               onMouseEnter={(e) => {
-                if (quantity >= mockProduct.moq) {
+                if (quantity >= product.moq) {
                   Object.assign(e.target.style, styles.addToCartBtnHover)
                 }
               }}
@@ -900,7 +904,7 @@ export default function ProductDetailPage() {
                   boxShadow: "none",
                 })
               }}
-              disabled={quantity < mockProduct.moq}
+              disabled={quantity < product.moq}
             >
               <FaShoppingCart />
               Add to Cart

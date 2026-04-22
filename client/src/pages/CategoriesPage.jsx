@@ -65,7 +65,7 @@ const styles = {
   // Main Container
   mainContainer: {
     display: "grid",
-    gridTemplateColumns: "250px 1fr",
+    gridTemplateColumns: "1fr",
     gap: "2rem",
     maxWidth: "1400px",
     margin: "0 auto",
@@ -194,7 +194,7 @@ const styles = {
   topControls: {
     display: "flex",
     alignItems: "center",
-    justifyContent: "space-between",
+    justifyContent: "flex-start",
     gap: "1rem",
     flexWrap: "wrap",
   },
@@ -204,8 +204,8 @@ const styles = {
 
   searchBox: {
     position: "relative",
-    flex: 1,
-    minWidth: "200px",
+    flex: 0,
+    minWidth: "300px",
   },
   searchIcon: {
     position: "absolute",
@@ -338,6 +338,7 @@ const styles = {
     fontWeight: 600,
     textTransform: "uppercase",
     letterSpacing: "0.5px",
+    display: "none",
   },
 
   categoryInfo: {
@@ -351,10 +352,11 @@ const styles = {
     fontWeight: 600,
     color: "#111827",
     margin: 0,
+    textAlign: "center",
   },
 
   categoryMeta: {
-    display: "flex",
+    display: "none",
     alignItems: "center",
     gap: "0.5rem",
     fontSize: "0.8rem",
@@ -366,6 +368,7 @@ const styles = {
   },
 
   categoryDescription: {
+    display: "none",
     fontSize: "0.8rem",
     color: "#9ca3af",
     margin: 0,
@@ -508,138 +511,6 @@ export default function CategoriesPage() {
 
       {/* Main Container */}
       <div style={{ ...styles.mainContainer, ...(isMobile ? styles.mainContainerMobile : {}) }}>
-        {/* Sidebar - Desktop Only */}
-        {!isMobile && (
-          <aside style={styles.sidebar}>
-            <div style={styles.sidebarContent}>
-              <h3 style={styles.sidebarTitle}>Filters</h3>
-
-              {/* Price Filter */}
-              <div style={styles.filterGroup}>
-                <label style={styles.filterLabel}>Price Range</label>
-                <div style={styles.filterOptions}>
-                  <div style={styles.filterCheckbox}>
-                    <input type="checkbox" style={styles.filterCheckboxInput} />
-                    <span style={styles.filterCheckboxLabel}>Under $50</span>
-                  </div>
-                  <div style={styles.filterCheckbox}>
-                    <input type="checkbox" style={styles.filterCheckboxInput} />
-                    <span style={styles.filterCheckboxLabel}>$50 - $100</span>
-                  </div>
-                  <div style={styles.filterCheckbox}>
-                    <input type="checkbox" style={styles.filterCheckboxInput} />
-                    <span style={styles.filterCheckboxLabel}>$100 - $500</span>
-                  </div>
-                  <div style={styles.filterCheckbox}>
-                    <input type="checkbox" style={styles.filterCheckboxInput} />
-                    <span style={styles.filterCheckboxLabel}>Above $500</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Rating Filter */}
-              <div style={styles.filterGroup}>
-                <label style={styles.filterLabel}>Rating</label>
-                <div style={styles.filterOptions}>
-                  <div style={styles.filterCheckbox}>
-                    <input type="checkbox" style={styles.filterCheckboxInput} />
-                    <span style={styles.filterCheckboxLabel}>4.5+ Stars</span>
-                  </div>
-                  <div style={styles.filterCheckbox}>
-                    <input type="checkbox" style={styles.filterCheckboxInput} />
-                    <span style={styles.filterCheckboxLabel}>4+ Stars</span>
-                  </div>
-                  <div style={styles.filterCheckbox}>
-                    <input type="checkbox" style={styles.filterCheckboxInput} />
-                    <span style={styles.filterCheckboxLabel}>3+ Stars</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Availability Filter */}
-              <div style={{ ...styles.filterGroup, ...styles.filterGroupLast }}>
-                <label style={styles.filterLabel}>Availability</label>
-                <div style={styles.filterOptions}>
-                  <div style={styles.filterCheckbox}>
-                    <input type="checkbox" style={styles.filterCheckboxInput} />
-                    <span style={styles.filterCheckboxLabel}>In Stock</span>
-                  </div>
-                  <div style={styles.filterCheckbox}>
-                    <input type="checkbox" style={styles.filterCheckboxInput} />
-                    <span style={styles.filterCheckboxLabel}>On Sale</span>
-                  </div>
-                  <div style={styles.filterCheckbox}>
-                    <input type="checkbox" style={styles.filterCheckboxInput} />
-                    <span style={styles.filterCheckboxLabel}>Coming Soon</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </aside>
-        )}
-
-        {/* Mobile Filter Overlay */}
-        {isMobile && showMobileFilters && (
-          <div style={styles.sidebarMobileOpen} onClick={() => setShowMobileFilters(false)}>
-            <div
-              style={styles.sidebarMobileContent}
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div style={styles.sidebarHeader}>
-                <h3 style={styles.sidebarTitle}>Filters</h3>
-                <button
-                  style={{ ...styles.closeBtn, ...styles.closeBtnShow }}
-                  onClick={() => setShowMobileFilters(false)}
-                >
-                  <FaTimes />
-                </button>
-              </div>
-
-              {/* Price Filter */}
-              <div style={styles.filterGroup}>
-                <label style={styles.filterLabel}>Price Range</label>
-                <div style={styles.filterOptions}>
-                  <div style={styles.filterCheckbox}>
-                    <input type="checkbox" style={styles.filterCheckboxInput} />
-                    <span style={styles.filterCheckboxLabel}>Under $50</span>
-                  </div>
-                  <div style={styles.filterCheckbox}>
-                    <input type="checkbox" style={styles.filterCheckboxInput} />
-                    <span style={styles.filterCheckboxLabel}>$50 - $100</span>
-                  </div>
-                  <div style={styles.filterCheckbox}>
-                    <input type="checkbox" style={styles.filterCheckboxInput} />
-                    <span style={styles.filterCheckboxLabel}>$100 - $500</span>
-                  </div>
-                  <div style={styles.filterCheckbox}>
-                    <input type="checkbox" style={styles.filterCheckboxInput} />
-                    <span style={styles.filterCheckboxLabel}>Above $500</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Rating Filter */}
-              <div style={styles.filterGroup}>
-                <label style={styles.filterLabel}>Rating</label>
-                <div style={styles.filterOptions}>
-                  <div style={styles.filterCheckbox}>
-                    <input type="checkbox" style={styles.filterCheckboxInput} />
-                    <span style={styles.filterCheckboxLabel}>4.5+ Stars</span>
-                  </div>
-                  <div style={styles.filterCheckbox}>
-                    <input type="checkbox" style={styles.filterCheckboxInput} />
-                    <span style={styles.filterCheckboxLabel}>4+ Stars</span>
-                  </div>
-                  <div style={styles.filterCheckbox}>
-                    <input type="checkbox" style={styles.filterCheckboxInput} />
-                    <span style={styles.filterCheckboxLabel}>3+ Stars</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
         {/* Content Area */}
         <div style={styles.contentArea}>
           {/* Top Controls */}
@@ -659,44 +530,6 @@ export default function CategoriesPage() {
                 }}
               />
             </div>
-
-            <button
-              style={{ ...styles.filterToggle, ...(isMobile ? styles.filterToggleMobile : {}) }}
-              onClick={() => setShowMobileFilters(!showMobileFilters)}
-              onMouseEnter={(e) => {
-                if (!isMobile) {
-                  Object.assign(e.target.style, styles.filterToggleHover)
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (!isMobile) {
-                  Object.assign(e.target.style, {
-                    borderColor: "#e5e7eb",
-                    backgroundColor: "#ffffff",
-                  })
-                }
-              }}
-            >
-              <FaFilter style={{ fontSize: "0.875rem" }} />
-              Filters
-            </button>
-
-            <select
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value)}
-              style={styles.sortSelect}
-              onMouseEnter={(e) => (e.target.style.borderColor = "#1e293b")}
-              onMouseLeave={(e) => (e.target.style.borderColor = "#e5e7eb")}
-            >
-              <option value="popular">Most Popular</option>
-              <option value="rating">Highest Rated</option>
-              <option value="newest">Newest</option>
-            </select>
-          </div>
-
-          {/* Results Info */}
-          <div style={styles.resultsInfo}>
-            Showing {sortedCategories.length} of {CATEGORIES_DATA.length} categories
           </div>
 
           {/* Categories Grid */}
