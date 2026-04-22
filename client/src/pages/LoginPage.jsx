@@ -550,7 +550,7 @@ export default function LoginPage() {
 
           {/* Footer */}
           <div style={styles.footer}>
-            Don't have an account?
+            Don&apos;t have an account?
             <a
               href="/register"
               style={styles.footerLink}

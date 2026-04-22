@@ -263,7 +263,6 @@ export default function Navbar() {
   const handleSearch = (e) => {
     e.preventDefault()
     if (searchQuery.trim()) {
-      console.log("Search for:", searchQuery)
       // Add your search logic here
     }
   }
@@ -284,7 +283,7 @@ export default function Navbar() {
   const navLinks = [
     { label: "All Products", to: "/products" },
     { label: "Categories", to: "/categories" },
-    { label: "About", href: "#/about" },
+    { label: "About", to: "/about" },
   ]
 
   return (
@@ -345,11 +344,13 @@ export default function Navbar() {
       <div style={{ ...styles.headerRow, ...(isMobile ? styles.headerRowMobile : {}) }}>
         {/* Logo Section */}
         <div style={styles.logoSection}>
-          <img 
-            src="/images/products/logo.jpeg" 
-            alt="Pepta Logo" 
-            style={{ height: "50px", width: "auto", objectFit: "contain" }}
-          />
+          <Link to="/" style={{ display: 'block', cursor: 'pointer', textDecoration: 'none' }}>
+            <img 
+              src="/images/products/logo.jpeg" 
+              alt="Pepta Logo" 
+              style={{ height: "50px", width: "auto", objectFit: "contain" }}
+            />
+          </Link>
         </div>
 
         {/* Search Section */}

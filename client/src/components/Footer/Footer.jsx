@@ -1,4 +1,5 @@
-﻿import { useState, useEffect } from "react"
+import { useState, useEffect } from "react"
+import { Link } from "react-router-dom"
 import {
   FaEnvelope,
   FaPhoneAlt,
@@ -522,14 +523,14 @@ export default function Footer() {
       <section style={{ ...styles.main, ...(isMobile ? styles.mainMobile : {}) }}>
         {/* Column 1: About & Contact */}
         <div style={{ ...styles.column, ...styles.columnWide }}>
-          <div style={styles.brand}>
+          <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', textDecoration: 'none', cursor: 'pointer' }}>
             <img
               src="/images/products/logo.jpeg"
               alt="Pepta Logo"
               style={styles.brandLogo}
             />
             <h2 style={styles.brandName}>Pepta</h2>
-          </div>
+          </Link>
           <p style={styles.description}>
             Premium technology and gadget wholesale supplier for boutiques and showrooms across Bangladesh. Direct factory prices, bulk discounts, and professional wholesale service.
           </p>

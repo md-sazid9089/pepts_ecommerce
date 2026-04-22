@@ -505,7 +505,7 @@ export default function CategoriesPage() {
             <span style={styles.breadcrumbActive}>Categories</span>
           </div>
           <h1 style={styles.heroBannerTitle}>Explore All Categories</h1>
-          <p style={styles.heroBannerSubtitle}>Browse our complete collection of premium products and find what you're looking for</p>
+          <p style={styles.heroBannerSubtitle}>Browse our complete collection of premium products and find what you&apos;re looking for</p>
         </div>
       </div>
 

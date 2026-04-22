@@ -26,7 +26,7 @@ export const products = [
       '/images/products/product1/productc.jpeg',
       '/images/products/product1/productd.jpeg',
     ],
-    description: 'lol',
+    description: 'Premium handcrafted plush toy featuring soft texture and institutional-grade durability. Perfect for retail collections, specialty gift shops, and premium toy boutiques. High-quality construction designed for long-term retail display.',
     stock: 250,
     isNew: false,
     isFeatured: true,

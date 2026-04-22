@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from "react"
+import { useState, useEffect } from "react"
 
 // ====================================
 // THEME COLORS
@@ -186,11 +186,11 @@ export default function CategorySection() {
   }
 
   const handleCategoryClick = (categoryId, categoryName) => {
-    console.log(`Clicked category: ${categoryName} (ID: ${categoryId})`)
+    // Navigate to category
   }
 
   const handleViewAll = () => {
-    console.log("View all categories")
+    // Navigate to all categories
   }
 
   return (

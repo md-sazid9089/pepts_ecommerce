@@ -389,7 +389,7 @@ export default function AboutPage() {
       <section style={ctaStyles.container}>
         <h2 style={ctaStyles.title}>Start Your Wholesale Journey Today</h2>
         <p style={ctaStyles.subtitle}>
-          Join hundreds of retailers already growing their business with Pepta. Let's build something great together.
+          Join hundreds of retailers already growing their business with Pepta. Let&apos;s build something great together.
         </p>
         <div style={ctaStyles.buttonContainer}>
           <button
@@ -400,7 +400,7 @@ export default function AboutPage() {
             }}
             onMouseEnter={() => setHoveredPrimaryBtn(true)}
             onMouseLeave={() => setHoveredPrimaryBtn(false)}
-            onClick={() => console.log("Browse Products clicked")}
+            onClick={() => {}}
           >
             Browse Products
           </button>
@@ -412,7 +412,7 @@ export default function AboutPage() {
             }}
             onMouseEnter={() => setHoveredSecondaryBtn(true)}
             onMouseLeave={() => setHoveredSecondaryBtn(false)}
-            onClick={() => console.log("Contact clicked")}
+            onClick={() => {}}
           >
             Contact / Request Quote
           </button>

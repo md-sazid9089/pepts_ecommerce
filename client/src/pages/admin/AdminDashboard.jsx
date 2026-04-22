@@ -658,7 +658,7 @@ export default function AdminDashboard() {
             {/* Page Header */}
             <div style={styles.pageHeader}>
               <h1 style={styles.pageTitle}>Dashboard</h1>
-              <p style={styles.pageSubtitle}>Welcome back! Here's your business overview.</p>
+              <p style={styles.pageSubtitle}>Welcome back! Here&apos;s your business overview.</p>
             </div>
 
             {/* Stats Cards */}

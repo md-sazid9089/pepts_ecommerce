@@ -209,11 +209,11 @@ export default function NewArrivals() {
   const newProducts = products.filter((product) => product.isNew).slice(0, 4)
 
   const handleAddToCart = (productId) => {
-    console.log("Added to cart:", productId)
+    // Add to cart logic
   }
 
   const handleWishlist = (productId) => {
-    console.log("Added to wishlist:", productId)
+    // Add to wishlist logic
   }
 
   const renderStars = (rating) => {
