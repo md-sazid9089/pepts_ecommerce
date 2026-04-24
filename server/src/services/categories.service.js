@@ -36,6 +36,21 @@ export async function getAll() {
 }
 
 /**
+ * Get a category by ID
+ * @param {string} id
+ * @returns {Promise<object|null>}
+ */
+export async function getById(id) {
+  try {
+    return await prisma.category.findUnique({
+      where: { id, isActive: true },
+    })
+  } catch (error) {
+    throw new Error(`Failed to fetch category by ID: ${error.message}`)
+  }
+}
+
+/**
  * Get a category by name
  * @param {string} name
  * @returns {Promise<object|null>}
@@ -50,4 +65,56 @@ export async function getByName(name) {
   }
 }
 
-export default { getAll, getByName }
+/**
+ * Create a new category
+ * @param {object} data - { name, description, icon }
+ * @returns {Promise<object>}
+ */
+export async function create(data) {
+  try {
+    return await prisma.category.create({
+      data: {
+        name: data.name,
+        description: data.description,
+        icon: data.icon,
+      },
+    })
+  } catch (error) {
+    throw new Error(`Failed to create category: ${error.message}`)
+  }
+}
+
+/**
+ * Update a category
+ * @param {string} id
+ * @param {object} data - Fields to update
+ * @returns {Promise<object>}
+ */
+export async function update(id, data) {
+  try {
+    return await prisma.category.update({
+      where: { id },
+      data,
+    })
+  } catch (error) {
+    throw new Error(`Failed to update category: ${error.message}`)
+  }
+}
+
+/**
+ * Delete a category (soft delete)
+ * @param {string} id
+ * @returns {Promise<object>}
+ */
+export async function deleteCategory(id) {
+  try {
+    return await prisma.category.update({
+      where: { id },
+      data: { isActive: false },
+    })
+  } catch (error) {
+    throw new Error(`Failed to delete category: ${error.message}`)
+  }
+}
+
+export default { getAll, getById, getByName, create, update, deleteCategory }

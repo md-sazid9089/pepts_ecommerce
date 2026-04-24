@@ -1,7 +1,7 @@
 /**
  * ============================================================================
- * ORDER DETAILS
- * GET /api/orders/:id — get order details
+ * USER ORDERS
+ * GET /api/orders/user — get orders for the logged-in user
  * ============================================================================
  */
 
@@ -23,24 +23,19 @@ function verifyJwt(request) {
   }
 }
 
-export async function GET(request, { params }) {
+export async function GET(request) {
   try {
     const user = verifyJwt(request)
     if (!user) return apiResponse.unauthorized("Authentication required")
 
-    const { id } = await params
-    const order = await ordersService.getOrderById(id)
-    
-    if (!order) return apiResponse.notFound("Order not found")
-    
-    // Permission check
-    if (order.userId !== user.userId && user.role !== "admin") {
-      return apiResponse.forbidden("Access denied")
-    }
+    const { searchParams } = new URL(request.url)
+    const page = parseInt(searchParams.get("page") || "1", 10)
+    const pageSize = parseInt(searchParams.get("pageSize") || "10", 10)
 
-    return apiResponse.success(order, "Order fetched successfully")
+    const result = await ordersService.getUserOrders(user.userId, page, pageSize)
+    return apiResponse.paginated(result.items, result.total, page, pageSize, "Orders fetched successfully")
   } catch (error) {
-    console.error("GET /api/orders/:id error:", error)
-    return apiResponse.serverError("Failed to fetch order", error)
+    console.error("GET /api/orders/user error:", error)
+    return apiResponse.serverError("Failed to fetch user orders", error)
   }
 }

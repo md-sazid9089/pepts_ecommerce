@@ -29,6 +29,11 @@ export const createProductSchema = z.object({
     .nonnegative("Stock must be >= 0")
     .default(0),
 
+  categoryId: z
+    .string()
+    .trim()
+    .optional(),
+
   categoryName: z
     .string()
     .trim()
@@ -36,6 +41,10 @@ export const createProductSchema = z.object({
     .max(100, "Category name too long")
     .optional()
     .default("General"),
+
+  images: z
+    .array(z.string().url())
+    .optional(),
 })
 
 export const updateProductSchema = z.object({
@@ -43,8 +52,10 @@ export const updateProductSchema = z.object({
   description: z.string().trim().min(1).max(5000).optional(),
   price: z.number().nonnegative().optional(),
   stock: z.number().int().nonnegative().optional(),
+  categoryId: z.string().trim().optional(),
   categoryName: z.string().trim().min(1).max(100).optional(),
   isActive: z.boolean().optional(),
+  images: z.array(z.string().url()).optional(),
 })
 
 export const productQuerySchema = z.object({

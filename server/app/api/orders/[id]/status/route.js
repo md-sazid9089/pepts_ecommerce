@@ -1,7 +1,7 @@
 /**
  * ============================================================================
- * ORDER DETAILS
- * GET /api/orders/:id — get order details
+ * ORDER STATUS UPDATE
+ * PUT /api/orders/:id/status — update order status (admin only)
  * ============================================================================
  */
 
@@ -23,24 +23,21 @@ function verifyJwt(request) {
   }
 }
 
-export async function GET(request, { params }) {
+export async function PUT(request, { params }) {
   try {
     const user = verifyJwt(request)
     if (!user) return apiResponse.unauthorized("Authentication required")
+    if (user.role !== "admin") return apiResponse.forbidden("Admin access required")
 
     const { id } = await params
-    const order = await ordersService.getOrderById(id)
+    const body = await request.json()
     
-    if (!order) return apiResponse.notFound("Order not found")
-    
-    // Permission check
-    if (order.userId !== user.userId && user.role !== "admin") {
-      return apiResponse.forbidden("Access denied")
-    }
+    if (!body.status) return apiResponse.validationError("Status is required")
 
-    return apiResponse.success(order, "Order fetched successfully")
+    const order = await ordersService.updateOrderStatus(id, body.status)
+    return apiResponse.success(order, "Order status updated successfully")
   } catch (error) {
-    console.error("GET /api/orders/:id error:", error)
-    return apiResponse.serverError("Failed to fetch order", error)
+    console.error("PUT /api/orders/:id/status error:", error)
+    return apiResponse.serverError("Failed to update order status", error)
   }
 }

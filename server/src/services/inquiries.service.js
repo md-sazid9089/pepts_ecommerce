@@ -35,6 +35,24 @@ export async function createInquiry(data, userId = null) {
 }
 
 /**
+ * Get inquiry by ID
+ * @param {string} id
+ * @returns {Promise<object|null>}
+ */
+export async function getInquiryById(id) {
+  try {
+    return await prisma.inquiry.findUnique({
+      where: { id },
+      include: {
+        user: { select: { id: true, email: true, firstName: true, lastName: true } },
+      },
+    })
+  } catch (error) {
+    throw new Error(`Failed to fetch inquiry: ${error.message}`)
+  }
+}
+
+/**
  * Get all inquiries (admin)
  * @param {number} page
  * @param {number} pageSize
@@ -94,4 +112,19 @@ export async function updateInquiry(inquiryId, updates) {
   }
 }
 
-export default { createInquiry, getAllInquiries, updateInquiry }
+/**
+ * Delete inquiry (admin)
+ * @param {string} id
+ * @returns {Promise<object>}
+ */
+export async function deleteInquiry(id) {
+  try {
+    return await prisma.inquiry.delete({
+      where: { id },
+    })
+  } catch (error) {
+    throw new Error(`Failed to delete inquiry: ${error.message}`)
+  }
+}
+
+export default { createInquiry, getInquiryById, getAllInquiries, updateInquiry, deleteInquiry }

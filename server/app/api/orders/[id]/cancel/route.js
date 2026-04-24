@@ -1,7 +1,7 @@
 /**
  * ============================================================================
- * ORDER DETAILS
- * GET /api/orders/:id — get order details
+ * ORDER CANCELLATION
+ * POST /api/orders/:id/cancel — cancel an order
  * ============================================================================
  */
 
@@ -23,24 +23,25 @@ function verifyJwt(request) {
   }
 }
 
-export async function GET(request, { params }) {
+export async function POST(request, { params }) {
   try {
     const user = verifyJwt(request)
     if (!user) return apiResponse.unauthorized("Authentication required")
 
     const { id } = await params
-    const order = await ordersService.getOrderById(id)
     
+    // Optional: check if the order belongs to the user or if they are admin
+    const order = await ordersService.getOrderById(id)
     if (!order) return apiResponse.notFound("Order not found")
     
-    // Permission check
     if (order.userId !== user.userId && user.role !== "admin") {
-      return apiResponse.forbidden("Access denied")
+      return apiResponse.forbidden("You do not have permission to cancel this order")
     }
 
-    return apiResponse.success(order, "Order fetched successfully")
+    const cancelledOrder = await ordersService.cancelOrder(id)
+    return apiResponse.success(cancelledOrder, "Order cancelled successfully")
   } catch (error) {
-    console.error("GET /api/orders/:id error:", error)
-    return apiResponse.serverError("Failed to fetch order", error)
+    console.error("POST /api/orders/:id/cancel error:", error)
+    return apiResponse.serverError("Failed to cancel order", error)
   }
 }
