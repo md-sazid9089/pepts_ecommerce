@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo, useCallback } from "react"
 import { useParams, useNavigate } from "react-router-dom"
 import {
   FaChevronLeft,
@@ -414,6 +414,13 @@ const tabItems = [
   { id: "faq", label: "FAQ" },
 ]
 
+const overviewPoints = [
+  "Transparent bulk pricing with clear MOQ and price breaks.",
+  "Verified supplier for B2B buyers with customs-ready packaging.",
+  "Flexible OEM / ODM support and custom labeling available.",
+  "Fast quote turnaround and dedicated wholesale service.",
+]
+
 export default function ProductDetailPage() {
   const { id } = useParams()
   const navigate = useNavigate()
@@ -446,42 +453,89 @@ export default function ProductDetailPage() {
     window.scrollTo(0, 0)
   }, [id])
 
-  const handleNextImage = () => {
-    if (!product?.images?.length) return
-    setCurrentImageIndex((prev) => (prev + 1) % product.images.length)
-  }
+  const images = useMemo(() => {
+    if (product?.images?.length) return product.images
+    if (product?.image) return [product.image]
+    return []
+  }, [product])
 
-  const handlePrevImage = () => {
-    if (!product?.images?.length) return
-    setCurrentImageIndex((prev) => (prev - 1 + product.images.length) % product.images.length)
-  }
+  const productCode = useMemo(() => product?.id || "N/A", [product])
 
-  const handleQuantityChange = (event) => {
+  const currentTier = useMemo(() => {
+    const pricing = product?.tieredPricing
+    if (!pricing || pricing.length === 0) return null
+    return pricing.find((tier) => {
+      if (tier.max === null) return quantity >= tier.min
+      return quantity >= tier.min && quantity <= tier.max
+    }) || pricing[0]
+  }, [product?.tieredPricing, quantity])
+
+  const faqItems = useMemo(() => [
+    {
+      question: "What is the minimum order quantity?",
+      answer: `MOQ is ${product?.moq ?? 1} pieces. Larger quantities unlock better pricing tiers.`,
+    },
+    {
+      question: "How long does production take?",
+      answer: "Typical lead time is 15-25 days after order confirmation and sample approval.",
+    },
+    {
+      question: "Can I request a sample?",
+      answer: "Yes. Contact the supplier to arrange a paid sample and shipping details.",
+    },
+  ], [product?.moq])
+
+  const isOrderValid = useMemo(
+    () => Boolean(product && product.inStock && quantity >= (product.moq || 1)),
+    [product, quantity],
+  )
+
+  const layoutStyle = useMemo(
+    () => ({ ...styles.layout, ...(isMobile ? styles.layoutMobile : {}) }),
+    [isMobile],
+  )
+
+  const actionGroupStyle = useMemo(
+    () => ({ ...styles.richerActions, ...(isMobile ? styles.richerActionsMobile : {}) }),
+    [isMobile],
+  )
+
+  const handleNextImage = useCallback(() => {
+    if (!images.length) return
+    setCurrentImageIndex((prev) => (prev + 1) % images.length)
+  }, [images])
+
+  const handlePrevImage = useCallback(() => {
+    if (!images.length) return
+    setCurrentImageIndex((prev) => (prev - 1 + images.length) % images.length)
+  }, [images])
+
+  const handleQuantityChange = useCallback((event) => {
     const value = Number(event.target.value)
     if (!Number.isNaN(value) && value >= (product?.moq || 1)) {
       setQuantity(value)
     }
-  }
+  }, [product])
 
-  const handleSendInquiry = () => {
+  const handleSendInquiry = useCallback(() => {
     window.alert("Inquiry request initiated. This would start the wholesale inquiry flow.")
-  }
+  }, [])
 
-  const handleChatNow = () => {
+  const handleChatNow = useCallback(() => {
     window.alert("Chat request initiated. This would open buyer support.")
-  }
+  }, [])
 
-  const handleAddToCart = () => {
-    if (quantity >= (product?.moq || 1)) {
+  const handleAddToCart = useCallback(() => {
+    if (isOrderValid) {
       window.alert(`Added ${quantity} units to the cart.`)
     }
-  }
+  }, [isOrderValid, quantity])
 
-  const handleBuyNow = () => {
-    if (quantity >= (product?.moq || 1)) {
+  const handleBuyNow = useCallback(() => {
+    if (isOrderValid) {
       window.alert(`Proceeding to purchase ${quantity} units now.`)
     }
-  }
+  }, [isOrderValid, quantity])
 
   if (loading) {
     return (
@@ -506,37 +560,6 @@ export default function ProductDetailPage() {
     )
   }
 
-  const images = product.images?.length ? product.images : product.image ? [product.image] : []
-  const productCode = product.id || "N/A"
-  const currentTier = (product.tieredPricing || []).find((tier) => {
-    if (tier.max === null) {
-      return quantity >= tier.min
-    }
-    return quantity >= tier.min && quantity <= tier.max
-  })
-
-  const overviewPoints = [
-    "Transparent bulk pricing with clear MOQ and price breaks.",
-    "Verified supplier for B2B buyers with customs-ready packaging.",
-    "Flexible OEM / ODM support and custom labeling available.",
-    "Fast quote turnaround and dedicated wholesale service.",
-  ]
-
-  const faqItems = [
-    {
-      question: "What is the minimum order quantity?",
-      answer: `MOQ is ${product.moq} pieces. Larger quantities unlock better pricing tiers.`,
-    },
-    {
-      question: "How long does production take?",
-      answer: "Typical lead time is 15-25 days after order confirmation and sample approval.",
-    },
-    {
-      question: "Can I request a sample?",
-      answer: "Yes. Contact the supplier to arrange a paid sample and shipping details.",
-    },
-  ]
-
   return (
     <div style={styles.pageContainer}>
       <div style={styles.breadcrumb}>
@@ -552,10 +575,10 @@ export default function ProductDetailPage() {
         <p style={styles.headerText}>A premium wholesale product detail page focused on fast supplier decision-making, MOQ clarity, transparent pricing, and logistics readiness.</p>
       </div>
 
-      <div style={{ ...styles.layout, ...(isMobile ? styles.layoutMobile : {}) }}>
+      <div style={layoutStyle}>
         <div style={styles.galleryCard}>
           <div style={styles.imageCard}>
-            <img src={images[currentImageIndex] || product.image || ""} alt={product.name} style={styles.image} />
+            <img loading="lazy" decoding="async" src={images[currentImageIndex] || product.image || ""} alt={product.name} style={styles.image} />
             {product.discount > 0 && <div style={styles.imageBadge}>-{product.discount}%</div>}
             <button style={{ ...styles.carouselControl, ...styles.prevControl }} onClick={handlePrevImage}>
               <FaChevronLeft />
@@ -569,13 +592,14 @@ export default function ProductDetailPage() {
             {images.map((image, index) => (
               <button
                 key={image}
+                type="button"
                 style={{
                   ...styles.thumbItem,
                   ...(currentImageIndex === index ? styles.thumbItemActive : {}),
                 }}
                 onClick={() => setCurrentImageIndex(index)}
               >
-                <img src={image} alt={`${product.name} ${index + 1}`} style={styles.thumbImg} />
+                <img loading="lazy" decoding="async" src={image} alt={`${product.name} ${index + 1}`} style={styles.thumbImg} />
               </button>
             ))}
           </div>
@@ -621,20 +645,38 @@ export default function ProductDetailPage() {
             </div>
           </div>
 
-          <div style={{ ...styles.richerActions, ...(isMobile ? styles.richerActionsMobile : {}) }}>
-            <button style={styles.primaryButton} onClick={handleAddToCart}>
+          <div style={actionGroupStyle}>
+            <button
+              type="button"
+              style={{
+                ...styles.primaryButton,
+                opacity: isOrderValid ? 1 : 0.55,
+                cursor: isOrderValid ? "pointer" : "not-allowed",
+              }}
+              onClick={handleAddToCart}
+              disabled={!isOrderValid}
+            >
               Add to Cart
             </button>
-            <button style={styles.secondaryButton} onClick={handleBuyNow}>
+            <button
+              type="button"
+              style={{
+                ...styles.secondaryButton,
+                opacity: isOrderValid ? 1 : 0.55,
+                cursor: isOrderValid ? "pointer" : "not-allowed",
+              }}
+              onClick={handleBuyNow}
+              disabled={!isOrderValid}
+            >
               Buy Now
             </button>
           </div>
 
-          <div style={{ ...styles.richerActions, ...(isMobile ? styles.richerActionsMobile : {}) }}>
-            <button style={styles.primaryButton} onClick={handleSendInquiry}>
+          <div style={actionGroupStyle}>
+            <button type="button" style={styles.primaryButton} onClick={handleSendInquiry}>
               <FaTruck /> Send Inquiry
             </button>
-            <button style={styles.secondaryButton} onClick={handleChatNow}>
+            <button type="button" style={styles.secondaryButton} onClick={handleChatNow}>
               <FaComment /> Chat Now
             </button>
           </div>
@@ -785,10 +827,30 @@ export default function ProductDetailPage() {
 
       {isMobile && (
         <div style={styles.stickyBar}>
-          <button style={{ ...styles.stickyButton, ...styles.stickyPrimary }} onClick={handleAddToCart}>
+          <button
+            type="button"
+            style={{
+              ...styles.stickyButton,
+              ...styles.stickyPrimary,
+              opacity: isOrderValid ? 1 : 0.55,
+              cursor: isOrderValid ? "pointer" : "not-allowed",
+            }}
+            onClick={handleAddToCart}
+            disabled={!isOrderValid}
+          >
             Add to Cart
           </button>
-          <button style={{ ...styles.stickyButton, ...styles.stickySecondary }} onClick={handleBuyNow}>
+          <button
+            type="button"
+            style={{
+              ...styles.stickyButton,
+              ...styles.stickySecondary,
+              opacity: isOrderValid ? 1 : 0.55,
+              cursor: isOrderValid ? "pointer" : "not-allowed",
+            }}
+            onClick={handleBuyNow}
+            disabled={!isOrderValid}
+          >
             Buy Now
           </button>
         </div>
