@@ -7,7 +7,7 @@ import { useState, useEffect } from "react"
 const colors = {
   darkBrown: "#4A3535",
   logoBrown: "#5A3D3D",
-  logoOrange: "#EF7241",
+  logoOrange: "#5A3D3D",
   white: "#FFFFFF",
   lightBg: "#F9F6F5",
   iconBg: "#F4F4F4",

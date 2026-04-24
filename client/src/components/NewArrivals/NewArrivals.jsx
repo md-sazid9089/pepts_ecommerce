@@ -5,7 +5,7 @@ import { products } from "../../data/mock/products"
 const colors = {
   darkBrown: "#4A3535",
   logoBrown: "#5A3D3D",
-  logoOrange: "#EF7241",
+  logoOrange: "#5A3D3D",
   lightBg: "#F9F5F3",
   white: "#FFFFFF",
   mutedBrown: "#867671",

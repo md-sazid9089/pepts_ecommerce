@@ -5,7 +5,7 @@ const colors = {
   darkBrown: "#4A3535",
   lightBg: "#F5EDEC",
   softBg: "#F9F6F5",
-  logoOrange: "#EF7B41",
+  logoOrange: "#5A3D3D",
   mutedBrown: "#8B6F6F",
   ctaBg: "#533638",
   ctaAccent: "#F7B9C4",

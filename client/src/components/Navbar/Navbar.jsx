@@ -12,7 +12,7 @@ const colors = {
   mutedBrown: "#867671",
   darkBrown: "#4A3535",
   logoBrown: "#5A3D3D",
-  logoOrange: "#EF7241",
+  logoOrange: "#5A3D3D",
   darkBorder: "#4A3535",
 }
 
