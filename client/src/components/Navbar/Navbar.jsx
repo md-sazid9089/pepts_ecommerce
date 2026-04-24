@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react"
-import { Link } from "react-router-dom"
+import { Link, useNavigate } from "react-router-dom"
 import { FiSearch, FiUser, FiShoppingCart } from "react-icons/fi"
 
 // ====================================
@@ -243,6 +243,7 @@ const styles = {
 // ====================================
 
 export default function Navbar() {
+  const navigate = useNavigate()
   const [searchQuery, setSearchQuery] = useState("")
   const [isMobile, setIsMobile] = useState(false)
   const [hoveredLinks, setHoveredLinks] = useState({})
@@ -263,7 +264,7 @@ export default function Navbar() {
   const handleSearch = (e) => {
     e.preventDefault()
     if (searchQuery.trim()) {
-      // Add your search logic here
+      navigate(`/search?q=${encodeURIComponent(searchQuery.trim())}`)
     }
   }
 

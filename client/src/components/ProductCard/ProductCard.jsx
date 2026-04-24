@@ -281,8 +281,8 @@ export default function ProductCard({ product, onQuickView }) {
   const [imageHovering, setImageHovering] = useState(false);
   const [supplierHover, setSupplierHover] = useState(false);
 
-  const FALLBACK_IMAGE = `https://via.placeholder.com/260x260?text=${encodeURIComponent(product.name || 'Product')}`;
-  const displayImage = imageError ? FALLBACK_IMAGE : (product.image || FALLBACK_IMAGE);
+  const FALLBACK_IMAGE = `https://via.placeholder.com/260x260?text=${encodeURIComponent(product.name || product.title || 'Product')}`;
+  const displayImage = imageError ? FALLBACK_IMAGE : (product.image || product.imageUrl || FALLBACK_IMAGE);
 
   // B2B Wholesale Data
   const supplier = product.supplier || {
@@ -410,7 +410,7 @@ export default function ProductCard({ product, onQuickView }) {
 
         {/* 3. Product Title */}
         <h3 style={styles.productTitle}>
-          {product.name}
+          {product.name || product.title}
         </h3>
 
         {/* 4. Price & MOQ Area */}
