@@ -73,27 +73,57 @@ export async function getAll(page = 1, pageSize = 20, filters = {}) {
 
     const where = { isActive: true }
 
-    // MySQL case-insensitive search using contains (Prisma uses LIKE under the hood;
-    // collation on the column handles case — no mode needed for MySQL unlike SQLite)
-    if (filters.search) {
-      const term = filters.search.trim()
-      where.OR = [
-        { title:       { contains: term } },
-        { description: { contains: term } },
-      ]
-    }
-
     if (filters.category) {
       where.category = { name: { equals: filters.category } }
     }
 
     // Sort configuration
-    const sortField = filters.sortBy ?? "createdAt"
-    const sortDir   = filters.sortOrder ?? "desc"
-    const orderBy   = { [sortField]: sortDir }
+    const sortField = ["createdAt", "price", "title"].includes(filters.sortBy) ? filters.sortBy : "createdAt"
+    const sortDir   = filters.sortOrder === "asc" ? "ASC" : "DESC"
+    const orderBy   = { [sortField]: filters.sortOrder ?? "desc" }
 
-    // Select only the fields needed for listing — avoids fetching heavy TEXT columns
-    // (specs, images) on every list page load
+    // ── Search path: use LOWER() for true case-insensitive MySQL search ──────
+    if (filters.search) {
+      const term = `%${filters.search.trim().toLowerCase()}%`
+
+      const [rawItems, countResult] = await Promise.all([
+        prisma.$queryRaw`
+          SELECT p.id, p.title, p.price, p.stock, p.imageUrl,
+                 p.isActive, p.createdAt, p.updatedAt, p.categoryId,
+                 cat.name AS categoryName
+          FROM Product p
+          LEFT JOIN Category cat ON cat.id = p.categoryId
+          WHERE p.isActive = 1
+            AND (LOWER(p.title) LIKE ${term} OR LOWER(p.description) LIKE ${term})
+          ORDER BY p.createdAt DESC
+          LIMIT ${pageSize} OFFSET ${skip}
+        `,
+        prisma.$queryRaw`
+          SELECT COUNT(*) AS total FROM Product p
+          WHERE p.isActive = 1
+            AND (LOWER(p.title) LIKE ${term} OR LOWER(p.description) LIKE ${term})
+        `,
+      ])
+
+      const total = Number(countResult[0]?.total ?? 0)
+      const items = rawItems.map((p) => ({
+        id:         p.id,
+        title:      p.title,
+        price:      p.price,
+        stock:      p.stock,
+        inStock:    p.stock > 0,
+        imageUrl:   p.imageUrl ?? null,
+        categoryId: p.categoryId,
+        category:   p.categoryName ?? null,
+        isActive:   Boolean(p.isActive),
+        createdAt:  p.createdAt,
+        updatedAt:  p.updatedAt,
+      }))
+
+      return { items, total }
+    }
+
+    // ── Non-search path: use indexed findMany (fast) ─────────────────────────
     const select = {
       id:          true,
       title:       true,
@@ -105,7 +135,6 @@ export async function getAll(page = 1, pageSize = 20, filters = {}) {
       updatedAt:   true,
       categoryId:  true,
       category:    { select: { id: true, name: true } },
-      // description & specs are omitted from list — fetched in getById
     }
 
     const [rawItems, total] = await Promise.all([
@@ -113,7 +142,6 @@ export async function getAll(page = 1, pageSize = 20, filters = {}) {
       prisma.product.count({ where }),
     ])
 
-    // Map to response shape (specs/images are null in list view — that's fine)
     const items = rawItems.map((p) => ({
       id:         p.id,
       title:      p.title,
@@ -133,6 +161,7 @@ export async function getAll(page = 1, pageSize = 20, filters = {}) {
     throw new Error(`Failed to fetch products: ${error.message}`)
   }
 }
+
 
 /**
  * Get a single product by ID with full detail (bulk pricing + reviews).
