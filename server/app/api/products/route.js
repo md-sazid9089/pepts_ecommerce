@@ -1,41 +1,65 @@
 /**
  * ============================================================================
- * PRODUCTS ROUTE HANDLER
- * ============================================================================
- * Supports public product catalog operations for the PEPTS storefront.
- * This route supports:
- * ✅ GET /api/products
- * ✅ POST /api/products
- * ✅ OPTIONS /api/products
+ * PRODUCTS COLLECTION — PUBLIC GET / ADMIN POST
+ * GET  /api/products   — list products (public)
+ * POST /api/products   — create product (admin only, requires JWT with role=admin)
  * ============================================================================
  */
 
+import jwt from "jsonwebtoken"
 import apiResponse from "@/src/utils/apiResponse"
 import * as productsService from "@/src/services/products.service"
+import { createProductSchema, productQuerySchema } from "@/src/validators/product.validator"
+
+// ─── Helpers ────────────────────────────────────────────────────────────────
+
+/**
+ * Extract and verify the JWT from the Authorization header.
+ * Returns the decoded payload or null.
+ */
+function verifyJwt(request) {
+  const authHeader = request.headers.get("authorization")
+  const token =
+    authHeader && authHeader.startsWith("Bearer ")
+      ? authHeader.substring(7)
+      : null
+  if (!token) return null
+  try {
+    return jwt.verify(token, process.env.JWT_SECRET)
+  } catch {
+    return null
+  }
+}
+
+// ─── GET /api/products ───────────────────────────────────────────────────────
 
 export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url)
-    const page = parseInt(searchParams.get("page") || "1", 10)
-    const pageSize = parseInt(searchParams.get("pageSize") || "20", 10)
-    const search = searchParams.get("search") || undefined
-    const category = searchParams.get("category") || undefined
 
-    if (page < 1) {
-      return apiResponse.validationError("Invalid pagination", {
-        page: "Page must be greater than 0",
-      })
+    const raw = {
+      page: searchParams.get("page") ?? "1",
+      pageSize: searchParams.get("pageSize") ?? "20",
+      search: searchParams.get("search") ?? undefined,
+      category: searchParams.get("category") ?? undefined,
+      sortBy: searchParams.get("sortBy") ?? undefined,
+      sortOrder: searchParams.get("sortOrder") ?? undefined,
     }
 
-    if (pageSize < 1 || pageSize > 100) {
-      return apiResponse.validationError("Invalid pagination", {
-        pageSize: "Page size must be between 1 and 100",
-      })
+    const parsed = productQuerySchema.safeParse(raw)
+    if (!parsed.success) {
+      const errors = {}
+      parsed.error.errors.forEach((e) => { errors[e.path.join(".")] = e.message })
+      return apiResponse.validationError("Invalid query parameters", errors)
     }
+
+    const { page, pageSize, search, category, sortBy, sortOrder } = parsed.data
 
     const { items, total } = await productsService.getAll(page, pageSize, {
       search,
       category,
+      sortBy,
+      sortOrder,
     })
 
     return apiResponse.paginated(items, total, page, pageSize, "Products fetched successfully")
@@ -45,62 +69,33 @@ export async function GET(request) {
   }
 }
 
+// ─── POST /api/products (admin only) ────────────────────────────────────────
+
 export async function POST(request) {
   try {
+    // Auth check — must be admin
+    const user = verifyJwt(request)
+    if (!user) return apiResponse.unauthorized("Authentication required")
+    if (user.role !== "admin") return apiResponse.forbidden("Admin access required")
+
     let body
     try {
       body = await request.json()
-    } catch (error) {
+    } catch {
       return apiResponse.error("Invalid JSON in request body", 400)
     }
 
-    const errors = {}
-
-    if (!body.title || typeof body.title !== "string" || body.title.trim() === "") {
-      errors.title = "Title is required and must be a non-empty string"
+    const parsed = createProductSchema.safeParse(body)
+    if (!parsed.success) {
+      const errors = {}
+      parsed.error.errors.forEach((e) => { errors[e.path.join(".")] = e.message })
+      return apiResponse.validationError("Validation failed", errors)
     }
 
-    if (!body.description || typeof body.description !== "string" || body.description.trim() === "") {
-      errors.description = "Description is required and must be a non-empty string"
-    }
-
-    const priceValue = Number(body.price)
-    if (body.price === undefined || Number.isNaN(priceValue) || priceValue < 0) {
-      errors.price = "Price is required and must be a non-negative number"
-    }
-
-    const stockValue = body.stock === undefined || body.stock === "" ? 0 : Number(body.stock)
-    if (Number.isNaN(stockValue) || stockValue < 0) {
-      errors.stock = "Stock must be a non-negative number"
-    }
-
-    if (Object.keys(errors).length > 0) {
-      return apiResponse.validationError("Request validation failed", errors)
-    }
-
-    const createdProduct = await productsService.createProduct({
-      title: body.title,
-      description: body.description,
-      price: priceValue,
-      stock: stockValue,
-      categoryName: body.categoryName || body.category || "General",
-    })
-
-    return apiResponse.created(createdProduct, "Product created successfully")
+    const product = await productsService.createProduct(parsed.data)
+    return apiResponse.created(product, "Product created successfully")
   } catch (error) {
     console.error("POST /api/products error:", error)
     return apiResponse.serverError("Failed to create product", error)
   }
-}
-
-export async function OPTIONS(request) {
-  return new Response(null, {
-    status: 200,
-    headers: {
-      "Access-Control-Allow-Origin": process.env.FRONTEND_URL || "http://localhost:5173",
-      "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-      "Access-Control-Allow-Headers": "Content-Type, Authorization",
-      "Access-Control-Allow-Credentials": "true",
-    },
-  })
 }

@@ -6,7 +6,8 @@
       "@/src/*": ["./src/*"],
       "@/utils/*": ["./src/utils/*"],
       "@/services/*": ["./src/services/*"],
-      "@/lib/*": ["./src/lib/*"]
+      "@/lib/*": ["./src/lib/*"],
+      "@/validators/*": ["./src/validators/*"]
     }
   }
 }

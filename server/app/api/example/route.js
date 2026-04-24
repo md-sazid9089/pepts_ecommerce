@@ -15,7 +15,6 @@
  * ============================================================================
  */
 
-import { NextRequest } from "next/server"
 import apiResponse from "@/src/utils/apiResponse"
 import exampleService from "@/src/services/example.service"
 
