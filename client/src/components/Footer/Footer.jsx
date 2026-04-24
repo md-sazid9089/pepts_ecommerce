@@ -145,7 +145,7 @@ const styles = {
   // MAIN CONTENT SECTION
   main: {
     display: "grid",
-    gridTemplateColumns: "2fr 1fr 1fr 1fr",
+    gridTemplateColumns: "2fr 1fr 1fr 1fr 1fr",
     gap: "3rem",
     padding: "3rem",
     borderBottom: `1px solid ${themeColors.borderColor}`,
@@ -467,6 +467,15 @@ export default function Footer() {
     { label: "RC Cars", href: "#", icon: FiZap },
   ]
 
+  const supportLinks = [
+    { label: "Contact Us", href: "/contact" },
+    { label: "FAQs", href: "#" },
+    { label: "Shipping Info", href: "#" },
+    { label: "Return Policy", href: "#" },
+    { label: "Privacy Policy", href: "#" },
+    { label: "Terms & Conditions", href: "#" },
+  ]
+
   const socialLinks = [
     { icon: FaFacebookF, href: "#", label: "Facebook" },
     { icon: FaInstagram, href: "#", label: "Instagram" },
@@ -663,6 +672,32 @@ export default function Footer() {
                 </li>
               )
             })}
+          </ul>
+        </div>
+
+        {/* Column 5: Support & Services */}
+        <div style={styles.column}>
+          <h3 style={styles.columnTitle}>SUPPORT & SERVICES</h3>
+          <ul style={styles.links}>
+            {supportLinks.map((link, index) => (
+              <li key={index}>
+                <Link
+                  to={link.href}
+                  style={{
+                    ...styles.link,
+                    ...(hoveredLinks[`support-${index}`] ? styles.linkHover : {}),
+                  }}
+                  onMouseEnter={() =>
+                    setHoveredLinks({ ...hoveredLinks, [`support-${index}`]: true })
+                  }
+                  onMouseLeave={() =>
+                    setHoveredLinks({ ...hoveredLinks, [`support-${index}`]: false })
+                  }
+                >
+                  {link.label}
+                </Link>
+              </li>
+            ))}
           </ul>
         </div>
       </section>

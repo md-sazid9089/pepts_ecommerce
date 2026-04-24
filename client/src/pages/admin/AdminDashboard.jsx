@@ -1,4 +1,5 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { productsApi } from "@/services/api"
 import {
   FaBars,
   FaTimes,
@@ -481,6 +482,93 @@ const styles = {
     fontWeight: 500,
   },
 
+  formGroup: {
+    display: "grid",
+    gap: "0.75rem",
+    marginBottom: "1rem",
+  },
+
+  formLabel: {
+    fontSize: "0.9rem",
+    color: "#374151",
+    fontWeight: 600,
+  },
+
+  formInput: {
+    width: "100%",
+    padding: "0.85rem 1rem",
+    borderRadius: "0.65rem",
+    border: "1px solid #E5E7EB",
+    fontSize: "0.95rem",
+    color: "#111827",
+    outline: "none",
+  },
+
+  formTextarea: {
+    width: "100%",
+    minHeight: "120px",
+    padding: "0.85rem 1rem",
+    borderRadius: "0.65rem",
+    border: "1px solid #E5E7EB",
+    fontSize: "0.95rem",
+    color: "#111827",
+    resize: "vertical",
+  },
+
+  submitBtn: {
+    padding: "0.95rem 1.25rem",
+    borderRadius: "0.75rem",
+    border: "none",
+    backgroundColor: "#533638",
+    color: "white",
+    fontSize: "0.95rem",
+    fontWeight: 700,
+    cursor: "pointer",
+  },
+
+  notificationSuccess: {
+    backgroundColor: "#d1fae5",
+    color: "#065f46",
+    border: "1px solid #10b981",
+    padding: "0.95rem 1rem",
+    borderRadius: "0.75rem",
+    marginBottom: "1rem",
+  },
+
+  notificationError: {
+    backgroundColor: "#fee2e2",
+    color: "#991b1b",
+    border: "1px solid #f87171",
+    padding: "0.95rem 1rem",
+    borderRadius: "0.75rem",
+    marginBottom: "1rem",
+  },
+
+  productTable: {
+    width: "100%",
+    borderCollapse: "collapse",
+  },
+
+  productTableHeader: {
+    padding: "0.85rem 0",
+    textAlign: "left",
+    fontSize: "0.85rem",
+    fontWeight: 700,
+    color: "#6b7280",
+    textTransform: "uppercase",
+    letterSpacing: "0.3px",
+  },
+
+  productTableRow: {
+    borderBottom: "1px solid #E5E7EB",
+  },
+
+  productTableCell: {
+    padding: "0.95rem 0",
+    color: "#374151",
+    fontSize: "0.95rem",
+  },
+
   // Overlay for mobile sidebar
   sidebarOverlay: {
     position: "fixed",
@@ -533,6 +621,23 @@ export default function AdminDashboard() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [hoveredStat, setHoveredStat] = useState(null)
   const [hoveredTableRow, setHoveredTableRow] = useState(null)
+  const [products, setProducts] = useState([])
+  const [loadingProducts, setLoadingProducts] = useState(false)
+  const [productForm, setProductForm] = useState({
+    title: "",
+    brand: "",
+    description: "",
+    price: "",
+    stock: "",
+    categoryName: "General",
+    moq: "",
+    casePackSize: "",
+    tieredPricingJson: "",
+    specsText: "",
+  })
+  const [formMessage, setFormMessage] = useState("")
+  const [formError, setFormError] = useState("")
+  const [isSubmitting, setIsSubmitting] = useState(false)
   const isMobile = window.innerWidth < 768
 
   const navigationItems = [
@@ -546,6 +651,108 @@ export default function AdminDashboard() {
     { id: "reviews", label: "Reviews", icon: FaStar },
     { id: "settings", label: "Settings", icon: FaCog },
   ]
+
+  useEffect(() => {
+    if (activePage !== "products") return
+
+    const fetchProducts = async () => {
+      setLoadingProducts(true)
+      setFormError("")
+      try {
+        const response = await productsApi.getAll(1, 100)
+        if (response.success) {
+          setProducts(response.data?.items || [])
+        } else {
+          setFormError(response.message || "Failed to load products")
+        }
+      } catch (error) {
+        setFormError(error.message || "Failed to load products")
+      } finally {
+        setLoadingProducts(false)
+      }
+    }
+
+    fetchProducts()
+  }, [activePage])
+
+  const handleFormChange = (field) => (event) => {
+    setProductForm((prev) => ({
+      ...prev,
+      [field]: event.target.value,
+    }))
+  }
+
+  const handleCreateProduct = async (event) => {
+    event.preventDefault()
+    setFormError("")
+    setFormMessage("")
+    setIsSubmitting(true)
+
+    let tieredPricing = []
+    try {
+      tieredPricing = productForm.tieredPricingJson ? JSON.parse(productForm.tieredPricingJson) : []
+      if (!Array.isArray(tieredPricing)) {
+        throw new Error("Bulk pricing must be a JSON array.")
+      }
+    } catch (error) {
+      setFormError("Bulk pricing must be valid JSON.")
+      setIsSubmitting(false)
+      return
+    }
+
+    const specs = productForm.specsText
+      .split("\n")
+      .map((line) => line.trim())
+      .filter(Boolean)
+      .reduce((acc, line) => {
+        const [key, ...rest] = line.split(":")
+        if (!key || rest.length === 0) return acc
+        acc[key.trim()] = rest.join(":").trim()
+        return acc
+      }, {})
+
+    try {
+      const response = await productsApi.create({
+        title: productForm.title,
+        brand: productForm.brand,
+        description: productForm.description,
+        price: Number(productForm.price),
+        stock: Number(productForm.stock),
+        categoryName: productForm.categoryName,
+        moq: Number(productForm.moq),
+        casePackSize: Number(productForm.casePackSize),
+        tieredPricing,
+        specs,
+      })
+
+      if (!response.success) {
+        setFormError(response.message || "Unable to create product")
+        return
+      }
+
+      setFormMessage("Product created successfully.")
+      setProductForm({
+        title: "",
+        brand: "",
+        description: "",
+        price: "",
+        stock: "",
+        categoryName: "General",
+        moq: "",
+        casePackSize: "",
+        tieredPricingJson: "",
+        specsText: "",
+      })
+      const refreshed = await productsApi.getAll(1, 100)
+      if (refreshed.success) {
+        setProducts(refreshed.data?.items || [])
+      }
+    } catch (error) {
+      setFormError(error.message || "Unable to create product")
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
 
   return (
     <div style={{ ...styles.container, ...(isMobile ? styles.containerMobile : {}) }}>
@@ -793,11 +1000,203 @@ export default function AdminDashboard() {
           </>
         )}
 
-        {activePage !== "dashboard" && (
+        {activePage === "products" ? (
           <div style={styles.card}>
-            <h2 style={styles.cardTitle}>{navigationItems.find((i) => i.id === activePage)?.label}</h2>
-            <p style={{ color: "#6b7280", marginTop: "1rem" }}>Page content coming soon...</p>
+            <div style={styles.cardHeader}>
+              <h2 style={styles.cardTitle}>Products</h2>
+              <span style={{ color: "#6b7280" }}>Create new products and manage backend inventory.</span>
+            </div>
+
+            {formMessage && <div style={styles.notificationSuccess}>{formMessage}</div>}
+            {formError && <div style={styles.notificationError}>{formError}</div>}
+
+            <form onSubmit={handleCreateProduct} style={{ display: "grid", gap: "1rem", marginBottom: "1.5rem" }}>
+              <div style={styles.formGroup}>
+                <label style={styles.formLabel} htmlFor="title">Product Title</label>
+                <input
+                  id="title"
+                  type="text"
+                  value={productForm.title}
+                  onChange={handleFormChange("title")}
+                  style={styles.formInput}
+                  placeholder="Enter product title"
+                  required
+                />
+              </div>
+
+              <div style={styles.formGroup}>
+                <label style={styles.formLabel} htmlFor="brand">Brand</label>
+                <input
+                  id="brand"
+                  type="text"
+                  value={productForm.brand}
+                  onChange={handleFormChange("brand")}
+                  style={styles.formInput}
+                  placeholder="Supplier or brand name"
+                />
+              </div>
+
+              <div style={styles.formGroup}>
+                <label style={styles.formLabel} htmlFor="description">Description</label>
+                <textarea
+                  id="description"
+                  value={productForm.description}
+                  onChange={handleFormChange("description")}
+                  style={styles.formTextarea}
+                  placeholder="Enter a short product description"
+                  required
+                />
+              </div>
+
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: "1rem" }}>
+                <div style={styles.formGroup}>
+                  <label style={styles.formLabel} htmlFor="price">Price (USD)</label>
+                  <input
+                    id="price"
+                    type="number"
+                    value={productForm.price}
+                    onChange={handleFormChange("price")}
+                    style={styles.formInput}
+                    placeholder="0.00"
+                    min="0"
+                    step="0.01"
+                    required
+                  />
+                </div>
+
+                <div style={styles.formGroup}>
+                  <label style={styles.formLabel} htmlFor="stock">Stock</label>
+                  <input
+                    id="stock"
+                    type="number"
+                    value={productForm.stock}
+                    onChange={handleFormChange("stock")}
+                    style={styles.formInput}
+                    placeholder="0"
+                    min="0"
+                    step="1"
+                  />
+                </div>
+
+                <div style={styles.formGroup}>
+                  <label style={styles.formLabel} htmlFor="moq">MOQ</label>
+                  <input
+                    id="moq"
+                    type="number"
+                    value={productForm.moq}
+                    onChange={handleFormChange("moq")}
+                    style={styles.formInput}
+                    placeholder="Minimum order quantity"
+                    min="1"
+                    step="1"
+                  />
+                </div>
+
+                <div style={styles.formGroup}>
+                  <label style={styles.formLabel} htmlFor="casePackSize">Case Pack Size</label>
+                  <input
+                    id="casePackSize"
+                    type="number"
+                    value={productForm.casePackSize}
+                    onChange={handleFormChange("casePackSize")}
+                    style={styles.formInput}
+                    placeholder="Units per case"
+                    min="1"
+                    step="1"
+                  />
+                </div>
+
+                <div style={styles.formGroup}>
+                  <label style={styles.formLabel} htmlFor="categoryName">Category</label>
+                  <input
+                    id="categoryName"
+                    type="text"
+                    value={productForm.categoryName}
+                    onChange={handleFormChange("categoryName")}
+                    style={styles.formInput}
+                    placeholder="General"
+                  />
+                </div>
+              </div>
+
+              <div style={styles.formGroup}>
+                <label style={styles.formLabel} htmlFor="tieredPricingJson">Bulk Pricing Tiers (JSON)</label>
+                <textarea
+                  id="tieredPricingJson"
+                  value={productForm.tieredPricingJson}
+                  onChange={handleFormChange("tieredPricingJson")}
+                  style={styles.formTextarea}
+                  placeholder='[{"min":10,"max":50,"price":850,"unit":"per unit"}, ...]'
+                />
+              </div>
+
+              <div style={styles.formGroup}>
+                <label style={styles.formLabel} htmlFor="specsText">Product Specs</label>
+                <textarea
+                  id="specsText"
+                  value={productForm.specsText}
+                  onChange={handleFormChange("specsText")}
+                  style={styles.formTextarea}
+                  placeholder="Height: 30cm\nMaterial: Premium Vinyl\nPackage: 50 units per case"
+                />
+              </div>
+
+              <button type="submit" style={styles.submitBtn} disabled={isSubmitting}>
+                {isSubmitting ? "Creating product..." : "Create Wholesale Product"}
+              </button>
+            </form>
+
+            <div style={{ marginBottom: "1.5rem" }}>
+              <h3 style={{ fontSize: "1rem", fontWeight: 700, marginBottom: "0.75rem", color: "#111827" }}>
+                Current Catalog
+              </h3>
+              {loadingProducts ? (
+                <div style={{ color: "#374151" }}>Loading products...</div>
+              ) : (
+                <table style={styles.productTable}>
+                  <thead>
+                    <tr>
+                      <th style={styles.productTableHeader}>Title</th>
+                      <th style={styles.productTableHeader}>Brand</th>
+                      <th style={styles.productTableHeader}>Category</th>
+                      <th style={styles.productTableHeader}>Price</th>
+                      <th style={styles.productTableHeader}>Stock</th>
+                      <th style={styles.productTableHeader}>MOQ</th>
+                      <th style={styles.productTableHeader}>Case Pack</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {products.length > 0 ? (
+                      products.map((product) => (
+                        <tr key={product.id} style={styles.productTableRow}>
+                          <td style={styles.productTableCell}>{product.title || product.name}</td>
+                          <td style={styles.productTableCell}>{product.brand || "—"}</td>
+                          <td style={styles.productTableCell}>{product.category || product.categoryName || "General"}</td>
+                          <td style={styles.productTableCell}>${(product.price || 0).toFixed(2)}</td>
+                          <td style={styles.productTableCell}>{product.stock ?? 0}</td>
+                          <td style={styles.productTableCell}>{product.moq ?? "—"}</td>
+                          <td style={styles.productTableCell}>{product.casePackSize ?? "—"}</td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td style={styles.productTableCell} colSpan={7}>
+                          No products found in the backend catalog.
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              )}
+            </div>
           </div>
+        ) : (
+          activePage !== "dashboard" && (
+            <div style={styles.card}>
+              <h2 style={styles.cardTitle}>{navigationItems.find((i) => i.id === activePage)?.label}</h2>
+              <p style={{ color: "#6b7280", marginTop: "1rem" }}>Page content coming soon...</p>
+            </div>
+          )
         )}
       </main>
     </div>

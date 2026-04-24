@@ -13,20 +13,21 @@ const initialState = {
 function cartReducer(state, action) {
   switch (action.type) {
     case 'ADD_ITEM': {
+      const quantity = action.payload.quantity ?? 1;
       const existing = state.items.find(i => i.id === action.payload.id);
       if (existing) {
         return {
           ...state,
           items: state.items.map(i =>
             i.id === action.payload.id
-              ? { ...i, quantity: i.quantity + 1 }
+              ? { ...i, quantity: i.quantity + quantity }
               : i
           ),
         };
       }
       return {
         ...state,
-        items: [...state.items, { ...action.payload, quantity: 1 }],
+        items: [...state.items, { ...action.payload, quantity }],
       };
     }
     case 'REMOVE_ITEM':
@@ -117,7 +118,7 @@ export function CartProvider({ children }) {
   const moqViolations = state.items.filter(i => i.moq && i.quantity < i.moq);
   const isValidOrder = moqViolations.length === 0;
 
-  const addItem = (product) => dispatch({ type: 'ADD_ITEM', payload: product });
+  const addItem = (product, quantity = 1) => dispatch({ type: 'ADD_ITEM', payload: { ...product, quantity } });
   const removeItem = (id) => dispatch({ type: 'REMOVE_ITEM', payload: id });
   const updateQuantity = (id, quantity) => dispatch({ type: 'UPDATE_QUANTITY', payload: { id, quantity } });
   const clearCart = () => dispatch({ type: 'CLEAR_CART' });
