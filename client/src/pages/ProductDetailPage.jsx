@@ -4,594 +4,416 @@ import {
   FaChevronLeft,
   FaChevronRight,
   FaStar,
-  FaShoppingCart,
-  FaHeart,
-  FaShareAlt,
-  FaCheck,
   FaTruck,
-  FaUndo,
-  FaLock,
-  FaBox,
-  FaChevronDown,
-  FaChevronUp,
+  FaComment,
+  FaCheck,
 } from "react-icons/fa"
 import { getProductById } from "@/data/queries/productQueries"
 
 const styles = {
   pageContainer: {
     minHeight: "100vh",
-    background: "#ffffff",
-    fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif",
+    backgroundColor: "#f8fafc",
+    color: "#0f172a",
+    fontFamily: "Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
   },
-
-  // Breadcrumb
   breadcrumb: {
     padding: "1rem 2rem",
     display: "flex",
     alignItems: "center",
     gap: "0.5rem",
-    fontSize: "0.875rem",
-    color: "#6b7280",
-    borderBottom: "1px solid #e5e7eb",
+    fontSize: "0.9rem",
+    color: "#475569",
+    backgroundColor: "#ffffff",
+    borderBottom: "1px solid #e2e8f0",
   },
   breadcrumbLink: {
-    color: "#1e293b",
-    textDecoration: "none",
-    cursor: "pointer",
-    transition: "color 0.2s ease",
-  },
-  breadcrumbLinkHover: {
     color: "#0f172a",
+    cursor: "pointer",
   },
   breadcrumbActive: {
-    color: "#111827",
-    fontWeight: 500,
+    color: "#475569",
   },
-
-  // Main Container
-  mainContainer: {
+  header: {
     maxWidth: "1400px",
     margin: "0 auto",
-    padding: "2rem",
+    padding: "1.75rem 2rem 0",
+  },
+  headerTitle: {
+    margin: 0,
+    fontSize: "2rem",
+    fontWeight: 700,
+    lineHeight: 1.05,
+  },
+  headerText: {
+    margin: "1rem 0 0",
+    maxWidth: "760px",
+    color: "#64748b",
+    fontSize: "1rem",
+    lineHeight: 1.75,
+  },
+  layout: {
+    maxWidth: "1800px",
+    margin: "0 auto 3rem",
+    padding: "0 2rem",
     display: "grid",
-    gridTemplateColumns: "1fr 1fr",
-    gap: "3rem",
+    gridTemplateColumns: "1.55fr 0.7fr",
+    gap: "2rem",
   },
-  mainContainerMobile: {
+  layoutMobile: {
     gridTemplateColumns: "1fr",
+    padding: "0 1rem",
     gap: "1.5rem",
-    padding: "1rem",
   },
-
-  // Image Gallery Section
-  gallerySection: {
+  galleryCard: {
     display: "flex",
     flexDirection: "column",
-    gap: "1.5rem",
+    gap: "1rem",
   },
-
-  // Main Image
-  mainImageWrapper: {
+  imageCard: {
     position: "relative",
-    backgroundColor: "#f3f4f6",
-    borderRadius: "0.75rem",
+    backgroundColor: "#ffffff",
+    borderRadius: "1rem",
     overflow: "hidden",
-    aspectRatio: "1",
-    border: "1px solid #e5e7eb",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
+    minHeight: "420px",
+    boxShadow: "0 20px 50px rgba(15, 23, 42, 0.08)",
   },
-  mainImage: {
+  image: {
     width: "100%",
     height: "100%",
     objectFit: "cover",
   },
-
-  // Badge on Image
   imageBadge: {
     position: "absolute",
     top: "1rem",
-    right: "1rem",
-    backgroundColor: "#ef4444",
+    left: "1rem",
+    backgroundColor: "#0f172a",
     color: "#ffffff",
-    padding: "0.5rem 1rem",
-    borderRadius: "0.375rem",
-    fontSize: "0.875rem",
-    fontWeight: 600,
+    borderRadius: "999px",
+    padding: "0.65rem 1rem",
+    fontSize: "0.8rem",
+    fontWeight: 700,
   },
-
-  // Carousel Controls
   carouselControl: {
     position: "absolute",
     top: "50%",
     transform: "translateY(-50%)",
+    width: "2.75rem",
+    height: "2.75rem",
+    borderRadius: "0.75rem",
+    border: "1px solid rgba(15, 23, 42, 0.12)",
     backgroundColor: "rgba(255, 255, 255, 0.9)",
-    border: "1px solid #e5e7eb",
-    width: "2.5rem",
-    height: "2.5rem",
-    borderRadius: "0.375rem",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
     cursor: "pointer",
-    transition: "all 0.2s ease",
-    color: "#111827",
+    display: "grid",
+    placeItems: "center",
+    color: "#0f172a",
+    boxShadow: "0 15px 30px rgba(15, 23, 42, 0.12)",
   },
-  carouselControlHover: {
-    backgroundColor: "#ffffff",
-    borderColor: "#1e293b",
-    transform: "translateY(-50%)",
-  },
-  carouselControlPrev: {
+  prevControl: {
     left: "1rem",
   },
-  carouselControlNext: {
+  nextControl: {
     right: "1rem",
   },
-
-  // Thumbnail Gallery
-  thumbnailGallery: {
+  thumbRow: {
     display: "grid",
-    gridTemplateColumns: "repeat(4, 1fr)",
+    gridTemplateColumns: "repeat(4, minmax(0, 1fr))",
     gap: "0.75rem",
   },
-  thumbnailGalleryMobile: {
-    gridTemplateColumns: "repeat(3, 1fr)",
-    gap: "0.5rem",
-  },
-  thumbnail: {
-    aspectRatio: "1",
-    borderRadius: "0.5rem",
+  thumbItem: {
+    borderRadius: "0.85rem",
     overflow: "hidden",
-    border: "2px solid #e5e7eb",
+    border: "1px solid #e2e8f0",
+    minHeight: "100px",
     cursor: "pointer",
-    transition: "all 0.2s ease",
-    backgroundColor: "#f3f4f6",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
   },
-  thumbnailActive: {
-    borderColor: "#1e293b",
-    boxShadow: "0 0 0 1px #1e293b",
+  thumbItemActive: {
+    borderColor: "#0f172a",
+    boxShadow: "0 0 0 1px rgba(15, 23, 42, 0.08)",
   },
-  thumbnailHover: {
-    borderColor: "#9ca3af",
-  },
-  thumbnailImage: {
+  thumbImg: {
     width: "100%",
     height: "100%",
     objectFit: "cover",
   },
-
-  // Product Info Section
-  infoSection: {
+  productPanel: {
+    backgroundColor: "#ffffff",
+    borderRadius: "1rem",
+    padding: "2rem",
+    boxShadow: "0 20px 50px rgba(15, 23, 42, 0.08)",
     display: "flex",
     flexDirection: "column",
     gap: "1.5rem",
   },
-
-  // Badge
-  badge: {
+  supplierStrip: {
+    display: "flex",
+    flexWrap: "wrap",
+    gap: "0.75rem",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  supplierLabel: {
     display: "inline-flex",
     alignItems: "center",
     gap: "0.5rem",
-    width: "fit-content",
-    padding: "0.375rem 0.75rem",
-    backgroundColor: "#dbeafe",
-    border: "1px solid #93c5fd",
-    borderRadius: "0.375rem",
-    fontSize: "0.75rem",
-    fontWeight: 600,
-    textTransform: "uppercase",
-    color: "#1e40af",
-    letterSpacing: "0.5px",
+    backgroundColor: "#ecfdf5",
+    color: "#166534",
+    padding: "0.5rem 0.85rem",
+    borderRadius: "999px",
+    fontWeight: 700,
+    fontSize: "0.85rem",
   },
-
-  // Header
-  header: {
-    display: "flex",
-    flexDirection: "column",
+  titleRow: {
+    display: "grid",
     gap: "0.75rem",
   },
-  brand: {
-    fontSize: "0.875rem",
-    fontWeight: 600,
-    color: "#6b7280",
-    textTransform: "uppercase",
-    letterSpacing: "0.5px",
-  },
   title: {
-    fontSize: "1.75rem",
+    margin: 0,
+    fontSize: "2rem",
     fontWeight: 700,
-    color: "#111827",
+    color: "#0f172a",
+  },
+  subtitle: {
     margin: 0,
-    lineHeight: 1.2,
-  },
-  productCode: {
-    fontSize: "0.875rem",
-    color: "#6b7280",
-    margin: 0,
-  },
-
-  // Rating
-  ratingSection: {
-    display: "flex",
-    alignItems: "center",
-    gap: "1rem",
-  },
-  ratingStars: {
-    display: "flex",
-    alignItems: "center",
-    gap: "0.5rem",
-  },
-  starIcon: {
-    color: "#fbbf24",
+    color: "#475569",
     fontSize: "1rem",
+    lineHeight: 1.8,
   },
-  ratingValue: {
-    fontSize: "0.875rem",
-    fontWeight: 600,
-    color: "#111827",
+  priceGroup: {
+    display: "grid",
+    gap: "0.75rem",
   },
-  reviewCount: {
-    fontSize: "0.875rem",
-    color: "#6b7280",
-  },
-
-  // Price Section
-  priceSection: {
-    display: "flex",
-    alignItems: "center",
-    gap: "1rem",
-    paddingBottom: "1.5rem",
-    borderBottom: "1px solid #e5e7eb",
-  },
-  currentPrice: {
-    fontSize: "1.875rem",
+  priceLabel: {
+    textTransform: "uppercase",
+    letterSpacing: "0.15em",
+    fontSize: "0.8rem",
+    color: "#475569",
     fontWeight: 700,
-    color: "#111827",
   },
-  originalPrice: {
-    fontSize: "1.25rem",
-    color: "#9ca3af",
-    textDecoration: "line-through",
+  priceValue: {
+    fontSize: "2.5rem",
+    fontWeight: 800,
+    color: "#0f172a",
   },
-  discountBadge: {
-    padding: "0.5rem 0.75rem",
-    backgroundColor: "#fef2f2",
-    color: "#991b1b",
-    borderRadius: "0.375rem",
-    fontSize: "0.875rem",
-    fontWeight: 600,
-  },
-
-  // Description
-  description: {
+  priceRange: {
+    color: "#64748b",
     fontSize: "0.95rem",
-    color: "#374151",
-    lineHeight: 1.6,
+  },
+  moqBadge: {
+    display: "inline-flex",
+    alignItems: "center",
+    justifyContent: "center",
+    padding: "0.7rem 1rem",
+    borderRadius: "999px",
+    backgroundColor: "#ffedd5",
+    color: "#c2410c",
+    fontWeight: 700,
+    width: "fit-content",
+  },
+  statsGrid: {
+    display: "grid",
+    gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+    gap: "0.75rem",
+  },
+  statCard: {
+    backgroundColor: "#f8fafc",
+    borderRadius: "1rem",
+    padding: "1rem",
+    border: "1px solid #e2e8f0",
+  },
+  statLabel: {
     margin: 0,
+    fontSize: "0.8rem",
+    color: "#475569",
+    fontWeight: 700,
+    textTransform: "uppercase",
+    letterSpacing: "0.08em",
   },
-
-  // Specifications
-  specsSection: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "1rem",
-    paddingBottom: "1.5rem",
-    borderBottom: "1px solid #e5e7eb",
+  statValue: {
+    margin: "0.75rem 0 0",
+    color: "#0f172a",
+    fontSize: "1.1rem",
+    fontWeight: 700,
   },
-  specsTitle: {
-    fontSize: "1rem",
-    fontWeight: 600,
-    color: "#111827",
-    margin: 0,
-  },
-  specsGrid: {
+  richerActions: {
     display: "grid",
     gridTemplateColumns: "1fr 1fr",
     gap: "1rem",
   },
-  specsGridMobile: {
+  richerActionsMobile: {
     gridTemplateColumns: "1fr",
   },
-  specItem: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "0.25rem",
-  },
-  specLabel: {
-    fontSize: "0.8rem",
-    fontWeight: 500,
-    color: "#6b7280",
-    textTransform: "uppercase",
-    letterSpacing: "0.3px",
-  },
-  specValue: {
-    fontSize: "0.95rem",
-    fontWeight: 500,
-    color: "#111827",
-  },
-
-  // Tiered Pricing
-  tieredPricingSection: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "1rem",
-    padding: "1.5rem",
-    backgroundColor: "#f9fafb",
-    borderRadius: "0.75rem",
-    borderBottom: "1px solid #e5e7eb",
-    marginBottom: "1.5rem",
-  },
-  tieredPricingTitle: {
-    fontSize: "0.95rem",
-    fontWeight: 600,
-    color: "#111827",
-    margin: 0,
-  },
-  tieredTable: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "0.75rem",
-  },
-  tieredTableHeader: {
-    display: "grid",
-    gridTemplateColumns: "1fr 1fr 1fr",
-    gap: "1rem",
-    paddingBottom: "0.75rem",
-    borderBottom: "1px solid #e5e7eb",
-  },
-  tieredTableHeaderCell: {
-    fontSize: "0.8rem",
-    fontWeight: 600,
-    color: "#6b7280",
-    textTransform: "uppercase",
-    letterSpacing: "0.3px",
-  },
-  tieredTableRow: {
-    display: "grid",
-    gridTemplateColumns: "1fr 1fr 1fr",
-    gap: "1rem",
-    padding: "0.75rem",
-    backgroundColor: "#ffffff",
-    borderRadius: "0.375rem",
-  },
-  tieredTableCell: {
-    fontSize: "0.875rem",
-    color: "#111827",
-  },
-
-  // Stock Info
-  stockInfo: {
-    display: "flex",
-    alignItems: "center",
-    gap: "0.75rem",
-    padding: "1rem",
-    backgroundColor: "#f0fdf4",
-    borderRadius: "0.5rem",
-    border: "1px solid #dcfce7",
-    marginBottom: "1.5rem",
-  },
-  stockIcon: {
-    color: "#16a34a",
-    fontSize: "1.25rem",
-  },
-  stockText: {
-    fontSize: "0.875rem",
-    color: "#166534",
-    fontWeight: 500,
-  },
-
-  // Quantity Selector
-  quantitySection: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "1rem",
-    marginBottom: "1.5rem",
-  },
-  quantityLabel: {
-    fontSize: "0.875rem",
-    fontWeight: 600,
-    color: "#111827",
-  },
-  quantitySelector: {
-    display: "flex",
-    alignItems: "center",
-    gap: "1rem",
-    width: "fit-content",
-  },
-  quantityInput: {
-    width: "4rem",
-    padding: "0.5rem",
-    border: "1px solid #e5e7eb",
-    borderRadius: "0.375rem",
-    fontSize: "0.95rem",
-    textAlign: "center",
-    outline: "none",
-    transition: "all 0.2s ease",
-  },
-  quantityInputFocus: {
-    borderColor: "#1e293b",
-    boxShadow: "0 0 0 3px rgba(30, 41, 59, 0.1)",
-  },
-  quantityButton: {
-    width: "2.5rem",
-    height: "2.5rem",
-    border: "1px solid #e5e7eb",
-    borderRadius: "0.375rem",
-    background: "#f3f4f6",
-    cursor: "pointer",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    transition: "all 0.2s ease",
-    color: "#111827",
-    fontSize: "0.875rem",
-    fontWeight: 600,
-    fontFamily: "inherit",
-  },
-  quantityButtonHover: {
-    borderColor: "#1e293b",
-    backgroundColor: "#1e293b",
-    color: "#ffffff",
-  },
-
-  // Action Buttons
-  actionButtons: {
-    display: "flex",
-    gap: "1rem",
-    marginBottom: "1.5rem",
-  },
-  actionButtonsMobile: {
-    flexDirection: "column",
-  },
-  addToCartBtn: {
-    flex: 1,
-    padding: "0.875rem 1.5rem",
-    backgroundColor: "#1e293b",
-    color: "#ffffff",
+  primaryButton: {
     border: "none",
-    borderRadius: "0.5rem",
+    borderRadius: "1rem",
+    padding: "1rem 1.25rem",
+    backgroundColor: "#0f172a",
+    color: "#ffffff",
+    fontWeight: 700,
     fontSize: "0.95rem",
-    fontWeight: 600,
     cursor: "pointer",
-    transition: "all 0.3s ease",
-    display: "flex",
+    display: "inline-flex",
     alignItems: "center",
     justifyContent: "center",
     gap: "0.5rem",
-    fontFamily: "inherit",
   },
-  addToCartBtnHover: {
-    backgroundColor: "#0f172a",
-    transform: "translateY(-2px)",
-    boxShadow: "0 8px 20px rgba(30, 41, 59, 0.3)",
-  },
-  wishlistBtn: {
-    padding: "0.875rem 1.5rem",
-    backgroundColor: "#f3f4f6",
-    color: "#111827",
-    border: "1px solid #e5e7eb",
-    borderRadius: "0.5rem",
+  secondaryButton: {
+    border: "1px solid #e2e8f0",
+    borderRadius: "1rem",
+    padding: "1rem 1.25rem",
+    backgroundColor: "#f8fafc",
+    color: "#0f172a",
+    fontWeight: 700,
     fontSize: "0.95rem",
-    fontWeight: 600,
     cursor: "pointer",
-    transition: "all 0.2s ease",
-    display: "flex",
+    display: "inline-flex",
     alignItems: "center",
+    justifyContent: "center",
     gap: "0.5rem",
-    fontFamily: "inherit",
   },
-  wishlistBtnHover: {
-    backgroundColor: "#e5e7eb",
-    borderColor: "#1e293b",
-  },
-  shareBtn: {
-    padding: "0.875rem 1.5rem",
-    backgroundColor: "#f3f4f6",
-    color: "#111827",
-    border: "1px solid #e5e7eb",
-    borderRadius: "0.5rem",
-    fontSize: "0.95rem",
-    fontWeight: 600,
-    cursor: "pointer",
-    transition: "all 0.2s ease",
-    display: "flex",
-    alignItems: "center",
-    gap: "0.5rem",
-    fontFamily: "inherit",
-  },
-  shareBtnHover: {
-    backgroundColor: "#e5e7eb",
-    borderColor: "#1e293b",
-  },
-
-  // Features
-  featuresSection: {
+  infoTabs: {
     display: "grid",
-    gridTemplateColumns: "repeat(3, 1fr)",
-    gap: "1rem",
+    gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))",
+    gap: "0.75rem",
   },
-  featuresMobile: {
-    gridTemplateColumns: "1fr",
+  tabButton: {
+    border: "1px solid transparent",
+    borderRadius: "0.85rem",
+    padding: "0.85rem 0.9rem",
+    backgroundColor: "#f8fafc",
+    color: "#475569",
+    fontSize: "0.9rem",
+    fontWeight: 700,
+    cursor: "pointer",
   },
-  featureCard: {
+  tabButtonActive: {
+    backgroundColor: "#0f172a",
+    color: "#ffffff",
+    borderColor: "#0f172a",
+  },
+  tabPanel: {
+    marginTop: "1.5rem",
+    padding: "1.75rem",
+    backgroundColor: "#ffffff",
+    borderRadius: "1rem",
+    boxShadow: "0 20px 50px rgba(15, 23, 42, 0.06)",
+  },
+  panelTitle: {
+    margin: 0,
+    fontSize: "1.15rem",
+    fontWeight: 700,
+    color: "#0f172a",
+  },
+  panelText: {
+    marginTop: "1rem",
+    color: "#475569",
+    lineHeight: 1.8,
+    fontSize: "0.95rem",
+  },
+  bulletList: {
+    marginTop: "1rem",
+    display: "grid",
+    gap: "0.75rem",
+  },
+  bulletItem: {
+    display: "flex",
+    gap: "0.75rem",
+    alignItems: "flex-start",
+  },
+  bulletDot: {
+    width: "0.65rem",
+    height: "0.65rem",
+    borderRadius: "999px",
+    backgroundColor: "#0f172a",
+    marginTop: "0.45rem",
+    flexShrink: 0,
+  },
+  sidebar: {
     display: "flex",
     flexDirection: "column",
-    alignItems: "center",
-    gap: "0.75rem",
-    padding: "1.5rem",
-    backgroundColor: "#f9fafb",
-    borderRadius: "0.5rem",
-    border: "1px solid #e5e7eb",
-    textAlign: "center",
+    gap: "1rem",
   },
-  featureIcon: {
-    fontSize: "1.75rem",
-    color: "#1e293b",
-  },
-  featureTitle: {
-    fontSize: "0.875rem",
-    fontWeight: 600,
-    color: "#111827",
-    margin: 0,
-  },
-  featureDesc: {
-    fontSize: "0.8rem",
-    color: "#6b7280",
-    margin: 0,
-  },
-
-  // Collapsible Section
-  collapsibleHeader: {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "space-between",
-    padding: "1rem",
-    backgroundColor: "#f9fafb",
-    borderRadius: "0.5rem",
-    cursor: "pointer",
-    border: "1px solid #e5e7eb",
-    transition: "all 0.2s ease",
-    fontFamily: "inherit",
-    fontSize: "0.95rem",
-    fontWeight: 600,
-    color: "#111827",
-  },
-  collapsibleHeaderHover: {
-    backgroundColor: "#f3f4f6",
-  },
-  collapsibleContent: {
-    padding: "1rem",
+  sidebarCard: {
     backgroundColor: "#ffffff",
-    borderLeft: "1px solid #e5e7eb",
-    borderRight: "1px solid #e5e7eb",
-    borderBottom: "1px solid #e5e7eb",
-    borderBottomLeftRadius: "0.5rem",
-    borderBottomRightRadius: "0.5rem",
+    borderRadius: "1rem",
+    padding: "1.75rem",
+    boxShadow: "0 20px 50px rgba(15, 23, 42, 0.06)",
+    display: "flex",
+    flexDirection: "column",
+    gap: "1rem",
   },
-  collapsibleText: {
-    fontSize: "0.875rem",
-    color: "#374151",
-    lineHeight: 1.6,
+  sidebarTitle: {
+    margin: 0,
+    fontSize: "1rem",
+    fontWeight: 700,
   },
-
-  // MOQ Warning
-  moqWarning: {
+  sidebarText: {
+    margin: 0,
+    color: "#475569",
+    lineHeight: 1.7,
+    fontSize: "0.95rem",
+  },
+  detailRow: {
+    display: "flex",
+    justifyContent: "space-between",
+    gap: "1rem",
+    padding: "1rem 0",
+    borderBottom: "1px solid #e2e8f0",
+  },
+  detailLabel: {
+    color: "#475569",
+    fontSize: "0.9rem",
+    fontWeight: 700,
+  },
+  detailValue: {
+    color: "#0f172a",
+    fontSize: "0.95rem",
+    fontWeight: 700,
+    textAlign: "right",
+  },
+  stickyBar: {
+    position: "fixed",
+    bottom: 0,
+    left: 0,
+    right: 0,
+    padding: "0.85rem 1rem",
+    backgroundColor: "rgba(255, 255, 255, 0.98)",
+    borderTop: "1px solid #e2e8f0",
+    display: "grid",
+    gridTemplateColumns: "1fr 1fr",
+    gap: "0.75rem",
+    alignItems: "center",
+    zIndex: 90,
+  },
+  stickyButton: {
+    width: "100%",
+    border: "none",
+    borderRadius: "1rem",
     padding: "1rem",
-    backgroundColor: "#fef3c7",
-    border: "1px solid #fcd34d",
-    borderRadius: "0.5rem",
-    fontSize: "0.875rem",
-    color: "#92400e",
-    marginBottom: "1.5rem",
+    fontWeight: 700,
+    cursor: "pointer",
+    fontSize: "0.95rem",
+  },
+  stickyPrimary: {
+    backgroundColor: "#0f172a",
+    color: "#ffffff",
+  },
+  stickySecondary: {
+    backgroundColor: "#f8fafc",
+    color: "#0f172a",
+    border: "1px solid #e2e8f0",
   },
 }
 
-// Mock product data
+const tabItems = [
+  { id: "overview", label: "Overview" },
+  { id: "description", label: "Description" },
+  { id: "specifications", label: "Specifications" },
+  { id: "packaging", label: "Packaging" },
+  { id: "certifications", label: "Certifications" },
+  { id: "faq", label: "FAQ" },
+]
+
 export default function ProductDetailPage() {
   const { id } = useParams()
   const navigate = useNavigate()
@@ -599,9 +421,18 @@ export default function ProductDetailPage() {
   const [loading, setLoading] = useState(true)
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
   const [quantity, setQuantity] = useState(1)
-  const [expandedSection, setExpandedSection] = useState(null)
-  const [hoveredBtn, setHoveredBtn] = useState(null)
-  const isMobile = window.innerWidth < 768
+  const [activeTab, setActiveTab] = useState("overview")
+  const [isMobile, setIsMobile] = useState(false)
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768)
+    }
+
+    handleResize()
+    window.addEventListener("resize", handleResize)
+    return () => window.removeEventListener("resize", handleResize)
+  }, [])
 
   useEffect(() => {
     setLoading(true)
@@ -609,392 +440,359 @@ export default function ProductDetailPage() {
     if (data) {
       setProduct(data)
       setQuantity(data.moq || 1)
+      setCurrentImageIndex(0)
     }
     setLoading(false)
     window.scrollTo(0, 0)
   }, [id])
 
   const handleNextImage = () => {
-    if (!product?.images) return
+    if (!product?.images?.length) return
     setCurrentImageIndex((prev) => (prev + 1) % product.images.length)
   }
 
   const handlePrevImage = () => {
-    if (!product?.images) return
+    if (!product?.images?.length) return
     setCurrentImageIndex((prev) => (prev - 1 + product.images.length) % product.images.length)
   }
 
-  const handleQuantityChange = (e) => {
-    const value = parseInt(e.target.value) || (product?.moq || 1)
-    if (value >= (product?.moq || 1)) {
+  const handleQuantityChange = (event) => {
+    const value = Number(event.target.value)
+    if (!Number.isNaN(value) && value >= (product?.moq || 1)) {
       setQuantity(value)
     }
   }
 
+  const handleSendInquiry = () => {
+    window.alert("Inquiry request initiated. This would start the wholesale inquiry flow.")
+  }
+
+  const handleChatNow = () => {
+    window.alert("Chat request initiated. This would open buyer support.")
+  }
+
   const handleAddToCart = () => {
     if (quantity >= (product?.moq || 1)) {
-      alert(`Added ${quantity} units to cart`)
+      window.alert(`Added ${quantity} units to the cart.`)
+    }
+  }
+
+  const handleBuyNow = () => {
+    if (quantity >= (product?.moq || 1)) {
+      window.alert(`Proceeding to purchase ${quantity} units now.`)
     }
   }
 
   if (loading) {
     return (
-      <div style={{ ...styles.pageContainer, display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh' }}>
-        <p style={{ fontSize: '1.2rem', color: '#6b7280' }}>Loading product details...</p>
+      <div style={{ ...styles.pageContainer, display: "flex", alignItems: "center", justifyContent: "center", minHeight: "100vh" }}>
+        <p style={{ color: "#64748b", fontSize: "1.1rem" }}>Loading product details…</p>
       </div>
     )
   }
 
   if (!product) {
     return (
-      <div style={{ ...styles.pageContainer, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100vh', gap: '1rem' }}>
-        <h2 style={{ color: '#111827' }}>Product Not Found</h2>
-        <p style={{ color: '#6b7280' }}>The product you are looking for does not exist or has been removed.</p>
-        <button 
-          onClick={() => navigate('/products')}
-          style={{ ...styles.addToCartBtn, width: 'auto', padding: '0.75rem 2rem' }}
+      <div style={{ ...styles.pageContainer, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", minHeight: "100vh", gap: "1rem", padding: "2rem" }}>
+        <h1 style={{ margin: 0, fontSize: "1.75rem", color: "#0f172a" }}>Product not found</h1>
+        <p style={{ margin: 0, color: "#64748b" }}>The requested product does not exist or has been removed.</p>
+        <button
+          onClick={() => navigate("/products")}
+          style={{ ...styles.primaryButton, width: "auto", padding: "0.9rem 1.5rem" }}
         >
-          Back to Products
+          Back to products
         </button>
       </div>
     )
   }
 
-  const currentTierPrice = (product.tieredPricing || []).find((tier) => {
+  const images = product.images?.length ? product.images : product.image ? [product.image] : []
+  const productCode = product.id || "N/A"
+  const currentTier = (product.tieredPricing || []).find((tier) => {
     if (tier.max === null) {
       return quantity >= tier.min
     }
     return quantity >= tier.min && quantity <= tier.max
   })
 
+  const overviewPoints = [
+    "Transparent bulk pricing with clear MOQ and price breaks.",
+    "Verified supplier for B2B buyers with customs-ready packaging.",
+    "Flexible OEM / ODM support and custom labeling available.",
+    "Fast quote turnaround and dedicated wholesale service.",
+  ]
+
+  const faqItems = [
+    {
+      question: "What is the minimum order quantity?",
+      answer: `MOQ is ${product.moq} pieces. Larger quantities unlock better pricing tiers.`,
+    },
+    {
+      question: "How long does production take?",
+      answer: "Typical lead time is 15-25 days after order confirmation and sample approval.",
+    },
+    {
+      question: "Can I request a sample?",
+      answer: "Yes. Contact the supplier to arrange a paid sample and shipping details.",
+    },
+  ]
+
   return (
     <div style={styles.pageContainer}>
-      {/* Breadcrumb */}
       <div style={styles.breadcrumb}>
-        <span
-          style={styles.breadcrumbLink}
-          onClick={() => navigate("/")}
-          onMouseEnter={(e) => Object.assign(e.target.style, styles.breadcrumbLinkHover)}
-          onMouseLeave={(e) => (e.target.style.color = "#1e293b")}
-        >
-          Home
-        </span>
-        <span style={{ color: "#d1d5db" }}>›</span>
-        <span
-          style={styles.breadcrumbLink}
-          onClick={() => navigate("/categories")}
-          onMouseEnter={(e) => Object.assign(e.target.style, styles.breadcrumbLinkHover)}
-          onMouseLeave={(e) => (e.target.style.color = "#1e293b")}
-        >
-          Categories
-        </span>
-        <span style={{ color: "#d1d5db" }}>›</span>
-        <span style={styles.breadcrumbActive}>{product.name}</span>
+        <span style={styles.breadcrumbLink} onClick={() => navigate("/")}>Home</span>
+        <span>›</span>
+        <span style={styles.breadcrumbLink} onClick={() => navigate("/categories")}>Categories</span>
+        <span>›</span>
+        <span style={styles.breadcrumbActive}>{product.category || "Product"}</span>
       </div>
 
-      {/* Main Container */}
-      <div style={{ ...styles.mainContainer, ...(isMobile ? styles.mainContainerMobile : {}) }}>
-        {/* Image Gallery */}
-        <div style={styles.gallerySection}>
-          <div style={styles.mainImageWrapper}>
-            <img src={product.images[currentImageIndex]} alt="Product" style={styles.mainImage} />
-            {product.discount > 0 && (
-              <div style={styles.imageBadge}>-{product.discount}%</div>
-            )}
+      <div style={styles.header}>
+        <h1 style={styles.headerTitle}>{product.name}</h1>
+        <p style={styles.headerText}>A premium wholesale product detail page focused on fast supplier decision-making, MOQ clarity, transparent pricing, and logistics readiness.</p>
+      </div>
 
-            {/* Previous Button */}
-            <button
-              style={{ ...styles.carouselControl, ...styles.carouselControlPrev }}
-              onClick={handlePrevImage}
-              onMouseEnter={(e) => Object.assign(e.target.style, styles.carouselControlHover)}
-              onMouseLeave={(e) => Object.assign(e.target.style, { backgroundColor: "rgba(255, 255, 255, 0.9)", borderColor: "#e5e7eb" })}
-            >
+      <div style={{ ...styles.layout, ...(isMobile ? styles.layoutMobile : {}) }}>
+        <div style={styles.galleryCard}>
+          <div style={styles.imageCard}>
+            <img src={images[currentImageIndex] || product.image || ""} alt={product.name} style={styles.image} />
+            {product.discount > 0 && <div style={styles.imageBadge}>-{product.discount}%</div>}
+            <button style={{ ...styles.carouselControl, ...styles.prevControl }} onClick={handlePrevImage}>
               <FaChevronLeft />
             </button>
-
-            {/* Next Button */}
-            <button
-              style={{ ...styles.carouselControl, ...styles.carouselControlNext }}
-              onClick={handleNextImage}
-              onMouseEnter={(e) => Object.assign(e.target.style, styles.carouselControlHover)}
-              onMouseLeave={(e) => Object.assign(e.target.style, { backgroundColor: "rgba(255, 255, 255, 0.9)", borderColor: "#e5e7eb" })}
-            >
+            <button style={{ ...styles.carouselControl, ...styles.nextControl }} onClick={handleNextImage}>
               <FaChevronRight />
             </button>
           </div>
 
-          {/* Thumbnails */}
-          <div style={{ ...styles.thumbnailGallery, ...(isMobile ? styles.thumbnailGalleryMobile : {}) }}>
-            {product.images.map((img, idx) => (
-              <div
-                key={idx}
+          <div style={styles.thumbRow}>
+            {images.map((image, index) => (
+              <button
+                key={image}
                 style={{
-                  ...styles.thumbnail,
-                  ...(currentImageIndex === idx ? styles.thumbnailActive : {}),
+                  ...styles.thumbItem,
+                  ...(currentImageIndex === index ? styles.thumbItemActive : {}),
                 }}
-                onClick={() => setCurrentImageIndex(idx)}
-                onMouseEnter={(e) => {
-                  if (currentImageIndex !== idx) {
-                    Object.assign(e.currentTarget.style, styles.thumbnailHover)
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  if (currentImageIndex !== idx) {
-                    Object.assign(e.currentTarget.style, { borderColor: "#e5e7eb" })
-                  }
-                }}
+                onClick={() => setCurrentImageIndex(index)}
               >
-                <img src={img} alt={`Thumbnail ${idx}`} style={styles.thumbnailImage} />
-              </div>
+                <img src={image} alt={`${product.name} ${index + 1}`} style={styles.thumbImg} />
+              </button>
             ))}
           </div>
         </div>
 
-        {/* Product Info */}
-        <div style={styles.infoSection}>
-          {/* Badge */}
-          <div style={styles.badge}>
-            <FaCheck style={{ fontSize: "0.625rem" }} />
-            New Arrival
+        <div style={styles.productPanel}>
+          <div style={styles.supplierStrip}>
+            <span style={styles.supplierLabel}>
+              <FaCheck /> Verified Supplier
+            </span>
+            <span style={styles.moqBadge}>MOQ {product.moq} pcs</span>
           </div>
 
-          {/* Header */}
-          <div style={styles.header}>
-            <p style={styles.brand}>{product.brand}</p>
-            <h1 style={styles.title}>{product.name}</h1>
-            <p style={styles.productCode}>Product Code: {product.code}</p>
-          </div>
-
-          {/* Rating */}
-          <div style={styles.ratingSection}>
-            <div style={styles.ratingStars}>
-              {[...Array(5)].map((_, i) => (
-                <FaStar
-                  key={i}
-                  style={{
-                    ...styles.starIcon,
-                    color: i < Math.floor(product.rating) ? "#fbbf24" : "#e5e7eb",
-                  }}
-                />
-              ))}
-            </div>
-            <span style={styles.ratingValue}>{product.rating}</span>
-            <span style={styles.reviewCount}>({product.reviews} reviews)</span>
-          </div>
-
-          {/* Price */}
-          <div style={styles.priceSection}>
-            <span style={styles.currentPrice}>${product.price}</span>
-            {product.originalPrice > product.price && (
-              <span style={styles.originalPrice}>${product.originalPrice}</span>
-            )}
-            {product.discount > 0 && (
-              <span style={styles.discountBadge}>Save {product.discount}%</span>
-            )}
-          </div>
-
-          {/* Description */}
-          <p style={styles.description}>{product.description}</p>
-
-          {/* Specifications */}
-          <div style={styles.specsSection}>
-            <h3 style={styles.specsTitle}>Product Specifications</h3>
-            <div style={{ ...styles.specsGrid, ...(isMobile ? styles.specsGridMobile : {}) }}>
-              {Object.entries(product.specs).map(([key, value]) => (
-                <div key={key} style={styles.specItem}>
-                  <span style={styles.specLabel}>{key}</span>
-                  <span style={styles.specValue}>{value}</span>
-                </div>
-              ))}
+          <div style={styles.titleRow}>
+            <div>
+              <p style={styles.subtitle}>{product.brand}</p>
+              <p style={{ margin: 0, color: "#475569", fontSize: "0.95rem" }}>Product code: {productCode}</p>
             </div>
           </div>
 
-          {/* MOQ Warning */}
-          {quantity < product.moq && (
-            <div style={styles.moqWarning}>
-              Minimum order quantity is {product.moq} units
-            </div>
-          )}
+          <div style={styles.priceGroup}>
+            <span style={styles.priceLabel}>FOB price</span>
+            <span style={styles.priceValue}>${product.price.toFixed(2)}</span>
+            <span style={styles.priceRange}>{product.priceRange || "Pricing may vary by order volume."}</span>
+          </div>
 
-          {/* Tiered Pricing */}
-          <div style={styles.tieredPricingSection}>
-            <h3 style={styles.tieredPricingTitle}>💰 Bulk Pricing</h3>
-            <div style={styles.tieredTable}>
-              <div style={styles.tieredTableHeader}>
-                <div style={styles.tieredTableHeaderCell}>Quantity</div>
-                <div style={styles.tieredTableHeaderCell}>Price</div>
-                <div style={styles.tieredTableHeaderCell}>Savings</div>
-              </div>
-              {product.tieredPricing.map((tier, idx) => {
-                const savings = ((product.price - tier.price) / product.price * 100).toFixed(0)
-                return (
-                  <div key={idx} style={styles.tieredTableRow}>
-                    <div style={styles.tieredTableCell}>
-                      {tier.min} - {tier.max ? tier.max : "∞"}
-                    </div>
-                    <div style={styles.tieredTableCell}>${tier.price}</div>
-                    <div style={styles.tieredTableCell}>{savings}% off</div>
-                  </div>
-                )
-              })}
+          <div style={styles.statsGrid}>
+            <div style={styles.statCard}>
+              <p style={styles.statLabel}>Availability</p>
+              <p style={styles.statValue}>{product.inStock ? `${product.stock} in stock` : "Out of stock"}</p>
+            </div>
+            <div style={styles.statCard}>
+              <p style={styles.statLabel}>Production</p>
+              <p style={styles.statValue}>{product.casePackSize || "Customizable"}</p>
+            </div>
+            <div style={styles.statCard}>
+              <p style={styles.statLabel}>Lead Time</p>
+              <p style={styles.statValue}>15-25 days</p>
+            </div>
+            <div style={styles.statCard}>
+              <p style={styles.statLabel}>Location</p>
+              <p style={styles.statValue}>Yiwu, Zhejiang</p>
             </div>
           </div>
 
-          {/* Stock Info */}
-          {product.inStock ? (
-            <div style={styles.stockInfo}>
-              <FaCheck style={styles.stockIcon} />
-              <span style={styles.stockText}>In Stock - {product.stock} units available</span>
-            </div>
-          ) : (
-            <div style={{ ...styles.stockInfo, backgroundColor: "#fee2e2", borderColor: "#fecaca" }}>
-              <span style={{ ...styles.stockText, color: "#991b1b" }}>Out of Stock</span>
-            </div>
-          )}
-
-          {/* Quantity Selector */}
-          <div style={styles.quantitySection}>
-            <label style={styles.quantityLabel}>Quantity (Minimum: {product.moq})</label>
-            <div style={styles.quantitySelector}>
-              <button
-                style={styles.quantityButton}
-                onClick={() => setQuantity(Math.max(product.moq, quantity - 1))}
-                onMouseEnter={(e) => Object.assign(e.target.style, styles.quantityButtonHover)}
-                onMouseLeave={(e) => Object.assign(e.target.style, { borderColor: "#e5e7eb", backgroundColor: "#f3f4f6", color: "#111827" })}
-              >
-                −
-              </button>
-              <input
-                type="number"
-                min={product.moq}
-                value={quantity}
-                onChange={handleQuantityChange}
-                style={styles.quantityInput}
-                onFocus={(e) => Object.assign(e.target.style, styles.quantityInputFocus)}
-                onBlur={(e) => Object.assign(e.target.style, { borderColor: "#e5e7eb", boxShadow: "none" })}
-              />
-              <button
-                style={styles.quantityButton}
-                onClick={() => setQuantity(quantity + 1)}
-                onMouseEnter={(e) => Object.assign(e.target.style, styles.quantityButtonHover)}
-                onMouseLeave={(e) => Object.assign(e.target.style, { borderColor: "#e5e7eb", backgroundColor: "#f3f4f6", color: "#111827" })}
-              >
-                +
-              </button>
-              <span style={{ fontSize: "0.875rem", color: "#6b7280" }}>
-                Current: ${currentTierPrice?.price || product.price}/unit
-              </span>
-            </div>
-          </div>
-
-          {/* Action Buttons */}
-          <div style={{ ...styles.actionButtons, ...(isMobile ? styles.actionButtonsMobile : {}) }}>
-            <button
-              style={styles.addToCartBtn}
-              onClick={handleAddToCart}
-              onMouseEnter={(e) => {
-                if (quantity >= product.moq) {
-                  Object.assign(e.target.style, styles.addToCartBtnHover)
-                }
-              }}
-              onMouseLeave={(e) => {
-                Object.assign(e.target.style, {
-                  backgroundColor: "#1e293b",
-                  transform: "none",
-                  boxShadow: "none",
-                })
-              }}
-              disabled={quantity < product.moq}
-            >
-              <FaShoppingCart />
+          <div style={{ ...styles.richerActions, ...(isMobile ? styles.richerActionsMobile : {}) }}>
+            <button style={styles.primaryButton} onClick={handleAddToCart}>
               Add to Cart
             </button>
-            <button
-              style={styles.wishlistBtn}
-              onMouseEnter={(e) => Object.assign(e.target.style, styles.wishlistBtnHover)}
-              onMouseLeave={(e) => Object.assign(e.target.style, { backgroundColor: "#f3f4f6", borderColor: "#e5e7eb" })}
-            >
-              <FaHeart />
-              Wishlist
-            </button>
-            <button
-              style={styles.shareBtn}
-              onMouseEnter={(e) => Object.assign(e.target.style, styles.shareBtnHover)}
-              onMouseLeave={(e) => Object.assign(e.target.style, { backgroundColor: "#f3f4f6", borderColor: "#e5e7eb" })}
-            >
-              <FaShareAlt />
-              Share
+            <button style={styles.secondaryButton} onClick={handleBuyNow}>
+              Buy Now
             </button>
           </div>
 
-          {/* Features */}
-          <div style={{ ...styles.featuresSection, ...(isMobile ? styles.featuresMobile : {}) }}>
-            <div style={styles.featureCard}>
-              <FaTruck style={styles.featureIcon} />
-              <h4 style={styles.featureTitle}>Fast Shipping</h4>
-              <p style={styles.featureDesc}>Worldwide delivery available</p>
-            </div>
-            <div style={styles.featureCard}>
-              <FaUndo style={styles.featureIcon} />
-              <h4 style={styles.featureTitle}>Easy Returns</h4>
-              <p style={styles.featureDesc}>30-day return policy</p>
-            </div>
-            <div style={styles.featureCard}>
-              <FaLock style={styles.featureIcon} />
-              <h4 style={styles.featureTitle}>Secure Payment</h4>
-              <p style={styles.featureDesc}>100% secure transactions</p>
-            </div>
+          <div style={{ ...styles.richerActions, ...(isMobile ? styles.richerActionsMobile : {}) }}>
+            <button style={styles.primaryButton} onClick={handleSendInquiry}>
+              <FaTruck /> Send Inquiry
+            </button>
+            <button style={styles.secondaryButton} onClick={handleChatNow}>
+              <FaComment /> Chat Now
+            </button>
           </div>
 
-          {/* Collapsible Sections */}
-          <div>
-            <button
-              style={{
-                ...styles.collapsibleHeader,
-                marginBottom: expandedSection === "details" ? 0 : "0.5rem",
-              }}
-              onClick={() => setExpandedSection(expandedSection === "details" ? null : "details")}
-              onMouseEnter={(e) => Object.assign(e.target.style, styles.collapsibleHeaderHover)}
-              onMouseLeave={(e) => (e.target.style.backgroundColor = "#f9fafb")}
-            >
-              <span>Detailed Information</span>
-              {expandedSection === "details" ? <FaChevronUp /> : <FaChevronDown />}
-            </button>
-            {expandedSection === "details" && (
-              <div style={styles.collapsibleContent}>
-                <p style={styles.collapsibleText}>
-                  This is a premium collectible fashion doll designed for wholesale retailers. Each unit comes individually packaged with protective foam and packaging. Ideal for gift shops, toy boutiques, and collectible stores. Bulk orders of 200+ units receive additional 5% discount.
-                </p>
-              </div>
+          <div style={styles.infoTabs}>
+            {tabItems.map((tab) => (
+              <button
+                key={tab.id}
+                style={{
+                  ...styles.tabButton,
+                  ...(activeTab === tab.id ? styles.tabButtonActive : {}),
+                }}
+                onClick={() => setActiveTab(tab.id)}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+
+          <div style={styles.tabPanel}>
+            {activeTab === "overview" && (
+              <>
+                <h2 style={styles.panelTitle}>Overview</h2>
+                <p style={styles.panelText}>{product.description}</p>
+                <div style={styles.bulletList}>
+                  {overviewPoints.map((point) => (
+                    <div key={point} style={styles.bulletItem}>
+                      <span style={styles.bulletDot} />
+                      <span>{point}</span>
+                    </div>
+                  ))}
+                </div>
+              </>
             )}
-          </div>
-
-          <div>
-            <button
-              style={{
-                ...styles.collapsibleHeader,
-                marginBottom: expandedSection === "shipping" ? 0 : "0.5rem",
-              }}
-              onClick={() => setExpandedSection(expandedSection === "shipping" ? null : "shipping")}
-              onMouseEnter={(e) => Object.assign(e.target.style, styles.collapsibleHeaderHover)}
-              onMouseLeave={(e) => (e.target.style.backgroundColor = "#f9fafb")}
-            >
-              <span>
-                <FaBox style={{ marginRight: "0.5rem" }} />
-                Shipping & Delivery
-              </span>
-              {expandedSection === "shipping" ? <FaChevronUp /> : <FaChevronDown />}
-            </button>
-            {expandedSection === "shipping" && (
-              <div style={styles.collapsibleContent}>
-                <p style={styles.collapsibleText}>
-                  We ship worldwide with various carrier options. Standard shipping takes 7-14 business days. Express shipping is available for urgent orders. All packages are insured and tracked. Customs duties may apply for international orders.
-                </p>
-              </div>
+            {activeTab === "description" && (
+              <>
+                <h2 style={styles.panelTitle}>Description</h2>
+                <p style={styles.panelText}>{product.description}</p>
+              </>
+            )}
+            {activeTab === "specifications" && (
+              <>
+                <h2 style={styles.panelTitle}>Specifications</h2>
+                <div style={styles.bulletList}>
+                  {Object.entries(product.specs || {}).map(([key, value]) => (
+                    <div key={key} style={styles.bulletItem}>
+                      <span style={styles.bulletDot} />
+                      <span><strong>{key}:</strong> {value}</span>
+                    </div>
+                  ))}
+                </div>
+              </>
+            )}
+            {activeTab === "packaging" && (
+              <>
+                <h2 style={styles.panelTitle}>Packaging</h2>
+                <p style={styles.panelText}>Bulk packaging is available with export-ready cartons and protective inserts. Custom branding and labels can be arranged for large orders.</p>
+              </>
+            )}
+            {activeTab === "certifications" && (
+              <>
+                <h2 style={styles.panelTitle}>Certifications</h2>
+                <div style={styles.bulletList}>
+                  <div style={styles.bulletItem}>
+                    <span style={styles.bulletDot} /> <span>Audited supplier</span>
+                  </div>
+                  <div style={styles.bulletItem}>
+                    <span style={styles.bulletDot} /> <span>CE / UKCA compliant</span>
+                  </div>
+                  <div style={styles.bulletItem}>
+                    <span style={styles.bulletDot} /> <span>ISO quality management</span>
+                  </div>
+                </div>
+              </>
+            )}
+            {activeTab === "faq" && (
+              <>
+                <h2 style={styles.panelTitle}>FAQ</h2>
+                <div style={styles.bulletList}>
+                  {faqItems.map((item) => (
+                    <div key={item.question} style={styles.bulletItem}>
+                      <span style={styles.bulletDot} />
+                      <div>
+                        <p style={{ margin: 0, fontWeight: 700, color: "#0f172a" }}>{item.question}</p>
+                        <p style={{ margin: "0.5rem 0 0", color: "#475569" }}>{item.answer}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </>
             )}
           </div>
         </div>
+
+        <aside style={styles.sidebar}>
+          <div style={styles.sidebarCard}>
+            <h2 style={styles.sidebarTitle}>Quick Facts</h2>
+            <p style={styles.sidebarText}>Buyer-focused order details for fast planning and supplier due diligence.</p>
+            <div style={styles.detailRow}>
+              <span style={styles.detailLabel}>MOQ</span>
+              <span style={styles.detailValue}>{product.moq} pcs</span>
+            </div>
+            <div style={styles.detailRow}>
+              <span style={styles.detailLabel}>Lead time</span>
+              <span style={styles.detailValue}>15-25 days</span>
+            </div>
+            <div style={styles.detailRow}>
+              <span style={styles.detailLabel}>Case pack</span>
+              <span style={styles.detailValue}>{product.casePackSize || "Customizable"}</span>
+            </div>
+            <div style={styles.detailRow}>
+              <span style={styles.detailLabel}>Supplier</span>
+              <span style={styles.detailValue}>{product.brand}</span>
+            </div>
+          </div>
+
+          <div style={styles.sidebarCard}>
+            <h2 style={styles.sidebarTitle}>Why Buy Wholesale?</h2>
+            <div style={styles.bulletList}>
+              <div style={styles.bulletItem}>
+                <span style={styles.bulletDot} />
+                <span>Lower unit cost for larger orders.</span>
+              </div>
+              <div style={styles.bulletItem}>
+                <span style={styles.bulletDot} />
+                <span>Custom packaging solutions on demand.</span>
+              </div>
+              <div style={styles.bulletItem}>
+                <span style={styles.bulletDot} />
+                <span>Supplier support for logistic planning.</span>
+              </div>
+            </div>
+          </div>
+
+          <div style={styles.sidebarCard}>
+            <h2 style={styles.sidebarTitle}>Order Summary</h2>
+            <div style={styles.detailRow}>
+              <span style={styles.detailLabel}>Unit price</span>
+              <span style={styles.detailValue}>${currentTier?.price?.toFixed(2) ?? product.price.toFixed(2)}</span>
+            </div>
+            <div style={styles.detailRow}>
+              <span style={styles.detailLabel}>Qty</span>
+              <span style={styles.detailValue}>{quantity}</span>
+            </div>
+          </div>
+        </aside>
       </div>
+
+      {isMobile && (
+        <div style={styles.stickyBar}>
+          <button style={{ ...styles.stickyButton, ...styles.stickyPrimary }} onClick={handleAddToCart}>
+            Add to Cart
+          </button>
+          <button style={{ ...styles.stickyButton, ...styles.stickySecondary }} onClick={handleBuyNow}>
+            Buy Now
+          </button>
+        </div>
+      )}
     </div>
   )
 }

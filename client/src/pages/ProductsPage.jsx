@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
-import { products, categories, brands } from '@/data/products';
+import { products as fallbackProducts } from '@/data/products';
+import productsApi from '@/services/api/products.api';
 import ProductCard from '@/components/ProductCard/ProductCard';
 import { FiSliders, FiX, FiSearch, FiChevronDown } from 'react-icons/fi';
 
@@ -252,10 +253,32 @@ const styles = {
 export default function ProductsPage() {
   const [sortBy, setSortBy] = useState('popular');
   const [displayCount, setDisplayCount] = useState(20);
-  
+  const [productsList, setProductsList] = useState(fallbackProducts);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      setLoading(true);
+      const response = await productsApi.getAll(1, 100);
+
+      if (response.success) {
+        setProductsList(response.data?.items || fallbackProducts);
+        setError(null);
+      } else {
+        setError(response.message || 'Failed to load products');
+        setProductsList(fallbackProducts);
+      }
+
+      setLoading(false);
+    };
+
+    fetchProducts();
+  }, []);
+
   // Filter and sort products (Simplified to only Sorting)
   const displayedProducts = useMemo(() => {
-    let results = [...products];
+    let results = [...productsList];
 
     // Sort products
     switch (sortBy) {
@@ -316,6 +339,17 @@ export default function ProductsPage() {
               </select>
             </div>
           </div>
+
+          {loading && (
+            <div style={{ padding: '16px', color: '#374151', fontWeight: 600 }}>
+              Loading products from the backend...
+            </div>
+          )}
+          {error && (
+            <div style={{ padding: '16px', color: '#b91c1c', fontWeight: 600 }}>
+              {error}
+            </div>
+          )}
 
           {/* Products Grid */}
           {visibleProducts.length > 0 ? (
