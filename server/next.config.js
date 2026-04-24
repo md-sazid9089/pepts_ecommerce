@@ -4,11 +4,19 @@
  * ============================================================================
  * NEXT.JS API-ONLY BACKEND CONFIGURATION
  * ============================================================================
- * Headless REST API backend — no React pages, pure JSON responses.
+ * Headless REST API — pure JSON responses, no React pages.
+ * Deployed on Vercel as serverless functions.
  * ============================================================================
  */
 
-const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:3001"
+// Allowed CORS origins — comma-separated in FRONTEND_URL env var
+// e.g. FRONTEND_URL=https://pepta.com,http://localhost:5173
+const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:5173"
+const allowedOrigins = FRONTEND_URL.split(",").map((u) => u.trim())
+
+// For the CORS header value we need a single origin (we'll handle multiple
+// origins dynamically in middleware if needed; for now use the first one)
+const primaryOrigin = allowedOrigins[0]
 
 const nextConfig = {
   reactStrictMode: true,
@@ -23,22 +31,23 @@ const nextConfig = {
       {
         source: "/api/:path*",
         headers: [
-          { key: "Access-Control-Allow-Origin", value: FRONTEND_URL },
-          { key: "Access-Control-Allow-Methods", value: "GET, POST, PUT, PATCH, DELETE, OPTIONS" },
-          { key: "Access-Control-Allow-Headers", value: "Content-Type, Authorization, X-Requested-With, Accept" },
+          // CORS — allow the Hostinger frontend (and localhost in dev)
+          { key: "Access-Control-Allow-Origin",      value: primaryOrigin },
+          { key: "Access-Control-Allow-Methods",     value: "GET, POST, PUT, PATCH, DELETE, OPTIONS" },
+          { key: "Access-Control-Allow-Headers",     value: "Content-Type, Authorization, X-Requested-With, Accept" },
           { key: "Access-Control-Allow-Credentials", value: "true" },
-          { key: "Access-Control-Max-Age", value: "86400" },
+          { key: "Access-Control-Max-Age",           value: "86400" },
           // Security headers
-          { key: "X-Content-Type-Options", value: "nosniff" },
-          { key: "X-Frame-Options", value: "DENY" },
-          { key: "X-XSS-Protection", value: "1; mode=block" },
-          { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+          { key: "X-Content-Type-Options",           value: "nosniff" },
+          { key: "X-Frame-Options",                  value: "DENY" },
+          { key: "X-XSS-Protection",                 value: "1; mode=block" },
+          { key: "Referrer-Policy",                  value: "strict-origin-when-cross-origin" },
         ],
       },
     ]
   },
 
-  // ✅ Expose only safe public env vars to the API layer
+  // Expose only non-secret public env vars to the client bundle
   env: {
     NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL,
   },

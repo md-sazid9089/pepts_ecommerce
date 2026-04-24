@@ -5,16 +5,18 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "prisma generate && next build",
     "start": "next start",
     "lint": "next lint",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
-    "prisma:studio": "prisma studio"
+    "prisma:studio": "prisma studio",
+    "prisma:push": "prisma db push"
   },
   "dependencies": {
     "@prisma/client": "^5.0.0",
     "bcryptjs": "^2.4.3",
+    "cloudinary": "^2.9.0",
     "cors": "^2.8.5",
     "dotenv": "^16.3.1",
     "jsonwebtoken": "^9.0.0",

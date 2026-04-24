@@ -14,22 +14,42 @@ export default defineConfig({
     },
   },
   server: {
-    port: 3000,
-    strictPort: false,
+    port: 5173,
+    strictPort: true,
     open: true,
   },
   build: {
     outDir: 'dist',
     sourcemap: false,
     minify: 'terser',
+    terserOptions: {
+      compress: {
+        drop_console: true,  // Remove all console.* in production build
+        drop_debugger: true,
+      },
+    },
     rollupOptions: {
       output: {
-        manualChunks: (id) => {
-          if (id.includes('node_modules/react') || id.includes('node_modules/react-dom') || id.includes('node_modules/react-router-dom')) {
-            return 'react-vendor';
+        manualChunks(id) {
+          // Core React — always needed
+          if (id.includes('node_modules/react/') || id.includes('node_modules/react-dom/')) {
+            return 'react-core'
           }
+          // Router — needed on every page but separate from React
+          if (id.includes('node_modules/react-router')) {
+            return 'react-router'
+          }
+          // Large icon library — lazy load separately
+          if (id.includes('node_modules/react-icons')) {
+            return 'react-icons'
+          }
+          // Animation library
           if (id.includes('node_modules/framer-motion')) {
-            return 'framer-motion';
+            return 'framer-motion'
+          }
+          // All other node_modules go in a vendor chunk
+          if (id.includes('node_modules/')) {
+            return 'vendor'
           }
         },
       },
@@ -41,7 +61,7 @@ export default defineConfig({
     },
   },
   preview: {
-    port: 3000,
-    strictPort: false,
+    port: 5173,
+    strictPort: true,
   },
 })

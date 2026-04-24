@@ -6,7 +6,7 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "mysql"
   url      = env("DATABASE_URL")
 }
 
@@ -41,19 +41,28 @@ model Product {
   description String
   price       Float    // Retail price
   stock       Int      @default(0)
-  
+  imageUrl    String?  // Primary Cloudinary image URL
+  images      String?  @db.Text // JSON array of additional image URLs
+  specs       String?  @db.Text // JSON: { height, material, clothing, package, tier, ... }
+
   // Foreign keys
   categoryId  String
   category    Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
-  
+
   // Relations
   bulkPrices  BulkPrice[]
   orderItems  OrderItem[]
   reviews     Review[]
-  
+
   isActive    Boolean  @default(true)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+
+  // Indexes for frequent query patterns
+  @@index([isActive, createdAt])   // Default list: active products sorted by date
+  @@index([isActive, price])       // Price-sorted product lists
+  @@index([categoryId, isActive])  // Category filter
+  @@index([title])                 // Search by title
 }
 
 // ============================================================================

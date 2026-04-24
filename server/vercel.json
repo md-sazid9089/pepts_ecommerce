@@ -1,0 +1,13 @@
+{
+  "version": 2,
+  "name": "pepta-api",
+  "buildCommand": "prisma generate && next build",
+  "installCommand": "npm install",
+  "framework": "nextjs",
+  "regions": ["sin1"],
+  "functions": {
+    "app/api/**/*.js": {
+      "maxDuration": 30
+    }
+  }
+}

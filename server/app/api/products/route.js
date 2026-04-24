@@ -62,7 +62,17 @@ export async function GET(request) {
       sortOrder,
     })
 
-    return apiResponse.paginated(items, total, page, pageSize, "Products fetched successfully")
+    const response = apiResponse.paginated(items, total, page, pageSize, "Products fetched successfully")
+
+    // Cache for 60s on CDN/browser, serve stale for 30s while revalidating
+    // Skip cache on search queries to always return fresh results
+    if (!search) {
+      response.headers.set("Cache-Control", "public, max-age=60, stale-while-revalidate=30")
+    } else {
+      response.headers.set("Cache-Control", "no-store")
+    }
+
+    return response
   } catch (error) {
     console.error("GET /api/products error:", error)
     return apiResponse.serverError("Failed to fetch products", error)

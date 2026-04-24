@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { productsApi } from "@/services/api"
 import {
   FaBars,
@@ -633,12 +633,28 @@ export default function AdminDashboard() {
     moq: "",
     casePackSize: "",
     tieredPricingJson: "",
-    specsText: "",
+    // Specification fields
+    specHeight: "",
+    specMaterial: "",
+    specClothing: "",
+    specPackage: "",
+    specTier: "",
   })
+  const [imageFile, setImageFile] = useState(null)
+  const [imagePreview, setImagePreview] = useState(null)
+  const [uploadingImage, setUploadingImage] = useState(null) // productId being uploaded
+  const [uploadImageFile, setUploadImageFile] = useState({}) // { [productId]: File }
   const [formMessage, setFormMessage] = useState("")
   const [formError, setFormError] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const isMobile = window.innerWidth < 768
+
+  // Responsive — recalculate on window resize instead of every render
+  const [isMobile, setIsMobile] = useState(() => window.innerWidth < 768)
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768)
+    window.addEventListener("resize", handleResize, { passive: true })
+    return () => window.removeEventListener("resize", handleResize)
+  }, [])
 
   const navigationItems = [
     { id: "dashboard", label: "Dashboard", icon: FaChartLine },
@@ -682,6 +698,37 @@ export default function AdminDashboard() {
     }))
   }
 
+  const handleImageFileChange = (e) => {
+    const file = e.target.files[0]
+    if (!file) return
+    setImageFile(file)
+    setImagePreview(URL.createObjectURL(file))
+  }
+
+  const handleUploadImageForProduct = async (productId) => {
+    const file = uploadImageFile[productId]
+    if (!file) return
+    const token = localStorage.getItem("authToken")
+    setUploadingImage(productId)
+    try {
+      const res = await productsApi.uploadImage(productId, file, token)
+      if (res.success) {
+        setProducts((prev) =>
+          prev.map((p) =>
+            p.id === productId ? { ...p, imageUrl: res.data.imageUrl } : p
+          )
+        )
+        setUploadImageFile((prev) => ({ ...prev, [productId]: null }))
+      } else {
+        alert(res.message || "Image upload failed")
+      }
+    } catch (e) {
+      alert(e.message)
+    } finally {
+      setUploadingImage(null)
+    }
+  }
+
   const handleCreateProduct = async (event) => {
     event.preventDefault()
     setFormError("")
@@ -700,29 +747,29 @@ export default function AdminDashboard() {
       return
     }
 
-    const specs = productForm.specsText
-      .split("\n")
-      .map((line) => line.trim())
-      .filter(Boolean)
-      .reduce((acc, line) => {
-        const [key, ...rest] = line.split(":")
-        if (!key || rest.length === 0) return acc
-        acc[key.trim()] = rest.join(":").trim()
-        return acc
-      }, {})
 
     try {
+      const specs = {
+        height:   productForm.specHeight.trim()   || undefined,
+        material: productForm.specMaterial.trim() || undefined,
+        clothing: productForm.specClothing.trim() || undefined,
+        package:  productForm.specPackage.trim()  || undefined,
+        tier:     productForm.specTier.trim()     || undefined,
+      }
+      // Remove undefined keys so we only send filled fields
+      Object.keys(specs).forEach((k) => specs[k] === undefined && delete specs[k])
+
       const response = await productsApi.create({
-        title: productForm.title,
-        brand: productForm.brand,
-        description: productForm.description,
-        price: Number(productForm.price),
-        stock: Number(productForm.stock),
+        title:        productForm.title,
+        brand:        productForm.brand,
+        description:  productForm.description,
+        price:        Number(productForm.price),
+        stock:        Number(productForm.stock),
         categoryName: productForm.categoryName,
-        moq: Number(productForm.moq),
+        moq:          Number(productForm.moq),
         casePackSize: Number(productForm.casePackSize),
         tieredPricing,
-        specs,
+        specs:        Object.keys(specs).length > 0 ? specs : undefined,
       })
 
       if (!response.success) {
@@ -730,7 +777,21 @@ export default function AdminDashboard() {
         return
       }
 
-      setFormMessage("Product created successfully.")
+      const newProductId = response.data?.id
+
+      // If an image was selected, upload it now
+      if (imageFile && newProductId) {
+        const token = localStorage.getItem("authToken")
+        const imgRes = await productsApi.uploadImage(newProductId, imageFile, token)
+        if (!imgRes.success) {
+          setFormMessage(`Product created, but image upload failed: ${imgRes.message}`)
+        } else {
+          setFormMessage("Product created and image uploaded successfully! ✅")
+        }
+      } else {
+        setFormMessage("Product created successfully.")
+      }
+
       setProductForm({
         title: "",
         brand: "",
@@ -741,8 +802,15 @@ export default function AdminDashboard() {
         moq: "",
         casePackSize: "",
         tieredPricingJson: "",
-        specsText: "",
+        specHeight: "",
+        specMaterial: "",
+        specClothing: "",
+        specPackage: "",
+        specTier: "",
       })
+      setImageFile(null)
+      setImagePreview(null)
+
       const refreshed = await productsApi.getAll(1, 100)
       if (refreshed.success) {
         setProducts(refreshed.data?.items || [])
@@ -1130,15 +1198,120 @@ export default function AdminDashboard() {
                 />
               </div>
 
+              {/* Specifications */}
               <div style={styles.formGroup}>
-                <label style={styles.formLabel} htmlFor="specsText">Product Specs</label>
-                <textarea
-                  id="specsText"
-                  value={productForm.specsText}
-                  onChange={handleFormChange("specsText")}
-                  style={styles.formTextarea}
-                  placeholder="Height: 30cm\nMaterial: Premium Vinyl\nPackage: 50 units per case"
-                />
+                <label style={{ ...styles.formLabel, fontSize: "1rem", color: "#533638", borderBottom: "2px solid #F7B9C4", paddingBottom: "0.4rem", marginBottom: "0.75rem", display: "block" }}>
+                  📋 Specifications
+                </label>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "1rem" }}>
+
+                  <div style={styles.formGroup}>
+                    <label style={styles.formLabel} htmlFor="specHeight">Height</label>
+                    <input
+                      id="specHeight"
+                      type="text"
+                      value={productForm.specHeight}
+                      onChange={handleFormChange("specHeight")}
+                      style={styles.formInput}
+                      placeholder="e.g. 30cm"
+                    />
+                  </div>
+
+                  <div style={styles.formGroup}>
+                    <label style={styles.formLabel} htmlFor="specMaterial">Material</label>
+                    <input
+                      id="specMaterial"
+                      type="text"
+                      value={productForm.specMaterial}
+                      onChange={handleFormChange("specMaterial")}
+                      style={styles.formInput}
+                      placeholder="e.g. Premium Vinyl & Plastic"
+                    />
+                  </div>
+
+                  <div style={styles.formGroup}>
+                    <label style={styles.formLabel} htmlFor="specClothing">Clothing</label>
+                    <input
+                      id="specClothing"
+                      type="text"
+                      value={productForm.specClothing}
+                      onChange={handleFormChange("specClothing")}
+                      style={styles.formInput}
+                      placeholder="e.g. Hand-sewn Couture Outfits"
+                    />
+                  </div>
+
+                  <div style={styles.formGroup}>
+                    <label style={styles.formLabel} htmlFor="specPackage">Package</label>
+                    <input
+                      id="specPackage"
+                      type="text"
+                      value={productForm.specPackage}
+                      onChange={handleFormChange("specPackage")}
+                      style={styles.formInput}
+                      placeholder="e.g. 50 units per case"
+                    />
+                  </div>
+
+                  <div style={styles.formGroup}>
+                    <label style={styles.formLabel} htmlFor="specTier">Tier</label>
+                    <input
+                      id="specTier"
+                      type="text"
+                      value={productForm.specTier}
+                      onChange={handleFormChange("specTier")}
+                      style={styles.formInput}
+                      placeholder="e.g. Premium / Collectible"
+                    />
+                  </div>
+
+                </div>
+              </div>
+
+
+              {/* Image Upload */}
+              <div style={styles.formGroup}>
+                <label style={styles.formLabel} htmlFor="productImage">Product Image (Cloudinary)</label>
+                <div style={{ display: "flex", alignItems: "center", gap: "1rem", flexWrap: "wrap" }}>
+                  <label
+                    htmlFor="productImage"
+                    style={{
+                      display: "inline-flex", alignItems: "center", gap: "0.5rem",
+                      padding: "0.65rem 1.25rem", borderRadius: "0.65rem",
+                      border: "2px dashed #533638", cursor: "pointer",
+                      color: "#533638", fontWeight: 600, fontSize: "0.9rem",
+                      backgroundColor: "#FFF5F5", transition: "all 0.2s",
+                    }}
+                  >
+                    📷 {imageFile ? imageFile.name : "Choose Image"}
+                    <input
+                      id="productImage"
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp,image/gif"
+                      style={{ display: "none" }}
+                      onChange={handleImageFileChange}
+                    />
+                  </label>
+                  {imagePreview && (
+                    <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
+                      <img
+                        src={imagePreview}
+                        alt="Preview"
+                        style={{ width: 64, height: 64, objectFit: "cover", borderRadius: "0.5rem", border: "1px solid #E5E7EB" }}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => { setImageFile(null); setImagePreview(null) }}
+                        style={{ background: "#fee2e2", border: "none", color: "#991b1b", borderRadius: "0.375rem", padding: "0.3rem 0.6rem", cursor: "pointer", fontSize: "0.8rem" }}
+                      >
+                        ✕ Remove
+                      </button>
+                    </div>
+                  )}
+                </div>
+                <p style={{ fontSize: "0.8rem", color: "#6b7280", marginTop: "0.25rem" }}>
+                  JPG, PNG, WebP or GIF · Max 10MB · Will be uploaded to Cloudinary automatically
+                </p>
               </div>
 
               <button type="submit" style={styles.submitBtn} disabled={isSubmitting}>
@@ -1156,26 +1329,74 @@ export default function AdminDashboard() {
                 <table style={styles.productTable}>
                   <thead>
                     <tr>
+                      <th style={styles.productTableHeader}>Image</th>
                       <th style={styles.productTableHeader}>Title</th>
-                      <th style={styles.productTableHeader}>Brand</th>
                       <th style={styles.productTableHeader}>Category</th>
                       <th style={styles.productTableHeader}>Price</th>
                       <th style={styles.productTableHeader}>Stock</th>
-                      <th style={styles.productTableHeader}>MOQ</th>
-                      <th style={styles.productTableHeader}>Case Pack</th>
+                      <th style={styles.productTableHeader}>Upload Image</th>
                     </tr>
                   </thead>
                   <tbody>
                     {products.length > 0 ? (
                       products.map((product) => (
                         <tr key={product.id} style={styles.productTableRow}>
-                          <td style={styles.productTableCell}>{product.title || product.name}</td>
-                          <td style={styles.productTableCell}>{product.brand || "—"}</td>
-                          <td style={styles.productTableCell}>{product.category || product.categoryName || "General"}</td>
+                          <td style={styles.productTableCell}>
+                            {product.imageUrl ? (
+                              <img
+                                src={product.imageUrl}
+                                alt={product.title}
+                                style={{ width: 48, height: 48, objectFit: "cover", borderRadius: "0.375rem", border: "1px solid #E5E7EB" }}
+                              />
+                            ) : (
+                              <div style={{ width: 48, height: 48, borderRadius: "0.375rem", backgroundColor: "#F3F4F6", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "1.25rem" }}>🖼️</div>
+                            )}
+                          </td>
+                          <td style={{ ...styles.productTableCell, maxWidth: 200, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                            {product.title || product.name}
+                          </td>
+                          <td style={styles.productTableCell}>{product.category || "General"}</td>
                           <td style={styles.productTableCell}>${(product.price || 0).toFixed(2)}</td>
                           <td style={styles.productTableCell}>{product.stock ?? 0}</td>
-                          <td style={styles.productTableCell}>{product.moq ?? "—"}</td>
-                          <td style={styles.productTableCell}>{product.casePackSize ?? "—"}</td>
+                          <td style={styles.productTableCell}>
+                            <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                              <label
+                                htmlFor={`img-${product.id}`}
+                                style={{
+                                  padding: "0.35rem 0.65rem", borderRadius: "0.375rem",
+                                  backgroundColor: "#EFF6FF", color: "#1D4ED8",
+                                  border: "1px solid #BFDBFE", cursor: "pointer",
+                                  fontSize: "0.78rem", fontWeight: 600, whiteSpace: "nowrap",
+                                }}
+                              >
+                                {uploadImageFile[product.id] ? "✓ Ready" : "📷 Choose"}
+                                <input
+                                  id={`img-${product.id}`}
+                                  type="file"
+                                  accept="image/jpeg,image/png,image/webp"
+                                  style={{ display: "none" }}
+                                  onChange={(e) => {
+                                    const file = e.target.files[0]
+                                    if (file) setUploadImageFile((prev) => ({ ...prev, [product.id]: file }))
+                                  }}
+                                />
+                              </label>
+                              {uploadImageFile[product.id] && (
+                                <button
+                                  onClick={() => handleUploadImageForProduct(product.id)}
+                                  disabled={uploadingImage === product.id}
+                                  style={{
+                                    padding: "0.35rem 0.65rem", borderRadius: "0.375rem",
+                                    backgroundColor: "#533638", color: "#fff",
+                                    border: "none", cursor: "pointer",
+                                    fontSize: "0.78rem", fontWeight: 600,
+                                  }}
+                                >
+                                  {uploadingImage === product.id ? "Uploading..." : "Upload"}
+                                </button>
+                              )}
+                            </div>
+                          </td>
                         </tr>
                       ))
                     ) : (

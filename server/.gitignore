@@ -48,3 +48,7 @@ tmp/
 # Misc
 .cache/
 .eslintcache
+
+# Dev scratch/test scripts (never ship to production)
+scratch/
+.vercel

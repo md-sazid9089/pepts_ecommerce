@@ -33,6 +33,9 @@ function mapProduct(product, full = false) {
     inStock: product.stock > 0,
     categoryId: product.categoryId,
     category: product.category?.name ?? null,
+    imageUrl: product.imageUrl ?? null,
+    images: product.images ? JSON.parse(product.images) : [],
+    specs: product.specs ? JSON.parse(product.specs) : null,
     isActive: product.isActive,
     createdAt: product.createdAt,
     updatedAt: product.updatedAt,
@@ -70,11 +73,13 @@ export async function getAll(page = 1, pageSize = 20, filters = {}) {
 
     const where = { isActive: true }
 
-    // SQLite-compatible search (LIKE via contains without mode)
+    // MySQL case-insensitive search using contains (Prisma uses LIKE under the hood;
+    // collation on the column handles case — no mode needed for MySQL unlike SQLite)
     if (filters.search) {
+      const term = filters.search.trim()
       where.OR = [
-        { title: { contains: filters.search } },
-        { description: { contains: filters.search } },
+        { title:       { contains: term } },
+        { description: { contains: term } },
       ]
     }
 
@@ -84,24 +89,46 @@ export async function getAll(page = 1, pageSize = 20, filters = {}) {
 
     // Sort configuration
     const sortField = filters.sortBy ?? "createdAt"
-    const sortDir = filters.sortOrder ?? "desc"
-    const orderBy = { [sortField]: sortDir }
+    const sortDir   = filters.sortOrder ?? "desc"
+    const orderBy   = { [sortField]: sortDir }
 
-    const [items, total] = await Promise.all([
-      prisma.product.findMany({
-        where,
-        skip,
-        take: pageSize,
-        orderBy,
-        include: { category: true },
-      }),
+    // Select only the fields needed for listing — avoids fetching heavy TEXT columns
+    // (specs, images) on every list page load
+    const select = {
+      id:          true,
+      title:       true,
+      price:       true,
+      stock:       true,
+      imageUrl:    true,
+      isActive:    true,
+      createdAt:   true,
+      updatedAt:   true,
+      categoryId:  true,
+      category:    { select: { id: true, name: true } },
+      // description & specs are omitted from list — fetched in getById
+    }
+
+    const [rawItems, total] = await Promise.all([
+      prisma.product.findMany({ where, skip, take: pageSize, orderBy, select }),
       prisma.product.count({ where }),
     ])
 
-    return {
-      items: items.map((p) => mapProduct(p)),
-      total,
-    }
+    // Map to response shape (specs/images are null in list view — that's fine)
+    const items = rawItems.map((p) => ({
+      id:         p.id,
+      title:      p.title,
+      price:      p.price,
+      stock:      p.stock,
+      inStock:    p.stock > 0,
+      imageUrl:   p.imageUrl ?? null,
+      categoryId: p.categoryId,
+      category:   p.category?.name ?? null,
+      isActive:   p.isActive,
+      createdAt:  p.createdAt,
+      updatedAt:  p.updatedAt,
+    }))
+
+    return { items, total }
   } catch (error) {
     throw new Error(`Failed to fetch products: ${error.message}`)
   }
@@ -156,11 +183,12 @@ export async function createProduct(data) {
 
     const product = await prisma.product.create({
       data: {
-        title: data.title.trim(),
+        title:       data.title.trim(),
         description: data.description.trim(),
-        price: data.price,
-        stock: Math.round(data.stock ?? 0),
-        categoryId: category.id,
+        price:       data.price,
+        stock:       Math.round(data.stock ?? 0),
+        categoryId:  category.id,
+        specs:       data.specs ? JSON.stringify(data.specs) : null,
       },
       include: { category: true },
     })
@@ -203,11 +231,12 @@ export async function updateProduct(productId, data) {
     const updated = await prisma.product.update({
       where: { id: productId },
       data: {
-        ...(data.title !== undefined && { title: data.title.trim() }),
+        ...(data.title       !== undefined && { title:       data.title.trim() }),
         ...(data.description !== undefined && { description: data.description.trim() }),
-        ...(data.price !== undefined && { price: data.price }),
-        ...(data.stock !== undefined && { stock: Math.round(data.stock) }),
-        ...(data.isActive !== undefined && { isActive: data.isActive }),
+        ...(data.price       !== undefined && { price:       data.price }),
+        ...(data.stock       !== undefined && { stock:       Math.round(data.stock) }),
+        ...(data.isActive    !== undefined && { isActive:    data.isActive }),
+        ...(data.specs       !== undefined && { specs:       JSON.stringify(data.specs) }),
         categoryId,
       },
       include: { category: true },

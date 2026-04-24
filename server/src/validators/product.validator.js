@@ -36,15 +36,30 @@ export const createProductSchema = z.object({
     .max(100, "Category name too long")
     .optional()
     .default("General"),
+
+  specs: z.object({
+    height:   z.string().trim().max(100).optional(),
+    material: z.string().trim().max(200).optional(),
+    clothing: z.string().trim().max(200).optional(),
+    package:  z.string().trim().max(200).optional(),
+    tier:     z.string().trim().max(100).optional(),
+  }).optional(),
 })
 
 export const updateProductSchema = z.object({
-  title: z.string().trim().min(1).max(255).optional(),
-  description: z.string().trim().min(1).max(5000).optional(),
-  price: z.number().nonnegative().optional(),
-  stock: z.number().int().nonnegative().optional(),
+  title:        z.string().trim().min(1).max(255).optional(),
+  description:  z.string().trim().min(1).max(5000).optional(),
+  price:        z.number().nonnegative().optional(),
+  stock:        z.number().int().nonnegative().optional(),
   categoryName: z.string().trim().min(1).max(100).optional(),
-  isActive: z.boolean().optional(),
+  isActive:     z.boolean().optional(),
+  specs: z.object({
+    height:   z.string().trim().max(100).optional(),
+    material: z.string().trim().max(200).optional(),
+    clothing: z.string().trim().max(200).optional(),
+    package:  z.string().trim().max(200).optional(),
+    tier:     z.string().trim().max(100).optional(),
+  }).optional(),
 })
 
 export const productQuerySchema = z.object({

@@ -209,6 +209,57 @@ export const productsApi = {
       }
     }
   },
+  /**
+   * Upload a product image to Cloudinary (admin only)
+   * @param {string} productId - Product ID
+   * @param {File} file - Image file from file input
+   * @param {string} token - Admin JWT token
+   * @returns {Promise<object>} - { imageUrl, publicId, width, height, product }
+   *
+   * EXAMPLE:
+   * const fileInput = document.getElementById('imageInput');
+   * const response = await productsApi.uploadImage("prod_123", fileInput.files[0], token);
+   * if (response.success) console.log(response.data.imageUrl);
+   */
+  uploadImage: async (productId, file, token) => {
+    try {
+      const formData = new FormData()
+      formData.append("image", file)
+
+      const apiBase = import.meta.env.VITE_API_URL || "http://localhost:3000"
+      const res = await fetch(`${apiBase}/api/products/${productId}/upload-image`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          // Do NOT set Content-Type — browser sets it automatically with boundary for multipart
+        },
+        body: formData,
+      })
+
+      const data = await res.json()
+      return data
+    } catch (error) {
+      return { success: false, message: error.message }
+    }
+  },
+
+  /**
+   * Remove product image (admin only)
+   * @param {string} productId - Product ID
+   * @param {string} token - Admin JWT token
+   */
+  removeImage: async (productId, token) => {
+    try {
+      const apiBase = import.meta.env.VITE_API_URL || "http://localhost:3000"
+      const res = await fetch(`${apiBase}/api/products/${productId}/upload-image`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      return await res.json()
+    } catch (error) {
+      return { success: false, message: error.message }
+    }
+  },
 }
 
 export default productsApi
