@@ -100,6 +100,27 @@ export async function createOrder(userId, items) {
 }
 
 /**
+ * Get order by ID
+ * @param {string} id
+ * @returns {Promise<object|null>}
+ */
+export async function getOrderById(id) {
+  try {
+    return await prisma.order.findUnique({
+      where: { id },
+      include: {
+        items: {
+          include: { product: { select: { id: true, title: true, price: true } } },
+        },
+        user: { select: { id: true, email: true, firstName: true, lastName: true } },
+      },
+    })
+  } catch (error) {
+    throw new Error(`Failed to fetch order: ${error.message}`)
+  }
+}
+
+/**
  * Get orders for a specific user (paginated)
  * @param {string} userId
  * @param {number} page
@@ -186,4 +207,27 @@ export async function updateOrderStatus(orderId, status) {
   })
 }
 
-export default { createOrder, getUserOrders, getAllOrders, updateOrderStatus }
+/**
+ * Cancel an order
+ * @param {string} id
+ * @returns {Promise<object>}
+ */
+export async function cancelOrder(id) {
+  try {
+    return await prisma.order.update({
+      where: { id },
+      data: { status: "cancelled" },
+    })
+  } catch (error) {
+    throw new Error(`Failed to cancel order: ${error.message}`)
+  }
+}
+
+export default {
+  createOrder,
+  getOrderById,
+  getUserOrders,
+  getAllOrders,
+  updateOrderStatus,
+  cancelOrder,
+}

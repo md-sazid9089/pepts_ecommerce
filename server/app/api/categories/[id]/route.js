@@ -1,15 +1,15 @@
 /**
  * ============================================================================
- * INQUIRY BY ID
- * GET    /api/inquiries/:id — get inquiry details (admin)
- * PUT    /api/inquiries/:id — update inquiry (admin)
- * DELETE /api/inquiries/:id — delete inquiry (admin)
+ * CATEGORY BY ID
+ * GET    /api/categories/:id — get category details
+ * PUT    /api/categories/:id — update category (admin)
+ * DELETE /api/categories/:id — delete category (admin)
  * ============================================================================
  */
 
 import jwt from "jsonwebtoken"
 import apiResponse from "@/src/utils/apiResponse"
-import * as inquiriesService from "@/src/services/inquiries.service"
+import * as categoriesService from "@/src/services/categories.service"
 
 function verifyJwt(request) {
   const authHeader = request.headers.get("authorization")
@@ -27,18 +27,13 @@ function verifyJwt(request) {
 
 export async function GET(request, { params }) {
   try {
-    const user = verifyJwt(request)
-    if (!user) return apiResponse.unauthorized("Authentication required")
-    if (user.role !== "admin") return apiResponse.forbidden("Admin access required")
-
     const { id } = await params
-    const inquiry = await inquiriesService.getInquiryById(id)
-    if (!inquiry) return apiResponse.notFound("Inquiry not found")
-    
-    return apiResponse.success(inquiry, "Inquiry fetched successfully")
+    const category = await categoriesService.getById(id)
+    if (!category) return apiResponse.notFound("Category not found")
+    return apiResponse.success(category, "Category fetched successfully")
   } catch (error) {
-    console.error("GET /api/inquiries/:id error:", error)
-    return apiResponse.serverError("Failed to fetch inquiry", error)
+    console.error("GET /api/categories/:id error:", error)
+    return apiResponse.serverError("Failed to fetch category", error)
   }
 }
 
@@ -50,11 +45,11 @@ export async function PUT(request, { params }) {
 
     const { id } = await params
     const body = await request.json()
-    const inquiry = await inquiriesService.updateInquiry(id, body)
-    return apiResponse.success(inquiry, "Inquiry updated successfully")
+    const category = await categoriesService.update(id, body)
+    return apiResponse.success(category, "Category updated successfully")
   } catch (error) {
-    console.error("PUT /api/inquiries/:id error:", error)
-    return apiResponse.serverError("Failed to update inquiry", error)
+    console.error("PUT /api/categories/:id error:", error)
+    return apiResponse.serverError("Failed to update category", error)
   }
 }
 
@@ -65,10 +60,10 @@ export async function DELETE(request, { params }) {
     if (user.role !== "admin") return apiResponse.forbidden("Admin access required")
 
     const { id } = await params
-    await inquiriesService.deleteInquiry(id)
-    return apiResponse.success(null, "Inquiry deleted successfully")
+    await categoriesService.deleteCategory(id)
+    return apiResponse.success(null, "Category deleted successfully")
   } catch (error) {
-    console.error("DELETE /api/inquiries/:id error:", error)
-    return apiResponse.serverError("Failed to delete inquiry", error)
+    console.error("DELETE /api/categories/:id error:", error)
+    return apiResponse.serverError("Failed to delete category", error)
   }
 }

@@ -1,13 +1,13 @@
 /**
  * ============================================================================
- * ORDER DETAILS
- * GET /api/orders/:id — get order details
+ * AUTH — UPDATE PROFILE
+ * PUT /api/auth/profile
  * ============================================================================
  */
 
 import jwt from "jsonwebtoken"
 import apiResponse from "@/src/utils/apiResponse"
-import * as ordersService from "@/src/services/orders.service"
+import * as authService from "@/src/services/auth.service"
 
 function verifyJwt(request) {
   const authHeader = request.headers.get("authorization")
@@ -23,24 +23,17 @@ function verifyJwt(request) {
   }
 }
 
-export async function GET(request, { params }) {
+export async function PUT(request) {
   try {
     const user = verifyJwt(request)
     if (!user) return apiResponse.unauthorized("Authentication required")
 
-    const { id } = await params
-    const order = await ordersService.getOrderById(id)
+    const body = await request.json()
+    const updatedUser = await authService.updateProfile(user.userId, body)
     
-    if (!order) return apiResponse.notFound("Order not found")
-    
-    // Permission check
-    if (order.userId !== user.userId && user.role !== "admin") {
-      return apiResponse.forbidden("Access denied")
-    }
-
-    return apiResponse.success(order, "Order fetched successfully")
+    return apiResponse.success(updatedUser, "Profile updated successfully")
   } catch (error) {
-    console.error("GET /api/orders/:id error:", error)
-    return apiResponse.serverError("Failed to fetch order", error)
+    console.error("PUT /api/auth/profile error:", error)
+    return apiResponse.serverError("Failed to update profile", error)
   }
 }

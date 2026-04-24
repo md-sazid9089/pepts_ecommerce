@@ -144,4 +144,25 @@ export async function moderateReview(reviewId, status) {
   }
 }
 
-export default { createReview, getProductReviews, getAllReviews, moderateReview }
+/**
+ * Delete a review (admin)
+ * @param {string} id
+ * @returns {Promise<object>}
+ */
+export async function deleteReview(id) {
+  try {
+    return await prisma.review.delete({
+      where: { id },
+    })
+  } catch (error) {
+    throw new Error(`Failed to delete review: ${error.message}`)
+  }
+}
+
+export default {
+  createReview,
+  getProductReviews,
+  getAllReviews,
+  moderateReview,
+  deleteReview,
+}

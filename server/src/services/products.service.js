@@ -3,15 +3,6 @@
  * PRODUCTS SERVICE LAYER
  * ============================================================================
  * Handles product database operations and business logic.
- *
- * FIXES APPLIED:
- * ✅ Removed mode:"insensitive" — SQLite does not support it
- * ✅ Added isActive:true filter on all queries — respects soft-deletes
- * ✅ Added updateProduct and deleteProduct (soft delete)
- * ✅ Includes bulkPrices and real reviews aggregation in getById
- * ✅ Removed hardcoded placeholder image and fake rating
- * ✅ Added sortBy / sortOrder support
- * ============================================================================
  */
 
 import prisma from "@/lib/prisma"
@@ -33,6 +24,7 @@ function mapProduct(product, full = false) {
     inStock: product.stock > 0,
     categoryId: product.categoryId,
     category: product.category?.name ?? null,
+    images: product.images?.map((img) => img.url) || [],
     isActive: product.isActive,
     createdAt: product.createdAt,
     updatedAt: product.updatedAt,
@@ -61,7 +53,7 @@ function mapProduct(product, full = false) {
  * Get all active products with pagination, search, and sort.
  * @param {number} page
  * @param {number} pageSize
- * @param {{ search?: string, category?: string, sortBy?: string, sortOrder?: string }} filters
+ * @param {{ search?: string, category?: string, categoryId?: string, sortBy?: string, sortOrder?: string }} filters
  * @returns {Promise<{ items: Array, total: number }>}
  */
 export async function getAll(page = 1, pageSize = 20, filters = {}) {
@@ -70,7 +62,6 @@ export async function getAll(page = 1, pageSize = 20, filters = {}) {
 
     const where = { isActive: true }
 
-    // SQLite-compatible search (LIKE via contains without mode)
     if (filters.search) {
       where.OR = [
         { title: { contains: filters.search } },
@@ -82,7 +73,10 @@ export async function getAll(page = 1, pageSize = 20, filters = {}) {
       where.category = { name: { equals: filters.category } }
     }
 
-    // Sort configuration
+    if (filters.categoryId) {
+      where.categoryId = filters.categoryId
+    }
+
     const sortField = filters.sortBy ?? "createdAt"
     const sortDir = filters.sortOrder ?? "desc"
     const orderBy = { [sortField]: sortDir }
@@ -93,7 +87,7 @@ export async function getAll(page = 1, pageSize = 20, filters = {}) {
         skip,
         take: pageSize,
         orderBy,
-        include: { category: true },
+        include: { category: true, images: true },
       }),
       prisma.product.count({ where }),
     ])
@@ -120,6 +114,7 @@ export async function getById(productId) {
       where: { id: productId, isActive: true },
       include: {
         category: true,
+        images: true,
         bulkPrices: { orderBy: { minQuantity: "asc" } },
         reviews: {
           where: { status: "approved" },
@@ -137,22 +132,27 @@ export async function getById(productId) {
 }
 
 /**
- * Create a new product. Upserts the category if needed.
+ * Create a new product.
  * @param {object} data - validated product data
  * @returns {Promise<object>} created product
  */
 export async function createProduct(data) {
   try {
-    const categoryName = (data.categoryName || DEFAULT_CATEGORY_NAME).trim()
+    let categoryId = data.categoryId
 
-    const category = await prisma.category.upsert({
-      where: { name: categoryName },
-      update: {},
-      create: {
-        name: categoryName,
-        description: `Products in the ${categoryName} category`,
-      },
-    })
+    // If no categoryId, use categoryName to find or create
+    if (!categoryId) {
+      const categoryName = (data.categoryName || DEFAULT_CATEGORY_NAME).trim()
+      const category = await prisma.category.upsert({
+        where: { name: categoryName },
+        update: {},
+        create: {
+          name: categoryName,
+          description: `Products in the ${categoryName} category`,
+        },
+      })
+      categoryId = category.id
+    }
 
     const product = await prisma.product.create({
       data: {
@@ -160,9 +160,14 @@ export async function createProduct(data) {
         description: data.description.trim(),
         price: data.price,
         stock: Math.round(data.stock ?? 0),
-        categoryId: category.id,
+        categoryId: categoryId,
+        ...(data.images && {
+          images: {
+            create: data.images.map((url) => ({ url })),
+          },
+        }),
       },
-      include: { category: true },
+      include: { category: true, images: true },
     })
 
     return mapProduct(product)
@@ -179,16 +184,18 @@ export async function createProduct(data) {
  */
 export async function updateProduct(productId, data) {
   try {
-    const existing = await prisma.product.findUnique({ where: { id: productId } })
+    const existing = await prisma.product.findUnique({
+      where: { id: productId },
+      include: { images: true },
+    })
     if (!existing) {
       const err = new Error("Product not found")
       err.code = "NOT_FOUND"
       throw err
     }
 
-    // Handle category change
-    let categoryId = existing.categoryId
-    if (data.categoryName) {
+    let categoryId = data.categoryId || existing.categoryId
+    if (!data.categoryId && data.categoryName) {
       const cat = await prisma.category.upsert({
         where: { name: data.categoryName.trim() },
         update: {},
@@ -198,6 +205,13 @@ export async function updateProduct(productId, data) {
         },
       })
       categoryId = cat.id
+    }
+
+    if (data.images) {
+      await prisma.image.deleteMany({ where: { productId } })
+      await prisma.image.createMany({
+        data: data.images.map((url) => ({ url, productId })),
+      })
     }
 
     const updated = await prisma.product.update({
@@ -210,7 +224,7 @@ export async function updateProduct(productId, data) {
         ...(data.isActive !== undefined && { isActive: data.isActive }),
         categoryId,
       },
-      include: { category: true },
+      include: { category: true, images: true },
     })
 
     return mapProduct(updated)
@@ -237,7 +251,7 @@ export async function deleteProduct(productId) {
     return await prisma.product.update({
       where: { id: productId },
       data: { isActive: false },
-      include: { category: true },
+      include: { category: true, images: true },
     })
   } catch (error) {
     if (error.code === "NOT_FOUND") throw error

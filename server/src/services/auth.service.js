@@ -120,4 +120,54 @@ export async function getUserById(userId) {
   return user ? sanitizeUser(user) : null
 }
 
-export default { register, login, getUserById }
+/**
+ * Update user profile
+ * @param {string} userId
+ * @param {object} data - { firstName, lastName }
+ * @returns {Promise<object>} sanitized user
+ */
+export async function updateProfile(userId, data) {
+  const user = await prisma.user.update({
+    where: { id: userId },
+    data: {
+      ...(data.firstName && { firstName: data.firstName }),
+      ...(data.lastName && { lastName: data.lastName }),
+    },
+  })
+  return sanitizeUser(user)
+}
+
+/**
+ * Change user password
+ * @param {string} userId
+ * @param {string} currentPassword
+ * @param {string} newPassword
+ * @returns {Promise<boolean>}
+ */
+export async function changePassword(userId, currentPassword, newPassword) {
+  const user = await prisma.user.findUnique({ where: { id: userId } })
+  if (!user) throw new Error("User not found")
+
+  const match = await bcrypt.compare(currentPassword, user.password)
+  if (!match) {
+    const err = new Error("Incorrect current password")
+    err.code = "INVALID_PASSWORD"
+    throw err
+  }
+
+  const hashedPassword = await bcrypt.hash(newPassword, SALT_ROUNDS)
+  await prisma.user.update({
+    where: { id: userId },
+    data: { password: hashedPassword },
+  })
+
+  return true
+}
+
+export default {
+  register,
+  login,
+  getUserById,
+  updateProfile,
+  changePassword,
+}
