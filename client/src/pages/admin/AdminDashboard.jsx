@@ -625,10 +625,15 @@ export default function AdminDashboard() {
   const [loadingProducts, setLoadingProducts] = useState(false)
   const [productForm, setProductForm] = useState({
     title: "",
+    brand: "",
     description: "",
     price: "",
     stock: "",
     categoryName: "General",
+    moq: "",
+    casePackSize: "",
+    tieredPricingJson: "",
+    specsText: "",
   })
   const [formMessage, setFormMessage] = useState("")
   const [formError, setFormError] = useState("")
@@ -683,13 +688,41 @@ export default function AdminDashboard() {
     setFormMessage("")
     setIsSubmitting(true)
 
+    let tieredPricing = []
+    try {
+      tieredPricing = productForm.tieredPricingJson ? JSON.parse(productForm.tieredPricingJson) : []
+      if (!Array.isArray(tieredPricing)) {
+        throw new Error("Bulk pricing must be a JSON array.")
+      }
+    } catch (error) {
+      setFormError("Bulk pricing must be valid JSON.")
+      setIsSubmitting(false)
+      return
+    }
+
+    const specs = productForm.specsText
+      .split("\n")
+      .map((line) => line.trim())
+      .filter(Boolean)
+      .reduce((acc, line) => {
+        const [key, ...rest] = line.split(":")
+        if (!key || rest.length === 0) return acc
+        acc[key.trim()] = rest.join(":").trim()
+        return acc
+      }, {})
+
     try {
       const response = await productsApi.create({
         title: productForm.title,
+        brand: productForm.brand,
         description: productForm.description,
         price: Number(productForm.price),
         stock: Number(productForm.stock),
         categoryName: productForm.categoryName,
+        moq: Number(productForm.moq),
+        casePackSize: Number(productForm.casePackSize),
+        tieredPricing,
+        specs,
       })
 
       if (!response.success) {
@@ -698,7 +731,18 @@ export default function AdminDashboard() {
       }
 
       setFormMessage("Product created successfully.")
-      setProductForm({ title: "", description: "", price: "", stock: "", categoryName: "General" })
+      setProductForm({
+        title: "",
+        brand: "",
+        description: "",
+        price: "",
+        stock: "",
+        categoryName: "General",
+        moq: "",
+        casePackSize: "",
+        tieredPricingJson: "",
+        specsText: "",
+      })
       const refreshed = await productsApi.getAll(1, 100)
       if (refreshed.success) {
         setProducts(refreshed.data?.items || [])
@@ -981,6 +1025,18 @@ export default function AdminDashboard() {
               </div>
 
               <div style={styles.formGroup}>
+                <label style={styles.formLabel} htmlFor="brand">Brand</label>
+                <input
+                  id="brand"
+                  type="text"
+                  value={productForm.brand}
+                  onChange={handleFormChange("brand")}
+                  style={styles.formInput}
+                  placeholder="Supplier or brand name"
+                />
+              </div>
+
+              <div style={styles.formGroup}>
                 <label style={styles.formLabel} htmlFor="description">Description</label>
                 <textarea
                   id="description"
@@ -1023,6 +1079,34 @@ export default function AdminDashboard() {
                 </div>
 
                 <div style={styles.formGroup}>
+                  <label style={styles.formLabel} htmlFor="moq">MOQ</label>
+                  <input
+                    id="moq"
+                    type="number"
+                    value={productForm.moq}
+                    onChange={handleFormChange("moq")}
+                    style={styles.formInput}
+                    placeholder="Minimum order quantity"
+                    min="1"
+                    step="1"
+                  />
+                </div>
+
+                <div style={styles.formGroup}>
+                  <label style={styles.formLabel} htmlFor="casePackSize">Case Pack Size</label>
+                  <input
+                    id="casePackSize"
+                    type="number"
+                    value={productForm.casePackSize}
+                    onChange={handleFormChange("casePackSize")}
+                    style={styles.formInput}
+                    placeholder="Units per case"
+                    min="1"
+                    step="1"
+                  />
+                </div>
+
+                <div style={styles.formGroup}>
                   <label style={styles.formLabel} htmlFor="categoryName">Category</label>
                   <input
                     id="categoryName"
@@ -1035,8 +1119,30 @@ export default function AdminDashboard() {
                 </div>
               </div>
 
+              <div style={styles.formGroup}>
+                <label style={styles.formLabel} htmlFor="tieredPricingJson">Bulk Pricing Tiers (JSON)</label>
+                <textarea
+                  id="tieredPricingJson"
+                  value={productForm.tieredPricingJson}
+                  onChange={handleFormChange("tieredPricingJson")}
+                  style={styles.formTextarea}
+                  placeholder='[{"min":10,"max":50,"price":850,"unit":"per unit"}, ...]'
+                />
+              </div>
+
+              <div style={styles.formGroup}>
+                <label style={styles.formLabel} htmlFor="specsText">Product Specs</label>
+                <textarea
+                  id="specsText"
+                  value={productForm.specsText}
+                  onChange={handleFormChange("specsText")}
+                  style={styles.formTextarea}
+                  placeholder="Height: 30cm\nMaterial: Premium Vinyl\nPackage: 50 units per case"
+                />
+              </div>
+
               <button type="submit" style={styles.submitBtn} disabled={isSubmitting}>
-                {isSubmitting ? "Creating product..." : "Create Product"}
+                {isSubmitting ? "Creating product..." : "Create Wholesale Product"}
               </button>
             </form>
 
@@ -1051,24 +1157,30 @@ export default function AdminDashboard() {
                   <thead>
                     <tr>
                       <th style={styles.productTableHeader}>Title</th>
+                      <th style={styles.productTableHeader}>Brand</th>
                       <th style={styles.productTableHeader}>Category</th>
                       <th style={styles.productTableHeader}>Price</th>
                       <th style={styles.productTableHeader}>Stock</th>
+                      <th style={styles.productTableHeader}>MOQ</th>
+                      <th style={styles.productTableHeader}>Case Pack</th>
                     </tr>
                   </thead>
                   <tbody>
                     {products.length > 0 ? (
                       products.map((product) => (
                         <tr key={product.id} style={styles.productTableRow}>
-                          <td style={styles.productTableCell}>{product.name}</td>
-                          <td style={styles.productTableCell}>{product.category || "General"}</td>
-                          <td style={styles.productTableCell}>${product.price.toFixed(2)}</td>
-                          <td style={styles.productTableCell}>{product.stock}</td>
+                          <td style={styles.productTableCell}>{product.title || product.name}</td>
+                          <td style={styles.productTableCell}>{product.brand || "—"}</td>
+                          <td style={styles.productTableCell}>{product.category || product.categoryName || "General"}</td>
+                          <td style={styles.productTableCell}>${(product.price || 0).toFixed(2)}</td>
+                          <td style={styles.productTableCell}>{product.stock ?? 0}</td>
+                          <td style={styles.productTableCell}>{product.moq ?? "—"}</td>
+                          <td style={styles.productTableCell}>{product.casePackSize ?? "—"}</td>
                         </tr>
                       ))
                     ) : (
                       <tr>
-                        <td style={styles.productTableCell} colSpan={4}>
+                        <td style={styles.productTableCell} colSpan={7}>
                           No products found in the backend catalog.
                         </td>
                       </tr>

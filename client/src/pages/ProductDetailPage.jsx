@@ -9,6 +9,7 @@ import {
   FaCheck,
 } from "react-icons/fa"
 import { getProductById } from "@/data/queries/productQueries"
+import { useCart } from "@/context/CartContext"
 
 const styles = {
   pageContainer: {
@@ -517,6 +518,8 @@ export default function ProductDetailPage() {
     }
   }, [product])
 
+  const { addItem, openCart } = useCart()
+
   const handleSendInquiry = useCallback(() => {
     window.alert("Inquiry request initiated. This would start the wholesale inquiry flow.")
   }, [])
@@ -526,10 +529,27 @@ export default function ProductDetailPage() {
   }, [])
 
   const handleAddToCart = useCallback(() => {
-    if (isOrderValid) {
-      window.alert(`Added ${quantity} units to the cart.`)
-    }
-  }, [isOrderValid, quantity])
+    if (!isOrderValid || !product) return
+
+    addItem(
+      {
+        id: product.id,
+        name: product.name,
+        brand: product.brand || product.category,
+        code: product.code || product.id,
+        price: currentTier?.price ?? product.price,
+        originalPrice: product.originalPrice ?? product.price,
+        moq: product.moq,
+        tieredPricing: product.tieredPricing,
+        images,
+        unit: product.unit || "Piece",
+      },
+      quantity,
+    )
+
+    openCart()
+    navigate("/cart")
+  }, [addItem, currentTier?.price, images, isOrderValid, navigate, openCart, product, quantity])
 
   const handleBuyNow = useCallback(() => {
     if (isOrderValid) {

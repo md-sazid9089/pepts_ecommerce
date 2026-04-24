@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useEffect, useMemo, useCallback } from "react"
 import { useNavigate } from "react-router-dom"
 import {
   FaTrash,
@@ -419,6 +419,105 @@ const styles = {
     boxShadow: "0 8px 20px rgba(30, 41, 59, 0.3)",
   },
 
+  requestQuoteBtn: {
+    width: "100%",
+    padding: "0.875rem",
+    backgroundColor: "#f59e0b",
+    color: "#111827",
+    border: "none",
+    borderRadius: "0.5rem",
+    fontSize: "0.95rem",
+    fontWeight: 600,
+    cursor: "pointer",
+    transition: "all 0.3s ease",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: "0.5rem",
+    fontFamily: "inherit",
+  },
+  requestQuoteBtnHover: {
+    backgroundColor: "#d97706",
+    transform: "translateY(-2px)",
+    boxShadow: "0 8px 20px rgba(217, 119, 6, 0.2)",
+  },
+
+  addMoreBtn: {
+    width: "100%",
+    padding: "0.875rem",
+    backgroundColor: "#f3f4f6",
+    color: "#111827",
+    border: "1px solid #e5e7eb",
+    borderRadius: "0.5rem",
+    fontSize: "0.95rem",
+    fontWeight: 600,
+    cursor: "pointer",
+    transition: "all 0.2s ease",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: "0.5rem",
+    fontFamily: "inherit",
+  },
+  addMoreBtnHover: {
+    backgroundColor: "#e5e7eb",
+    borderColor: "#d1d5db",
+  },
+
+  orderNoteSection: {
+    marginTop: "1.5rem",
+    padding: "1rem",
+    backgroundColor: "#ffffff",
+    border: "1px solid #e5e7eb",
+    borderRadius: "0.75rem",
+  },
+  orderNoteLabel: {
+    fontSize: "0.875rem",
+    fontWeight: 700,
+    color: "#111827",
+    marginBottom: "0.75rem",
+    display: "block",
+  },
+  orderNoteTextarea: {
+    width: "100%",
+    minHeight: "100px",
+    borderRadius: "0.65rem",
+    border: "1px solid #e5e7eb",
+    padding: "0.85rem 1rem",
+    fontSize: "0.95rem",
+    color: "#111827",
+    fontFamily: "inherit",
+    resize: "vertical",
+  },
+  quoteSuccess: {
+    backgroundColor: "#ecfdf5",
+    color: "#166534",
+    border: "1px solid #d1fae5",
+    padding: "1rem",
+    borderRadius: "0.75rem",
+    marginTop: "1rem",
+  },
+  mobileStickyBar: {
+    display: "none",
+  },
+  mobileStickyBarShow: {
+    display: "flex",
+    position: "fixed",
+    bottom: 0,
+    left: 0,
+    right: 0,
+    zIndex: 30,
+    padding: "1rem 1rem 1.25rem",
+    backgroundColor: "#ffffff",
+    borderTop: "1px solid #e5e7eb",
+    justifyContent: "space-between",
+    gap: "0.75rem",
+    boxShadow: "0 -10px 30px rgba(15, 23, 42, 0.08)",
+  },
+  mobileStickyButton: {
+    flex: 1,
+  },
+
   continuShoppingBtn: {
     width: "100%",
     padding: "0.875rem",
@@ -548,25 +647,53 @@ const styles = {
 const initialCartItems = [
   {
     id: 1,
-    name: "Premium Fashion Doll Collection - Assorted Series A",
-    brand: "PreciousPlay",
-    code: "PFD-2024-001",
-    price: 850,
-    originalPrice: 1200,
-    quantity: 10,
-    image: "https://placehold.co/100?text=Doll+1",
+    name: "Custom Plush Doll Toy - Soft Stuffed Animal",
+    brand: "PEPTA Wholesale",
+    code: "PLSH-001",
+    price: 4.8,
+    originalPrice: 5.4,
+    quantity: 500,
+    unit: "Piece",
+    moq: 100,
+    images: ["https://placehold.co/100?text=Doll+1"],
+    tieredPricing: [
+      { min: 100, max: 299, price: 4.8 },
+      { min: 300, max: 599, price: 4.5 },
+      { min: 600, max: null, price: 4.2 },
+    ],
   },
   {
     id: 2,
-    name: "Vintage Romance Doll Series - Limited Edition",
-    brand: "DollMasters",
-    code: "VRD-2024-002",
-    price: 1250,
-    originalPrice: 1800,
-    quantity: 5,
-    image: "https://placehold.co/100?text=Doll+2",
+    name: "Dinosaur Plush Toy - Wholesale Bulk Set",
+    brand: "PEPTA Wholesale",
+    code: "DIN-003",
+    price: 3.5,
+    originalPrice: 4.2,
+    quantity: 300,
+    unit: "Piece",
+    moq: 50,
+    images: ["https://placehold.co/100?text=Dino+Toy"],
+    tieredPricing: [
+      { min: 50, max: 199, price: 3.5 },
+      { min: 200, max: 499, price: 3.2 },
+      { min: 500, max: null, price: 2.9 },
+    ],
   },
 ]
+
+const calculateTieredPrice = (item) => {
+  if (!item.tieredPricing) return item.price
+  const tier = item.tieredPricing.find((tier) => item.quantity >= tier.min && (tier.max === null || item.quantity <= tier.max))
+  return tier ? tier.price : item.price
+}
+
+const formatCurrency = (value) => `$${value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+
+const estimateShipping = (subtotal, itemCount) => {
+  if (subtotal >= 3000) return 0
+  if (subtotal >= 1500) return 80
+  return 120
+}
 
 // Mock recommendations
 const recommendedProducts = [
@@ -593,32 +720,73 @@ const recommendedProducts = [
 export default function CartPage() {
   const [cartItems, setCartItems] = useState(initialCartItems)
   const [promoCode, setPromoCode] = useState("")
+  const [promoDiscount, setPromoDiscount] = useState(0)
+  const [promoMessage, setPromoMessage] = useState("")
   const [hoveredItem, setHoveredItem] = useState(null)
+  const [orderNote, setOrderNote] = useState("")
+  const [quoteMessage, setQuoteMessage] = useState("")
+  const [requestingQuote, setRequestingQuote] = useState(false)
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768)
   const navigate = useNavigate()
-  const isMobile = window.innerWidth < 768
 
-  const subtotal = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0)
-  const shipping = subtotal > 500 ? 0 : 50
-  const tax = subtotal * 0.1
-  const total = subtotal + shipping + tax
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768)
+    window.addEventListener("resize", handleResize)
+    handleResize()
+    return () => window.removeEventListener("resize", handleResize)
+  }, [])
 
-  const handleUpdateQuantity = (id, quantity) => {
-    if (quantity <= 0) return
-    setCartItems(cartItems.map((item) => (item.id === id ? { ...item, quantity } : item)))
-  }
+  const getItemUnitPrice = useCallback((item) => calculateTieredPrice(item), [])
+  const getItemTotal = useCallback((item) => getItemUnitPrice(item) * item.quantity, [getItemUnitPrice])
 
-  const handleRemoveItem = (id) => {
-    setCartItems(cartItems.filter((item) => item.id !== id))
-  }
+  const subtotal = useMemo(
+    () => cartItems.reduce((sum, item) => sum + getItemTotal(item), 0),
+    [cartItems, getItemTotal]
+  )
 
-  const handlePromoApply = () => {
-    if (promoCode.toUpperCase() === "SAVE10") {
-      alert("Promo code applied! 10% discount")
+  const shipping = useMemo(() => estimateShipping(subtotal, cartItems.length), [subtotal, cartItems.length])
+  const tax = useMemo(() => subtotal * 0.08, [subtotal])
+  const promoDiscountAmount = useMemo(() => subtotal * promoDiscount, [subtotal, promoDiscount])
+  const total = useMemo(() => subtotal + shipping + tax - promoDiscountAmount, [subtotal, shipping, tax, promoDiscountAmount])
+  const totalSavings = useMemo(
+    () => cartItems.reduce((sum, item) => sum + (item.originalPrice - getItemUnitPrice(item)) * item.quantity, 0),
+    [cartItems, getItemUnitPrice]
+  )
+  const hasMoQViolations = useMemo(
+    () => cartItems.some((item) => item.moq && item.quantity < item.moq),
+    [cartItems]
+  )
+
+  const handleUpdateQuantity = useCallback(
+    (id, quantity) => {
+      if (quantity <= 0) return
+      setCartItems((current) => current.map((item) => (item.id === id ? { ...item, quantity } : item)))
+    },
+    []
+  )
+
+  const handleRequestQuote = useCallback(() => {
+    setRequestingQuote(true)
+    setQuoteMessage("Quote request submitted successfully. Our wholesale team will contact you within 24 hours.")
+  }, [])
+
+  const handleRemoveItem = useCallback((id) => {
+    setCartItems((current) => current.filter((item) => item.id !== id))
+  }, [])
+
+  const handlePromoApply = useCallback(() => {
+    const code = promoCode.trim().toUpperCase()
+    if (code === "SAVE10") {
+      setPromoDiscount(0.1)
+      setPromoMessage("10% wholesale discount applied.")
       setPromoCode("")
+    } else if (!code) {
+      setPromoMessage("Enter a valid promo code.")
     } else {
-      alert("Invalid promo code")
+      setPromoMessage("Promo code invalid.")
+      setPromoDiscount(0)
     }
-  }
+  }, [promoCode])
 
   return (
     <div style={styles.pageContainer}>
@@ -635,9 +803,13 @@ export default function CartPage() {
               Home
             </span>
             <FaChevronRight style={{ fontSize: "0.625rem", color: "#d1d5db" }} />
-            <span style={styles.breadcrumbActive}>Shopping Cart</span>
+            <span style={styles.breadcrumbActive}>Wholesale Cart</span>
           </div>
-          <h1 style={styles.pageTitle}>Shopping Cart</h1>
+          <h1 style={styles.pageTitle}>Wholesale Order Summary</h1>
+          <p style={{ marginTop: "0.75rem", color: "#475569", maxWidth: "760px", fontSize: "0.95rem" }}>
+            Manage your MOQ-driven cart, verify bulk discounts, and request a custom quote before finalizing your order.
+            Adjust quantities to meet supplier minimums and keep the purchasing flow flexible.
+          </p>
         </div>
       </div>
 
@@ -651,81 +823,92 @@ export default function CartPage() {
                 <FaBox />
               </div>
               <h2 style={styles.emptyStateTitle}>Your cart is empty</h2>
-              <p style={styles.emptyStateText}>Add items to your cart to get started</p>
+              <p style={styles.emptyStateText}>Add wholesale products to your cart to begin building an order.</p>
               <button
                 style={styles.emptyStateBtn}
                 onClick={() => navigate("/products")}
                 onMouseEnter={(e) => Object.assign(e.target.style, styles.emptyStateBtnHover)}
                 onMouseLeave={(e) => Object.assign(e.target.style, { backgroundColor: "#1e293b", transform: "none", boxShadow: "none" })}
               >
-                Continue Shopping
+                Add More Items
               </button>
             </div>
           ) : (
-            cartItems.map((item) => (
-              <div
-                key={item.id}
-                style={{
-                  ...styles.cartItem,
-                  ...(hoveredItem === item.id ? styles.cartItemHover : {}),
-                }}
-                onMouseEnter={() => setHoveredItem(item.id)}
-                onMouseLeave={() => setHoveredItem(null)}
-              >
-                <img src={item.image} alt={item.name} style={styles.cartItemImage} />
+            cartItems.map((item) => {
+              const unitPrice = getItemUnitPrice(item)
+              const itemTotal = getItemTotal(item)
+              const tierSavings = (item.originalPrice - unitPrice) * item.quantity
 
-                <div style={styles.cartItemDetails}>
-                  <div style={styles.cartItemInfo}>
-                    <p style={styles.cartItemBrand}>{item.brand}</p>
-                    <h3 style={styles.cartItemName}>{item.name}</h3>
-                    <p style={styles.cartItemCode}>SKU: {item.code}</p>
-                    <div style={styles.cartItemMeta}>
-                      <span>${item.price} per unit</span>
-                      <span>Stock: Limited</span>
+              return (
+                <div
+                  key={item.id}
+                  style={{
+                    ...styles.cartItem,
+                    ...(hoveredItem === item.id ? styles.cartItemHover : {}),
+                  }}
+                  onMouseEnter={() => setHoveredItem(item.id)}
+                  onMouseLeave={() => setHoveredItem(null)}
+                >
+                  <img src={item.images[0]} alt={item.name} style={styles.cartItemImage} />
+
+                  <div style={styles.cartItemDetails}>
+                    <div style={styles.cartItemInfo}>
+                      <p style={styles.cartItemBrand}>{item.brand}</p>
+                      <h3 style={styles.cartItemName}>{item.name}</h3>
+                      <p style={styles.cartItemCode}>SKU: {item.code}</p>
+                      <div style={styles.cartItemMeta}>
+                        <span>{item.unit} / {formatCurrency(unitPrice)}</span>
+                        <span>MOQ: {item.moq}</span>
+                      </div>
+                      {item.quantity < item.moq && (
+                        <p style={{ color: "#b45309", fontSize: "0.875rem", margin: "0.5rem 0 0 0" }}>
+                          ⚠ MOQ not met. Add {item.moq - item.quantity} more units.
+                        </p>
+                      )}
                     </div>
-                  </div>
 
-                  <div style={styles.cartItemPriceSection}>
-                    <div style={styles.cartItemPrice}>${(item.price * item.quantity).toLocaleString()}</div>
-                    {item.originalPrice > item.price && (
-                      <div style={styles.cartItemOriginalPrice}>${(item.originalPrice * item.quantity).toLocaleString()}</div>
-                    )}
+                    <div style={styles.cartItemPriceSection}>
+                      <div style={styles.cartItemPrice}>{formatCurrency(itemTotal)}</div>
+                      {tierSavings > 0 && (
+                        <div style={styles.cartItemOriginalPrice}>Save {formatCurrency(tierSavings)}</div>
+                      )}
 
-                    <div style={styles.cartItemActions}>
-                      <div style={styles.quantityControl}>
+                      <div style={styles.cartItemActions}>
+                        <div style={styles.quantityControl}>
+                          <button
+                            style={styles.quantityBtn}
+                            onClick={() => handleUpdateQuantity(item.id, item.quantity - 1)}
+                            onMouseEnter={(e) => Object.assign(e.target.style, styles.quantityBtnHover)}
+                            onMouseLeave={(e) => Object.assign(e.target.style, { color: "#111827", backgroundColor: "transparent" })}
+                          >
+                            <FaMinus />
+                          </button>
+                          <span style={styles.quantityDisplay}>{item.quantity}</span>
+                          <button
+                            style={styles.quantityBtn}
+                            onClick={() => handleUpdateQuantity(item.id, item.quantity + 1)}
+                            onMouseEnter={(e) => Object.assign(e.target.style, styles.quantityBtnHover)}
+                            onMouseLeave={(e) => Object.assign(e.target.style, { color: "#111827", backgroundColor: "transparent" })}
+                          >
+                            <FaPlus />
+                          </button>
+                        </div>
+
                         <button
-                          style={styles.quantityBtn}
-                          onClick={() => handleUpdateQuantity(item.id, item.quantity - 1)}
-                          onMouseEnter={(e) => Object.assign(e.target.style, styles.quantityBtnHover)}
-                          onMouseLeave={(e) => Object.assign(e.target.style, { color: "#111827", backgroundColor: "transparent" })}
+                          style={styles.removeBtn}
+                          onClick={() => handleRemoveItem(item.id)}
+                          onMouseEnter={(e) => Object.assign(e.target.style, styles.removeBtnHover)}
+                          onMouseLeave={(e) => (e.target.style.color = "#ef4444")}
                         >
-                          <FaMinus />
-                        </button>
-                        <span style={styles.quantityDisplay}>{item.quantity}</span>
-                        <button
-                          style={styles.quantityBtn}
-                          onClick={() => handleUpdateQuantity(item.id, item.quantity + 1)}
-                          onMouseEnter={(e) => Object.assign(e.target.style, styles.quantityBtnHover)}
-                          onMouseLeave={(e) => Object.assign(e.target.style, { color: "#111827", backgroundColor: "transparent" })}
-                        >
-                          <FaPlus />
+                          <FaTrash style={{ fontSize: "0.75rem" }} />
+                          Remove
                         </button>
                       </div>
-
-                      <button
-                        style={styles.removeBtn}
-                        onClick={() => handleRemoveItem(item.id)}
-                        onMouseEnter={(e) => Object.assign(e.target.style, styles.removeBtnHover)}
-                        onMouseLeave={(e) => (e.target.style.color = "#ef4444")}
-                      >
-                        <FaTrash style={{ fontSize: "0.75rem" }} />
-                        Remove
-                      </button>
                     </div>
                   </div>
                 </div>
-              </div>
-            ))
+              )
+            })
           )}
         </div>
 
@@ -738,29 +921,45 @@ export default function CartPage() {
 
               <div style={styles.summaryRow}>
                 <span style={styles.summaryRowLabel}>Subtotal</span>
-                <span style={styles.summaryRowValue}>${subtotal.toLocaleString()}</span>
+                <span style={styles.summaryRowValue}>{formatCurrency(subtotal)}</span>
               </div>
 
               <div style={styles.summaryRow}>
-                <span style={styles.summaryRowLabel}>Shipping</span>
-                <span style={styles.summaryRowValue}>
-                  {shipping === 0 ? "FREE" : "$" + shipping}
-                </span>
+                <span style={styles.summaryRowLabel}>Estimated Shipping</span>
+                <span style={styles.summaryRowValue}>{shipping === 0 ? "FREE" : formatCurrency(shipping)}</span>
               </div>
 
               <div style={styles.summaryRow}>
-                <span style={styles.summaryRowLabel}>Tax (10%)</span>
-                <span style={styles.summaryRowValue}>${tax.toFixed(2)}</span>
+                <span style={styles.summaryRowLabel}>Business Tax (8%)</span>
+                <span style={styles.summaryRowValue}>{formatCurrency(tax)}</span>
               </div>
+
+              {totalSavings > 0 && (
+                <div style={styles.summaryRow}>
+                  <span style={styles.summaryRowLabel}>Bulk Discount Savings</span>
+                  <span style={styles.summaryRowValue}>-{formatCurrency(totalSavings)}</span>
+                </div>
+              )}
+
+              {promoDiscountAmount > 0 && (
+                <div style={styles.summaryRow}>
+                  <span style={styles.summaryRowLabel}>Promotional Discount</span>
+                  <span style={styles.summaryRowValue}>-{formatCurrency(promoDiscountAmount)}</span>
+                </div>
+              )}
 
               <div style={styles.summaryTotal}>
-                <span style={styles.summaryTotalLabel}>Total</span>
-                <span style={styles.summaryTotalValue}>${total.toLocaleString()}</span>
+                <span style={styles.summaryTotalLabel}>Order Total</span>
+                <span style={styles.summaryTotalValue}>{formatCurrency(total)}</span>
               </div>
 
-              {subtotal <= 500 && (
-                <p style={{ fontSize: "0.8rem", color: "#10b981", marginTop: "1rem", margin: "1rem 0 0 0" }}>
-                  ✓ Free shipping over $500
+              <p style={{ fontSize: "0.875rem", color: "#475569", marginTop: "1rem" }}>
+                Free shipping for orders over $3,000. Estimated shipping based on order volume.
+              </p>
+
+              {hasMoQViolations && (
+                <p style={{ fontSize: "0.9rem", color: "#b45309", marginTop: "1rem", fontWeight: 600 }}>
+                  Some items are below the MOQ. Increase quantities or request a quote.
                 </p>
               )}
             </div>
@@ -791,12 +990,24 @@ export default function CartPage() {
                   Apply
                 </button>
               </div>
-              <p style={{ fontSize: "0.75rem", color: "#6b7280", margin: "0.5rem 0 0 0" }}>
-                Try: SAVE10
+              <p style={{ fontSize: "0.85rem", color: promoDiscount > 0 ? "#166534" : "#6b7280", margin: "0.75rem 0 0 0" }}>
+                {promoMessage || "Try: SAVE10"}
               </p>
             </div>
 
-            {/* Action Buttons */}
+            <div style={styles.orderNoteSection}>
+              <label style={styles.orderNoteLabel} htmlFor="orderNote">
+                Add Order Note (Optional)
+              </label>
+              <textarea
+                id="orderNote"
+                value={orderNote}
+                onChange={(e) => setOrderNote(e.target.value)}
+                style={styles.orderNoteTextarea}
+                placeholder="Add special packaging requests, delivery timelines, or sample requirements."
+              />
+            </div>
+
             <div style={styles.actionButtons}>
               <button
                 style={styles.checkoutBtn}
@@ -809,15 +1020,31 @@ export default function CartPage() {
               </button>
 
               <button
-                style={styles.continuShoppingBtn}
+                style={styles.requestQuoteBtn}
+                onClick={handleRequestQuote}
+                onMouseEnter={(e) => Object.assign(e.target.style, styles.requestQuoteBtnHover)}
+                onMouseLeave={(e) => Object.assign(e.target.style, { backgroundColor: "#f59e0b", transform: "none", boxShadow: "none" })}
+              >
+                <FaTruck style={{ fontSize: "0.875rem" }} />
+                Request a Quote
+              </button>
+
+              <button
+                style={styles.addMoreBtn}
                 onClick={() => navigate("/products")}
-                onMouseEnter={(e) => Object.assign(e.target.style, styles.continuShoppingBtnHover)}
+                onMouseEnter={(e) => Object.assign(e.target.style, styles.addMoreBtnHover)}
                 onMouseLeave={(e) => Object.assign(e.target.style, { backgroundColor: "#f3f4f6", borderColor: "#e5e7eb" })}
               >
-                <FaArrowLeft style={{ fontSize: "0.875rem" }} />
-                Continue Shopping
+                <FaPlus style={{ fontSize: "0.875rem" }} />
+                Add More Items
               </button>
             </div>
+
+            {requestingQuote && quoteMessage && (
+              <div style={styles.quoteSuccess}>
+                {quoteMessage}
+              </div>
+            )}
 
             {/* Trust Badges */}
             <div style={styles.trustBadges}>
@@ -837,6 +1064,23 @@ export default function CartPage() {
           </div>
         )}
       </div>
+
+      {isMobile && cartItems.length > 0 && (
+        <div style={{ ...styles.mobileStickyBar, ...(isMobile ? styles.mobileStickyBarShow : {}) }}>
+          <button
+            style={{ ...styles.checkoutBtn, ...styles.mobileStickyButton }}
+            onClick={() => navigate("/checkout")}
+          >
+            Proceed to Checkout
+          </button>
+          <button
+            style={{ ...styles.requestQuoteBtn, ...styles.mobileStickyButton }}
+            onClick={handleRequestQuote}
+          >
+            Request a Quote
+          </button>
+        </div>
+      )}
 
       {/* Recommendations */}
       {cartItems.length > 0 && (
