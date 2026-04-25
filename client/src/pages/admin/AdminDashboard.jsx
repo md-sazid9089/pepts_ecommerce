@@ -623,6 +623,7 @@ export default function AdminDashboard() {
   const [hoveredTableRow, setHoveredTableRow] = useState(null)
   const [products, setProducts] = useState([])
   const [loadingProducts, setLoadingProducts] = useState(false)
+  const defaultPricingRow = () => ({ min: "", max: "", price: "", unit: "per unit" })
   const [productForm, setProductForm] = useState({
     title: "",
     brand: "",
@@ -632,7 +633,6 @@ export default function AdminDashboard() {
     categoryName: "General",
     moq: "",
     casePackSize: "",
-    tieredPricingJson: "",
     // Specification fields
     specHeight: "",
     specMaterial: "",
@@ -640,6 +640,13 @@ export default function AdminDashboard() {
     specPackage: "",
     specTier: "",
   })
+  const [pricingRows, setPricingRows] = useState([defaultPricingRow()])
+
+  const handlePricingRowChange = (index, field, value) => {
+    setPricingRows((prev) => prev.map((row, i) => i === index ? { ...row, [field]: value } : row))
+  }
+  const addPricingRow = () => setPricingRows((prev) => [...prev, defaultPricingRow()])
+  const removePricingRow = (index) => setPricingRows((prev) => prev.filter((_, i) => i !== index))
   const [imageFile, setImageFile] = useState(null)
   const [imagePreview, setImagePreview] = useState(null)
   const [uploadingImage, setUploadingImage] = useState(null) // productId being uploaded
@@ -735,17 +742,15 @@ export default function AdminDashboard() {
     setFormMessage("")
     setIsSubmitting(true)
 
-    let tieredPricing = []
-    try {
-      tieredPricing = productForm.tieredPricingJson ? JSON.parse(productForm.tieredPricingJson) : []
-      if (!Array.isArray(tieredPricing)) {
-        throw new Error("Bulk pricing must be a JSON array.")
-      }
-    } catch (error) {
-      setFormError("Bulk pricing must be valid JSON.")
-      setIsSubmitting(false)
-      return
-    }
+    // Build tieredPricing from rows (filter out empty rows)
+    const tieredPricing = pricingRows
+      .filter((row) => row.min !== "" && row.price !== "")
+      .map((row) => ({
+        min: Number(row.min),
+        max: row.max !== "" ? Number(row.max) : null,
+        price: Number(row.price),
+        unit: row.unit || "per unit",
+      }))
 
 
     try {
@@ -801,13 +806,13 @@ export default function AdminDashboard() {
         categoryName: "General",
         moq: "",
         casePackSize: "",
-        tieredPricingJson: "",
         specHeight: "",
         specMaterial: "",
         specClothing: "",
         specPackage: "",
         specTier: "",
       })
+      setPricingRows([defaultPricingRow()])
       setImageFile(null)
       setImagePreview(null)
 
@@ -1187,15 +1192,86 @@ export default function AdminDashboard() {
                 </div>
               </div>
 
+              {/* ── Bulk Pricing Tiers ── */}
               <div style={styles.formGroup}>
-                <label style={styles.formLabel} htmlFor="tieredPricingJson">Bulk Pricing Tiers (JSON)</label>
-                <textarea
-                  id="tieredPricingJson"
-                  value={productForm.tieredPricingJson}
-                  onChange={handleFormChange("tieredPricingJson")}
-                  style={styles.formTextarea}
-                  placeholder='[{"min":10,"max":50,"price":850,"unit":"per unit"}, ...]'
-                />
+                <label style={{ ...styles.formLabel, fontSize: "1rem", color: "#533638", borderBottom: "2px solid #F7B9C4", paddingBottom: "0.4rem", marginBottom: "0.75rem", display: "block" }}>
+                  💰 Bulk Pricing Tiers
+                </label>
+
+                {/* Header row */}
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr 40px", gap: "0.5rem", marginBottom: "0.5rem" }}>
+                  {["Min Qty", "Max Qty", "Price (USD)", "Unit Label", ""].map((h) => (
+                    <span key={h} style={{ fontSize: "0.78rem", fontWeight: 700, color: "#6b7280", textTransform: "uppercase", letterSpacing: "0.3px" }}>{h}</span>
+                  ))}
+                </div>
+
+                {/* Tier rows */}
+                {pricingRows.map((row, idx) => (
+                  <div key={idx} style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr 40px", gap: "0.5rem", marginBottom: "0.5rem", alignItems: "center" }}>
+                    <input
+                      type="number" min="1" step="1"
+                      value={row.min}
+                      onChange={(e) => handlePricingRowChange(idx, "min", e.target.value)}
+                      style={{ ...styles.formInput, padding: "0.6rem 0.75rem" }}
+                      placeholder="e.g. 10"
+                    />
+                    <input
+                      type="number" min="1" step="1"
+                      value={row.max}
+                      onChange={(e) => handlePricingRowChange(idx, "max", e.target.value)}
+                      style={{ ...styles.formInput, padding: "0.6rem 0.75rem" }}
+                      placeholder="blank = unlimited"
+                    />
+                    <input
+                      type="number" min="0" step="0.01"
+                      value={row.price}
+                      onChange={(e) => handlePricingRowChange(idx, "price", e.target.value)}
+                      style={{ ...styles.formInput, padding: "0.6rem 0.75rem" }}
+                      placeholder="e.g. 850"
+                    />
+                    <input
+                      type="text"
+                      value={row.unit}
+                      onChange={(e) => handlePricingRowChange(idx, "unit", e.target.value)}
+                      style={{ ...styles.formInput, padding: "0.6rem 0.75rem" }}
+                      placeholder="per unit"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => removePricingRow(idx)}
+                      disabled={pricingRows.length === 1}
+                      style={{
+                        background: pricingRows.length === 1 ? "#f3f4f6" : "#fee2e2",
+                        color: pricingRows.length === 1 ? "#9ca3af" : "#991b1b",
+                        border: "none", borderRadius: "0.375rem",
+                        width: "32px", height: "32px",
+                        cursor: pricingRows.length === 1 ? "not-allowed" : "pointer",
+                        fontWeight: 700, fontSize: "1rem",
+                      }}
+                    >✕</button>
+                  </div>
+                ))}
+
+                <button
+                  type="button"
+                  onClick={addPricingRow}
+                  style={{
+                    marginTop: "0.5rem",
+                    padding: "0.5rem 1rem",
+                    borderRadius: "0.5rem",
+                    border: "1.5px dashed #533638",
+                    background: "#FFF5F5",
+                    color: "#533638",
+                    fontWeight: 600, fontSize: "0.875rem",
+                    cursor: "pointer",
+                  }}
+                >
+                  + Add Tier
+                </button>
+
+                <p style={{ fontSize: "0.78rem", color: "#6b7280", marginTop: "0.5rem" }}>
+                  Leave Max Qty blank for the last tier (unlimited). Example: 10–49 units → $900, 50+ units → $850.
+                </p>
               </div>
 
               {/* Specifications */}
