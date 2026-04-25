@@ -22,36 +22,48 @@ export default function AdminLogin({ onLogin }) {
     try {
       const res = await authApi.login(email, password)
 
+      // If login is successful
       if (res.success && res.data) {
-        const user = res.data
-        const isAdmin = user.role === 'admin' || user.email?.toLowerCase() === ADMIN_EMAIL.toLowerCase()
+        // API returns { user, token }. Our frontend code was mistakenly using res.data as the user object.
+        const userData = res.data.user || res.data
+        const token = res.data.token
+
+        const isAdmin = userData.role === 'admin' || userData.email?.toLowerCase() === ADMIN_EMAIL.toLowerCase()
+        
         if (!isAdmin) {
           setError('Access denied. Admin accounts only.')
           setLoading(false)
           return
         }
-        if (res.data.token) apiClient.setToken(res.data.token)
-        const session = { ...user, adminAt: Date.now() }
+
+        if (token) apiClient.setToken(token)
+        const session = { ...userData, adminAt: Date.now() }
         localStorage.setItem('pepta_admin_session', JSON.stringify(session))
         onLogin(session)
         return
       }
 
-      // API returned 401 — user might not be registered yet
+      // If we reach here, API returned failure (e.g. 401)
       if (isHardcodedAdmin) {
-        // Try to auto-register first
+        // Try to auto-register/fix the account if it doesn't exist or has wrong password
         try {
           const reg = await authApi.register(email, password, 'Maruf', 'Admin')
           if (reg.success && reg.data) {
-            if (reg.data.token) apiClient.setToken(reg.data.token)
-            const session = { ...reg.data, role: 'admin', adminAt: Date.now() }
+            const userData = reg.data.user || reg.data
+            const token = reg.data.token
+
+            if (token) apiClient.setToken(token)
+            const session = { ...userData, role: 'admin', adminAt: Date.now() }
             localStorage.setItem('pepta_admin_session', JSON.stringify(session))
             onLogin(session)
             return
           }
-        } catch (_) { /* registration failed too, use local fallback */ }
+        } catch (_) { 
+          // Registration failed (likely because user already exists)
+        }
 
-        // Final fallback: create a local session without API
+        // Final fallback: If API fails but credentials match our hardcoded admin, 
+        // allow local access so the admin can at least enter the dashboard.
         const localSession = {
           id: 'admin_local',
           email: ADMIN_EMAIL,
@@ -66,8 +78,8 @@ export default function AdminLogin({ onLogin }) {
 
       setError(res.message || 'Invalid email or password.')
     } catch (err) {
+      // This catch is for unexpected network errors
       if (isHardcodedAdmin) {
-        // Network error but correct admin creds — allow local session
         const localSession = { id: 'admin_local', email: ADMIN_EMAIL, name: 'Admin', role: 'admin', adminAt: Date.now() }
         localStorage.setItem('pepta_admin_session', JSON.stringify(localSession))
         onLogin(localSession)

