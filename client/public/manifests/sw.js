@@ -8,7 +8,7 @@
  */
 
 const CACHE_PREFIX = 'pepta';
-const CURRENT_VERSION = 'v4'; // Bumped to force update for all users
+const CURRENT_VERSION = 'v5'; // Bumped for optimized industry-standard strategy
 const CACHE_NAME = `${CACHE_PREFIX}-${CURRENT_VERSION}`;
 
 // Cache configuration
@@ -19,93 +19,78 @@ const CACHES_CONFIG = {
   API: `${CACHE_NAME}-api`,
 };
 
-// Assets to cache on install (Commonly used static files)
+// Assets to cache on install (Only core UI assets, NOT the HTML itself)
 const STATIC_ASSETS = [
-  '/',
   '/offline.html',
   '/images/products/logo.jpeg',
 ];
 
-const API_CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
-const IMAGE_CACHE_MAX_SIZE = 50; // Maximum images in cache
+const API_CACHE_DURATION = 0; // Disable API caching in SW for e-commerce reliability
+const IMAGE_CACHE_MAX_SIZE = 100;
 
 /**
- * Install Event - Cache essential assets
+ * Install Event
  */
 self.addEventListener('install', (event) => {
-  console.log('[SW] Installing Service Worker...');
-
   event.waitUntil(
     caches.open(CACHES_CONFIG.STATIC).then((cache) => {
-      console.log('[SW] Caching static assets');
-      return cache.addAll(STATIC_ASSETS).catch((err) => {
-        console.warn('[SW] Failed to cache some assets:', err);
-      });
+      return cache.addAll(STATIC_ASSETS);
     })
   );
-
-  // Force the waiting service worker to become the active service worker
   self.skipWaiting();
 });
 
 /**
- * Activate Event - Clean up old caches
+ * Activate Event
  */
 self.addEventListener('activate', (event) => {
-  console.log('[SW] Activating Service Worker...');
-
   event.waitUntil(
     caches.keys().then((cacheNames) => {
       return Promise.all(
         cacheNames.map((cacheName) => {
-          // Delete caches not matching current version
           if (!cacheName.includes(CURRENT_VERSION)) {
-            console.log('[SW] Deleting old cache:', cacheName);
             return caches.delete(cacheName);
           }
         })
       );
     })
   );
-
-  // Take control of all pages immediately
   self.clients.claim();
 });
 
 /**
- * Fetch Event - Intelligent routing based on request type
+ * Fetch Event - Industry Standard Strategy
  */
 self.addEventListener('fetch', (event) => {
   const { request } = event;
   const url = new URL(request.url);
 
-  // Skip non-GET requests
-  if (request.method !== 'GET') {
-    return;
-  }
-
-  // Skip chrome extensions and non-http protocols
-  if (url.protocol !== 'http:' && url.protocol !== 'https:') {
-    return;
-  }
-
-  // API calls - Network-first with cache fallback
+  // 1. API Calls - ALWAYS Network Only for E-commerce
+  // Ensures prices and stock are never stale.
   if (url.pathname.startsWith('/api/')) {
-    event.respondWith(networkFirstStrategy(request, CACHES_CONFIG.API));
+    event.respondWith(fetch(request).catch(() => {
+      // Optional: return cached data only if offline
+      return caches.match(request);
+    }));
     return;
   }
 
-  // Images - Cache-first with network fallback
+  // 2. Images - Cache First
   if (isImageRequest(request)) {
     event.respondWith(cacheFirstStrategy(request, CACHES_CONFIG.IMAGES, IMAGE_CACHE_MAX_SIZE));
     return;
   }
 
-  // Static assets (Vite /assets) - Cache-first
+  // 3. Hashed Assets (Vite /assets/) - Cache First (Safe because filenames change)
   if (url.pathname.includes('/assets/')) {
     event.respondWith(cacheFirstStrategy(request, CACHES_CONFIG.STATIC));
     return;
   }
+
+  // 4. Everything else (including HTML) - Network First
+  // We don't cache the root '/' in static anymore to avoid "stuck" versions.
+  event.respondWith(networkFirstStrategy(request, CACHES_CONFIG.DYNAMIC));
+});
 
   // HTML pages - Network-first with cache fallback
   if (request.mode === 'navigate' || request.destination === 'document') {
