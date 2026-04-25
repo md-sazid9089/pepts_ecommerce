@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react"
-import { productsApi } from "@/services/api"
+import { productsApi, ordersApi, inquiriesApi, categoriesApi, reviewsApi } from "@/services/api"
+import AdminLogin from "./AdminLogin"
 import {
   FaBars,
   FaTimes,
@@ -617,6 +618,15 @@ const getStatusBadge = (status) => {
 }
 
 export default function AdminDashboard() {
+  // ── Admin login guard ──────────────────────────────────────────────────────
+  const [adminUser, setAdminUser] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('pepta_admin_session')) } catch { return null }
+  })
+
+  if (!adminUser) {
+    return <AdminLogin onLogin={(u) => setAdminUser(u)} />
+  }
+  // ───────────────────────────────────────────────────────────────────────────
   const [activePage, setActivePage] = useState("dashboard")
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [hoveredStat, setHoveredStat] = useState(null)
@@ -875,7 +885,11 @@ export default function AdminDashboard() {
           })}
         </div>
 
-        <button style={{ ...styles.navItem, marginTop: "auto" }}>
+        <button style={{ ...styles.navItem, marginTop: "auto" }} onClick={() => {
+          localStorage.removeItem('pepta_admin_session')
+          localStorage.removeItem('authToken')
+          setAdminUser(null)
+        }}>
           <FaSignOutAlt style={styles.navItemIcon} />
           Logout
         </button>
@@ -1489,13 +1503,225 @@ export default function AdminDashboard() {
           </div>
         ) : (
           activePage !== "dashboard" && (
-            <div style={styles.card}>
-              <h2 style={styles.cardTitle}>{navigationItems.find((i) => i.id === activePage)?.label}</h2>
-              <p style={{ color: "#6b7280", marginTop: "1rem" }}>Page content coming soon...</p>
-            </div>
+            <AdminSection activePage={activePage} />
           )
         )}
       </main>
+    </div>
+  )
+}
+
+// ── Section router — replaces all "coming soon" stubs ──────────────────────
+function AdminSection({ activePage }) {
+  if (activePage === "orders")     return <OrdersSection />
+  if (activePage === "inquiries")  return <InquiriesSection />
+  if (activePage === "categories") return <CategoriesSection />
+  if (activePage === "reviews")    return <ReviewsSection />
+  if (activePage === "settings")   return <SettingsSection />
+  if (activePage === "users")      return <UsersSection />
+  if (activePage === "bulk-pricing") return <BulkPricingSection />
+  return (
+    <div style={{ background: '#fff', borderRadius: '0.75rem', padding: '2rem', border: '1px solid #e5e7eb' }}>
+      <h2 style={{ color: '#533638', marginBottom: '0.5rem' }}>{activePage}</h2>
+      <p style={{ color: '#6b7280' }}>This section is under construction.</p>
+    </div>
+  )
+}
+
+const tbl = {
+  card: { background:'#fff', borderRadius:'0.75rem', padding:'1.5rem', border:'1px solid #e5e7eb', boxShadow:'0 2px 8px rgba(0,0,0,0.06)' },
+  title: { fontSize:'1.25rem', fontWeight:700, color:'#111827', margin:'0 0 1.25rem 0' },
+  table: { width:'100%', borderCollapse:'collapse' },
+  th: { padding:'0.75rem 0.5rem', textAlign:'left', fontSize:'0.78rem', fontWeight:700, color:'#6b7280', textTransform:'uppercase', borderBottom:'2px solid #e5e7eb' },
+  td: { padding:'0.85rem 0.5rem', fontSize:'0.9rem', color:'#374151', borderBottom:'1px solid #f3f4f6' },
+  badge: (color) => ({ display:'inline-block', padding:'0.2rem 0.65rem', borderRadius:'2rem', fontSize:'0.75rem', fontWeight:700, background: color + '22', color }),
+  empty: { textAlign:'center', padding:'2rem', color:'#9ca3af' },
+  loading: { padding:'2rem', textAlign:'center', color:'#9ca3af' },
+  btn: { padding:'0.4rem 0.9rem', borderRadius:'0.375rem', border:'none', cursor:'pointer', fontSize:'0.8rem', fontWeight:600 },
+}
+
+function OrdersSection() {
+  const [orders, setOrders] = useState([])
+  const [loading, setLoading] = useState(true)
+  const statusColors = { pending:'#f59e0b', processing:'#3b82f6', shipped:'#8b5cf6', completed:'#10b981', cancelled:'#ef4444' }
+  useEffect(() => {
+    ordersApi.getAll(1, 50).then(r => { if (r.success) setOrders(r.data?.items || r.data || []); setLoading(false) })
+  }, [])
+  return (
+    <div style={tbl.card}>
+      <h2 style={tbl.title}>📦 Orders</h2>
+      {loading ? <p style={tbl.loading}>Loading...</p> : orders.length === 0 ? <p style={tbl.empty}>No orders yet.</p> : (
+        <table style={tbl.table}>
+          <thead><tr>{['Order ID','Customer','Total','Status','Date'].map(h => <th key={h} style={tbl.th}>{h}</th>)}</tr></thead>
+          <tbody>{orders.map((o,i) => (
+            <tr key={o.id||i}>
+              <td style={tbl.td}><strong>#{o.id?.slice(-8)||o.id}</strong></td>
+              <td style={tbl.td}>{o.user?.firstName||o.user?.email||o.contactName||'—'}</td>
+              <td style={tbl.td}>${(o.total||o.totalAmount||0).toFixed(2)}</td>
+              <td style={tbl.td}><span style={tbl.badge(statusColors[o.status]||'#6b7280')}>{o.status||'pending'}</span></td>
+              <td style={tbl.td}>{o.createdAt ? new Date(o.createdAt).toLocaleDateString() : '—'}</td>
+            </tr>
+          ))}</tbody>
+        </table>
+      )}
+    </div>
+  )
+}
+
+function InquiriesSection() {
+  const [inquiries, setInquiries] = useState([])
+  const [loading, setLoading] = useState(true)
+  const statusColors = { new:'#f59e0b', replied:'#10b981', closed:'#6b7280' }
+  useEffect(() => {
+    inquiriesApi.getAll(1, 50).then(r => { if (r.success) setInquiries(r.data?.items || r.data || []); setLoading(false) })
+  }, [])
+  const markReplied = async (id) => {
+    const r = await inquiriesApi.markReplied(id)
+    if (r.success) setInquiries(prev => prev.map(i => i.id===id ? {...i,status:'replied'} : i))
+  }
+  return (
+    <div style={tbl.card}>
+      <h2 style={tbl.title}>📬 Wholesale Inquiries</h2>
+      {loading ? <p style={tbl.loading}>Loading...</p> : inquiries.length === 0 ? <p style={tbl.empty}>No inquiries yet.</p> : (
+        <table style={tbl.table}>
+          <thead><tr>{['Company','Email','Product','Qty','Status','Action'].map(h=><th key={h} style={tbl.th}>{h}</th>)}</tr></thead>
+          <tbody>{inquiries.map((inq,i) => (
+            <tr key={inq.id||i}>
+              <td style={tbl.td}><strong>{inq.companyName||inq.name||'—'}</strong></td>
+              <td style={tbl.td}>{inq.contactEmail||inq.email||'—'}</td>
+              <td style={tbl.td}>{inq.productName||inq.product||'—'}</td>
+              <td style={tbl.td}>{inq.requestedQuantity||inq.qty||'—'}</td>
+              <td style={tbl.td}><span style={tbl.badge(statusColors[inq.status]||'#6b7280')}>{inq.status||'new'}</span></td>
+              <td style={tbl.td}>{inq.status!=='replied'&&<button style={{...tbl.btn,background:'#d1fae5',color:'#065f46'}} onClick={()=>markReplied(inq.id)}>✓ Mark Replied</button>}</td>
+            </tr>
+          ))}</tbody>
+        </table>
+      )}
+    </div>
+  )
+}
+
+function CategoriesSection() {
+  const [cats, setCats] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [newCat, setNewCat] = useState('')
+  const [saving, setSaving] = useState(false)
+  useEffect(() => {
+    categoriesApi.getAll().then(r => { if (r.success) setCats(r.data?.items || r.data || []); setLoading(false) })
+  }, [])
+  const addCat = async () => {
+    if (!newCat.trim()) return
+    setSaving(true)
+    const r = await categoriesApi.create({ name: newCat.trim() })
+    if (r.success) { setCats(p => [...p, r.data]); setNewCat('') }
+    setSaving(false)
+  }
+  return (
+    <div style={tbl.card}>
+      <h2 style={tbl.title}>🗂️ Categories</h2>
+      <div style={{ display:'flex', gap:'0.75rem', marginBottom:'1.5rem' }}>
+        <input value={newCat} onChange={e=>setNewCat(e.target.value)} placeholder="New category name" style={{ flex:1, padding:'0.7rem 1rem', borderRadius:'0.5rem', border:'1px solid #d1d5db', fontSize:'0.9rem', outline:'none' }} />
+        <button onClick={addCat} disabled={saving} style={{ ...tbl.btn, background:'#533638', color:'#fff', padding:'0.7rem 1.25rem', borderRadius:'0.5rem' }}>+ Add</button>
+      </div>
+      {loading ? <p style={tbl.loading}>Loading...</p> : cats.length === 0 ? <p style={tbl.empty}>No categories yet.</p> : (
+        <table style={tbl.table}>
+          <thead><tr>{['Name','Slug','Products'].map(h=><th key={h} style={tbl.th}>{h}</th>)}</tr></thead>
+          <tbody>{cats.map((c,i) => (
+            <tr key={c.id||i}>
+              <td style={tbl.td}><strong>{c.name}</strong></td>
+              <td style={tbl.td}>{c.slug||c.name?.toLowerCase().replace(/\s+/g,'-')}</td>
+              <td style={tbl.td}>{c._count?.products ?? c.productCount ?? '—'}</td>
+            </tr>
+          ))}</tbody>
+        </table>
+      )}
+    </div>
+  )
+}
+
+function ReviewsSection() {
+  const [reviews, setReviews] = useState([])
+  const [loading, setLoading] = useState(true)
+  useEffect(() => {
+    reviewsApi.getAll ? reviewsApi.getAll(1,50).then(r=>{ if(r.success) setReviews(r.data?.items||r.data||[]); setLoading(false) }) : setLoading(false)
+  }, [])
+  const stars = (n) => '★'.repeat(n||0) + '☆'.repeat(5-(n||0))
+  return (
+    <div style={tbl.card}>
+      <h2 style={tbl.title}>⭐ Reviews</h2>
+      {loading ? <p style={tbl.loading}>Loading...</p> : reviews.length === 0 ? <p style={tbl.empty}>No reviews yet.</p> : (
+        <table style={tbl.table}>
+          <thead><tr>{['Product','User','Rating','Comment','Date'].map(h=><th key={h} style={tbl.th}>{h}</th>)}</tr></thead>
+          <tbody>{reviews.map((r,i)=>(
+            <tr key={r.id||i}>
+              <td style={tbl.td}>{r.product?.title||r.productId||'—'}</td>
+              <td style={tbl.td}>{r.user?.email||r.userId||'—'}</td>
+              <td style={{...tbl.td,color:'#f59e0b'}}>{stars(r.rating)}</td>
+              <td style={{...tbl.td,maxWidth:200,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{r.comment||r.content||'—'}</td>
+              <td style={tbl.td}>{r.createdAt?new Date(r.createdAt).toLocaleDateString():'—'}</td>
+            </tr>
+          ))}</tbody>
+        </table>
+      )}
+    </div>
+  )
+}
+
+function UsersSection() {
+  const [users, setUsers] = useState([])
+  const [loading, setLoading] = useState(true)
+  useEffect(() => {
+    import('@/services/apiClient').then(({default:ac}) =>
+      ac.get('/api/protected/users',{page:1,pageSize:50})
+        .then(r=>{ if(r.success) setUsers(r.data?.items||r.data||[]); setLoading(false) })
+        .catch(()=>setLoading(false))
+    )
+  }, [])
+  return (
+    <div style={tbl.card}>
+      <h2 style={tbl.title}>👥 Users</h2>
+      {loading ? <p style={tbl.loading}>Loading...</p> : users.length === 0 ? <p style={tbl.empty}>No users found (may require elevated admin privileges).</p> : (
+        <table style={tbl.table}>
+          <thead><tr>{['Name','Email','Role','Joined'].map(h=><th key={h} style={tbl.th}>{h}</th>)}</tr></thead>
+          <tbody>{users.map((u,i)=>(
+            <tr key={u.id||i}>
+              <td style={tbl.td}>{u.firstName||''} {u.lastName||''}</td>
+              <td style={tbl.td}>{u.email}</td>
+              <td style={tbl.td}><span style={tbl.badge(u.role==='admin'?'#f59e0b':'#6b7280')}>{u.role||'user'}</span></td>
+              <td style={tbl.td}>{u.createdAt?new Date(u.createdAt).toLocaleDateString():'—'}</td>
+            </tr>
+          ))}</tbody>
+        </table>
+      )}
+    </div>
+  )
+}
+
+function BulkPricingSection() {
+  return (
+    <div style={tbl.card}>
+      <h2 style={tbl.title}>💰 Bulk Pricing</h2>
+      <p style={{color:'#6b7280',marginBottom:'1rem'}}>Bulk pricing is managed per product. Go to <strong>Products</strong> to set tiered pricing when creating or editing a product.</p>
+      <div style={{background:'#fef3c7',border:'1px solid #fcd34d',borderRadius:'0.5rem',padding:'1rem',color:'#92400e',fontSize:'0.9rem'}}>
+        💡 Tip: When creating a product, use the <strong>Bulk Pricing Tiers</strong> section to set min quantity, max quantity, and price per unit for each tier.
+      </div>
+    </div>
+  )
+}
+
+function SettingsSection() {
+  return (
+    <div style={tbl.card}>
+      <h2 style={tbl.title}>⚙️ Settings</h2>
+      <div style={{display:'grid',gap:'1.25rem'}}>
+        {[['Store Name','Pepta Wholesale'],['Contact Email','support@pepta.shopping'],['Currency','USD ($)'],['Minimum Order Value','$500']].map(([label,val])=>(
+          <div key={label} style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'1rem',background:'#f9fafb',borderRadius:'0.5rem'}}>
+            <span style={{fontWeight:600,color:'#374151'}}>{label}</span>
+            <span style={{color:'#6b7280'}}>{val}</span>
+          </div>
+        ))}
+        <p style={{fontSize:'0.8rem',color:'#9ca3af',marginTop:'0.5rem'}}>Settings management coming in next update.</p>
+      </div>
     </div>
   )
 }
