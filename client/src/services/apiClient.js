@@ -49,9 +49,6 @@ class ApiClient {
   getHeaders() {
     const headers = { 
       "Content-Type": "application/json",
-      "Cache-Control": "no-cache, no-store, must-revalidate",
-      "Pragma": "no-cache",
-      "Expires": "0"
     }
     const token = this.getToken()
     if (token) headers.Authorization = `Bearer ${token}`
@@ -60,13 +57,18 @@ class ApiClient {
 
   /**
    * Core fetch wrapper with AbortController timeout.
+   * Uses cache: 'no-store' to bypass browser cache without triggering CORS preflight.
    * @private
    */
   async _fetch(url, options = {}, timeoutMs = DEFAULT_TIMEOUT_MS) {
     const controller = new AbortController()
     const timer = setTimeout(() => controller.abort(), timeoutMs)
     try {
-      const response = await fetch(url, { ...options, signal: controller.signal })
+      const response = await fetch(url, { 
+        ...options, 
+        signal: controller.signal,
+        cache: 'no-store',  // ✅ Browser-native cache bypass — no CORS headers needed
+      })
       return response
     } catch (err) {
       if (err.name === "AbortError") {
@@ -123,7 +125,6 @@ class ApiClient {
       const response = await this._fetch(url, {
         method: "PUT",
         headers: this.getHeaders(),
-        body: JSON.stringify(data),
         body: JSON.stringify(data),
       })
       return this._handleResponse(response)

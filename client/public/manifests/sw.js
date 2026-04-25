@@ -8,7 +8,7 @@
  */
 
 const CACHE_PREFIX = 'pepta';
-const CURRENT_VERSION = 'v5'; // Bumped for optimized industry-standard strategy
+const CURRENT_VERSION = 'v6'; // Bumped: CORS fix — removed illegal request headers
 const CACHE_NAME = `${CACHE_PREFIX}-${CURRENT_VERSION}`;
 
 // Cache configuration
