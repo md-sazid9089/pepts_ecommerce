@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { products as fallbackProducts } from '@/data/products';
 import productsApi from '@/services/api/products.api';
 import ProductCard from '@/components/ProductCard/ProductCard';
@@ -251,9 +252,10 @@ const styles = {
 };
 
 export default function ProductsPage() {
+  const location = useLocation();
   const [sortBy, setSortBy] = useState('popular');
   const [displayCount, setDisplayCount] = useState(20);
-  const [productsList, setProductsList] = useState(fallbackProducts);
+  const [productsList, setProductsList] = useState([]); // Initialize empty to prevent stale data flicker
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -274,7 +276,7 @@ export default function ProductsPage() {
     };
 
     fetchProducts();
-  }, []);
+  }, [location.key]); // Refetch on every navigation/back action
 
   // Filter and sort products (Simplified to only Sorting)
   const displayedProducts = useMemo(() => {
