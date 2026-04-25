@@ -78,8 +78,14 @@ class ApiClient {
     }
   }
 
+  _getCleanUrl(endpoint) {
+    const base = this.baseURL.replace(/\/+$/, "") // Remove trailing slashes
+    const path = endpoint.startsWith("/") ? endpoint : `/${endpoint}`
+    return `${base}${path}`
+  }
+
   async get(endpoint, params = {}) {
-    const url = new URL(`${this.baseURL}${endpoint}`)
+    const url = new URL(this._getCleanUrl(endpoint))
     Object.entries(params).forEach(([k, v]) => {
       if (v !== undefined && v !== null) url.searchParams.append(k, v)
     })
@@ -96,9 +102,10 @@ class ApiClient {
   }
 
   async post(endpoint, data = {}) {
-    log(`POST ${this.baseURL}${endpoint}`)
+    const url = this._getCleanUrl(endpoint)
+    log(`POST ${url}`)
     try {
-      const response = await this._fetch(`${this.baseURL}${endpoint}`, {
+      const response = await this._fetch(url, {
         method: "POST",
         headers: this.getHeaders(),
         body: JSON.stringify(data),
@@ -110,11 +117,13 @@ class ApiClient {
   }
 
   async put(endpoint, data = {}) {
-    log(`PUT ${this.baseURL}${endpoint}`)
+    const url = this._getCleanUrl(endpoint)
+    log(`PUT ${url}`)
     try {
-      const response = await this._fetch(`${this.baseURL}${endpoint}`, {
+      const response = await this._fetch(url, {
         method: "PUT",
         headers: this.getHeaders(),
+        body: JSON.stringify(data),
         body: JSON.stringify(data),
       })
       return this._handleResponse(response)
@@ -124,9 +133,10 @@ class ApiClient {
   }
 
   async patch(endpoint, data = {}) {
-    log(`PATCH ${this.baseURL}${endpoint}`)
+    const url = this._getCleanUrl(endpoint)
+    log(`PATCH ${url}`)
     try {
-      const response = await this._fetch(`${this.baseURL}${endpoint}`, {
+      const response = await this._fetch(url, {
         method: "PATCH",
         headers: this.getHeaders(),
         body: JSON.stringify(data),
@@ -138,9 +148,10 @@ class ApiClient {
   }
 
   async delete(endpoint) {
-    log(`DELETE ${this.baseURL}${endpoint}`)
+    const url = this._getCleanUrl(endpoint)
+    log(`DELETE ${url}`)
     try {
-      const response = await this._fetch(`${this.baseURL}${endpoint}`, {
+      const response = await this._fetch(url, {
         method: "DELETE",
         headers: this.getHeaders(),
       })
