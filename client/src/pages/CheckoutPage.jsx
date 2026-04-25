@@ -1,9 +1,11 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { useAuth } from '@/context/AuthContext'
 import { useCart } from '@/context/CartContext'
 import { ordersApi } from '@/services/api'
 
 export default function CheckoutPage() {
+  const { user } = useAuth()
   const { items, totalPrice, savings, clearCart, isValidOrder, moqViolations } = useCart()
   const navigate = useNavigate()
   const [step, setStep] = useState(1) // 1=details, 2=review, 3=success
@@ -11,8 +13,14 @@ export default function CheckoutPage() {
   const [error, setError] = useState('')
   const [orderId, setOrderId] = useState(null)
   const [form, setForm] = useState({
-    companyName: '', contactName: '', email: '', phone: '',
-    address: '', city: '', country: '', notes: ''
+    companyName: '',
+    contactName: user?.name || '',
+    email: user?.email || '',
+    phone: user?.phone || '',
+    address: user?.address || '',
+    city: '',
+    country: '',
+    notes: ''
   })
 
   const s = {

@@ -363,16 +363,16 @@ export default function LoginPage() {
     }
 
     setLoading(true)
-    try {
-      login(email, password)
-      setTimeout(() => {
+    login(email, password)
+      .then(() => {
         navigate("/")
-      }, 500)
-    } catch {
-      setError("Login failed. Please check your credentials.")
-    } finally {
-      setLoading(false)
-    }
+      })
+      .catch((err) => {
+        setError(err.message || "Login failed. Please check your credentials.")
+      })
+      .finally(() => {
+        setLoading(false)
+      })
   }
 
   return (

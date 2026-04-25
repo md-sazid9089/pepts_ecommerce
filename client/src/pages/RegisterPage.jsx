@@ -386,16 +386,16 @@ export default function RegisterPage() {
     }
 
     setLoading(true)
-    try {
-      register(formData.name, formData.email, formData.password)
-      setTimeout(() => {
+    register(formData.name, formData.email, formData.password)
+      .then(() => {
         navigate("/")
-      }, 500)
-    } catch {
-      setError("Registration failed. Please try again.")
-    } finally {
-      setLoading(false)
-    }
+      })
+      .catch((err) => {
+        setError(err.message || "Registration failed. Please try again.")
+      })
+      .finally(() => {
+        setLoading(false)
+      })
   }
 
   return (

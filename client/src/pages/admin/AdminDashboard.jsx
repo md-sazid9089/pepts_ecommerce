@@ -586,26 +586,6 @@ const styles = {
   },
 }
 
-// Mock data
-const mockStats = [
-  { label: "Total Orders", value: "1,234", change: "+12.5%", icon: FaShoppingCart, bgColor: colors.info },
-  { label: "Total Revenue", value: "$45,231", change: "+8.2%", icon: FaDollarSign, bgColor: colors.success },
-  { label: "Total Products", value: "156", change: "+5 new", icon: FaBox, bgColor: colors.warning },
-  { label: "Total Users", value: "892", change: "+23 this month", icon: FaUsers, bgColor: colors.sidebar },
-]
-
-const mockOrders = [
-  { id: "#ORD-001", customer: "John Doe", total: "$2,500", status: "Pending", date: "2024-04-20" },
-  { id: "#ORD-002", customer: "Jane Smith", total: "$5,200", status: "Processing", date: "2024-04-19" },
-  { id: "#ORD-003", customer: "Bob Johnson", total: "$1,800", status: "Shipped", date: "2024-04-18" },
-  { id: "#ORD-004", customer: "Alice Brown", total: "$3,400", status: "Completed", date: "2024-04-17" },
-]
-
-const mockInquiries = [
-  { id: 1, name: "Wholesale Buyer Co.", email: "buyer@example.com", product: "Fashion Dolls", qty: 500, status: "New" },
-  { id: 2, name: "Retail Store Ltd.", email: "store@example.com", product: "RC Cars", qty: 200, status: "Replied" },
-  { id: 3, name: "Gift Shop Inc.", email: "gifts@example.com", product: "Barbie Dolls", qty: 100, status: "New" },
-]
 
 const getStatusBadge = (status) => {
   const statusMap = {
@@ -633,6 +613,65 @@ export default function AdminDashboard() {
   const [hoveredTableRow, setHoveredTableRow] = useState(null)
   const [products, setProducts] = useState([])
   const [loadingProducts, setLoadingProducts] = useState(false)
+
+  const [stats, setStats] = useState([
+    { label: "Total Orders", value: "0", change: "...", icon: FaShoppingCart, bgColor: colors.info },
+    { label: "Total Revenue", value: "$0", change: "...", icon: FaDollarSign, bgColor: colors.success },
+    { label: "Total Products", value: "0", change: "...", icon: FaBox, bgColor: colors.warning },
+    { label: "Total Inquiries", value: "0", change: "...", icon: FaInbox, bgColor: colors.sidebar },
+  ])
+  const [orders, setOrders] = useState([])
+  const [inquiries, setInquiries] = useState([])
+
+  // Fetch real dashboard data
+  useEffect(() => {
+    const fetchDashboardData = async () => {
+      try {
+        // 1. Fetch Orders & Revenue
+        const ordersRes = await ordersApi.getAll(1, 100)
+        if (ordersRes.success) {
+          const items = ordersRes.data?.items || []
+          setOrders(items.slice(0, 5)) // Show latest 5
+          const totalRev = items.reduce((sum, o) => sum + (o.totalAmount || 0), 0)
+          const totalCount = ordersRes.data?.pagination?.total || items.length
+          
+          setStats(prev => prev.map(s => {
+            if (s.label === "Total Orders") return { ...s, value: totalCount.toString() }
+            if (s.label === "Total Revenue") return { ...s, value: `$${totalRev.toLocaleString()}` }
+            return s
+          }))
+        }
+
+        // 2. Fetch Inquiries
+        const inquiriesRes = await inquiriesApi.getAll(1, 100)
+        if (inquiriesRes.success) {
+          const items = inquiriesRes.data?.items || []
+          setInquiries(items.slice(0, 5))
+          const totalCount = inquiriesRes.data?.pagination?.total || items.length
+          setStats(prev => prev.map(s => {
+            if (s.label === "Total Inquiries") return { ...s, value: totalCount.toString() }
+            return s
+          }))
+        }
+
+        // 3. Fetch Products
+        const productsRes = await productsApi.getAll(1, 1)
+        if (productsRes.success) {
+          const totalCount = productsRes.data?.pagination?.total || 0
+          setStats(prev => prev.map(s => {
+            if (s.label === "Total Products") return { ...s, value: totalCount.toString() }
+            return s
+          }))
+        }
+      } catch (e) {
+        console.error("Dashboard fetch error:", e)
+      }
+    }
+
+    if (activePage === "dashboard") {
+      fetchDashboardData()
+    }
+  }, [activePage])
   const defaultPricingRow = () => ({ min: "", max: "", price: "", unit: "per unit" })
   const [productForm, setProductForm] = useState({
     title: "",
@@ -939,15 +978,19 @@ export default function AdminDashboard() {
         {activePage === "dashboard" && (
           <>
             {/* Inquiry Alert */}
-            <div style={styles.inquiryAlert}>
-              <FaExclamationCircle style={styles.inquiryAlertIcon} />
-              <div style={styles.inquiryAlertContent}>
-                <p style={styles.inquiryAlertText}>3 new wholesale inquiries awaiting response!</p>
+            {inquiries.filter(iq => iq.status?.toLowerCase() === "new").length > 0 && (
+              <div style={styles.inquiryAlert}>
+                <FaExclamationCircle style={styles.inquiryAlertIcon} />
+                <div style={styles.inquiryAlertContent}>
+                  <p style={styles.inquiryAlertText}>
+                    {inquiries.filter(iq => iq.status?.toLowerCase() === "new").length} new wholesale inquiries awaiting response!
+                  </p>
+                </div>
+                <button style={{ background: "none", border: "none", cursor: "pointer", color: "#d97706", fontWeight: 600 }} onClick={() => setActivePage("inquiries")}>
+                  View →
+                </button>
               </div>
-              <button style={{ background: "none", border: "none", cursor: "pointer", color: "#d97706", fontWeight: 600 }} onClick={() => setActivePage("inquiries")}>
-                View →
-              </button>
-            </div>
+            )}
 
             {/* Page Header */}
             <div style={styles.pageHeader}>
@@ -957,7 +1000,7 @@ export default function AdminDashboard() {
 
             {/* Stats Cards */}
             <div style={styles.statsGrid}>
-              {mockStats.map((stat, idx) => {
+              {stats.map((stat, idx) => {
                 const Icon = stat.icon
                 return (
                   <div
@@ -1008,7 +1051,7 @@ export default function AdminDashboard() {
                     </tr>
                   </thead>
                   <tbody>
-                    {mockOrders.map((order, idx) => (
+                    {orders.map((order, idx) => (
                       <tr
                         key={idx}
                         style={{
@@ -1021,8 +1064,8 @@ export default function AdminDashboard() {
                         <td style={styles.tableCell}>
                           <strong>{order.id}</strong>
                         </td>
-                        <td style={styles.tableCell}>{order.customer}</td>
-                        <td style={styles.tableCell}>{order.total}</td>
+                        <td style={styles.tableCell}>{order.customer || order.user?.firstName || "Guest"}</td>
+                        <td style={styles.tableCell}>${(order.total || order.totalAmount || 0).toLocaleString()}</td>
                         <td style={styles.tableCell}>
                           <span style={{ ...styles.badge, ...getStatusBadge(order.status) }}>
                             {order.status}
@@ -1058,7 +1101,7 @@ export default function AdminDashboard() {
                     </tr>
                   </thead>
                   <tbody>
-                    {mockInquiries.map((inquiry, idx) => (
+                    {inquiries.map((inquiry, idx) => (
                       <tr
                         key={idx}
                         style={{
@@ -1069,10 +1112,10 @@ export default function AdminDashboard() {
                         onMouseLeave={() => setHoveredTableRow(null)}
                       >
                         <td style={styles.tableCell}>
-                          <strong>{inquiry.name}</strong>
+                          <strong>{inquiry.companyName || inquiry.name}</strong>
                         </td>
-                        <td style={styles.tableCell}>{inquiry.product}</td>
-                        <td style={styles.tableCell}>{inquiry.qty}</td>
+                        <td style={styles.tableCell}>{inquiry.productName || inquiry.product}</td>
+                        <td style={styles.tableCell}>{inquiry.requestedQuantity || inquiry.qty}</td>
                         <td style={styles.tableCell}>
                           <span style={{ ...styles.badge, ...(inquiry.status === "New" ? styles.badgePending : styles.badgeProcessing) }}>
                             {inquiry.status}

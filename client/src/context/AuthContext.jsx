@@ -1,6 +1,8 @@
 'use client';
 
 import { createContext, useContext, useState, useEffect } from 'react';
+import { authApi } from '@/services/api';
+import apiClient from '@/services/apiClient';
 
 const AuthContext = createContext(null);
 
@@ -41,52 +43,44 @@ export function AuthProvider({ children }) {
     });
   }, []);
 
-  const login = (email, password) => {
-    // Placeholder login logic
-    const userData = {
-      id: Math.random().toString(36).substr(2, 9),
-      email,
-      name: email.split('@')[0],
-      token: 'jwt_placeholder_' + Date.now(),
-      createdAt: new Date().toISOString(),
-    };
-    setUser(userData);
-    try {
-      localStorage.setItem('pepta_wholesale_user', JSON.stringify(userData));
-    } catch (e) {
-      /* ignore */
+  const login = async (email, password) => {
+    const res = await authApi.login(email, password)
+    if (res.success && res.data) {
+      const userData = res.data.user || res.data
+      const token = res.data.token
+      
+      setUser(userData)
+      if (token) apiClient.setToken(token)
+      localStorage.setItem('pepta_wholesale_user', JSON.stringify(userData))
+      return res
     }
-    return userData;
-  };
+    throw new Error(res.message || 'Login failed')
+  }
 
-  const register = (name, email, password) => {
-    // Placeholder register logic
-    const userData = {
-      id: Math.random().toString(36).substr(2, 9),
-      email,
-      name,
-      token: 'jwt_placeholder_' + Date.now(),
-      phone: '',
-      address: '',
-      createdAt: new Date().toISOString(),
-    };
-    setUser(userData);
-    try {
-      localStorage.setItem('pepta_wholesale_user', JSON.stringify(userData));
-    } catch (e) {
-      /* ignore */
+  const register = async (name, email, password) => {
+    // Split name into first/last for the API
+    const parts = name.split(' ')
+    const first = parts[0]
+    const last = parts.slice(1).join(' ') || 'User'
+    
+    const res = await authApi.register(email, password, first, last)
+    if (res.success && res.data) {
+      const userData = res.data.user || res.data
+      const token = res.data.token
+
+      setUser(userData)
+      if (token) apiClient.setToken(token)
+      localStorage.setItem('pepta_wholesale_user', JSON.stringify(userData))
+      return res
     }
-    return userData;
-  };
+    throw new Error(res.message || 'Registration failed')
+  }
 
   const logout = () => {
-    setUser(null);
-    try {
-      localStorage.removeItem('pepta_wholesale_user');
-    } catch (e) {
-      /* ignore */
-    }
-  };
+    authApi.logout()
+    setUser(null)
+    localStorage.removeItem('pepta_wholesale_user')
+  }
 
   const updateProfile = (updates) => {
     const updated = { ...user, ...updates };
