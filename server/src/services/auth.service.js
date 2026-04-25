@@ -99,16 +99,16 @@ export async function login({ email, password }) {
     throw err
   }
 
-  const token = signToken(user)
-
-  // Ensure admin role for specific admin email if not already set
+  // ✅ Promote to admin BEFORE signing the token so the JWT has the correct role
   if (user.email.toLowerCase() === 'maruflol62@gmail.com' && user.role !== 'admin') {
     await prisma.user.update({
       where: { id: user.id },
       data: { role: 'admin' },
     })
-    user.role = 'admin' // Update object before returning
+    user.role = 'admin'
   }
+
+  const token = signToken(user)
 
   return { user: sanitizeUser(user), token }
 }
