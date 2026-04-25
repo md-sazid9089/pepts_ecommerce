@@ -8,7 +8,7 @@
  */
 
 const CACHE_PREFIX = 'pepta';
-const CURRENT_VERSION = 'v3'; // Bumped to clear old "Precious Play" caches
+const CURRENT_VERSION = 'v4'; // Bumped to force update for all users
 const CACHE_NAME = `${CACHE_PREFIX}-${CURRENT_VERSION}`;
 
 // Cache configuration
@@ -19,12 +19,11 @@ const CACHES_CONFIG = {
   API: `${CACHE_NAME}-api`,
 };
 
-// Assets to cache on install
+// Assets to cache on install (Commonly used static files)
 const STATIC_ASSETS = [
   '/',
   '/offline.html',
-  '/favicon.ico',
-  '/_next/static/chunks/main.js',
+  '/images/products/logo.jpeg',
 ];
 
 const API_CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
@@ -102,8 +101,8 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Static assets (_next) - Cache-first
-  if (url.pathname.startsWith('/_next/')) {
+  // Static assets (Vite /assets) - Cache-first
+  if (url.pathname.includes('/assets/')) {
     event.respondWith(cacheFirstStrategy(request, CACHES_CONFIG.STATIC));
     return;
   }
