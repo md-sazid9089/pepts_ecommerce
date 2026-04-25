@@ -3,6 +3,7 @@ import { authApi } from '@/services/api'
 import apiClient from '@/services/apiClient'
 
 const ADMIN_EMAIL = 'maruflol62@gmail.com'
+const ADMIN_PASS  = 'Maruf$@21REDO&'
 
 export default function AdminLogin({ onLogin }) {
   const [email, setEmail] = useState('')
@@ -14,24 +15,65 @@ export default function AdminLogin({ onLogin }) {
     e.preventDefault()
     setError('')
     setLoading(true)
+
+    // ── Hardcoded fallback: always allow the designated admin credentials ──
+    const isHardcodedAdmin = email.trim().toLowerCase() === ADMIN_EMAIL.toLowerCase() && password === ADMIN_PASS
+    
     try {
       const res = await authApi.login(email, password)
+
       if (res.success && res.data) {
         const user = res.data
-        const isAdmin = user.role === 'admin' || user.email === ADMIN_EMAIL
+        const isAdmin = user.role === 'admin' || user.email?.toLowerCase() === ADMIN_EMAIL.toLowerCase()
         if (!isAdmin) {
           setError('Access denied. Admin accounts only.')
           setLoading(false)
           return
         }
         if (res.data.token) apiClient.setToken(res.data.token)
-        localStorage.setItem('pepta_admin_session', JSON.stringify({ ...user, adminAt: Date.now() }))
-        onLogin(user)
-      } else {
-        setError(res.message || 'Invalid credentials')
+        const session = { ...user, adminAt: Date.now() }
+        localStorage.setItem('pepta_admin_session', JSON.stringify(session))
+        onLogin(session)
+        return
       }
+
+      // API returned 401 — user might not be registered yet
+      if (isHardcodedAdmin) {
+        // Try to auto-register first
+        try {
+          const reg = await authApi.register(email, password, 'Maruf', 'Admin')
+          if (reg.success && reg.data) {
+            if (reg.data.token) apiClient.setToken(reg.data.token)
+            const session = { ...reg.data, role: 'admin', adminAt: Date.now() }
+            localStorage.setItem('pepta_admin_session', JSON.stringify(session))
+            onLogin(session)
+            return
+          }
+        } catch (_) { /* registration failed too, use local fallback */ }
+
+        // Final fallback: create a local session without API
+        const localSession = {
+          id: 'admin_local',
+          email: ADMIN_EMAIL,
+          name: 'Maruf Admin',
+          role: 'admin',
+          adminAt: Date.now(),
+        }
+        localStorage.setItem('pepta_admin_session', JSON.stringify(localSession))
+        onLogin(localSession)
+        return
+      }
+
+      setError(res.message || 'Invalid email or password.')
     } catch (err) {
-      setError('Connection error. Please try again.')
+      if (isHardcodedAdmin) {
+        // Network error but correct admin creds — allow local session
+        const localSession = { id: 'admin_local', email: ADMIN_EMAIL, name: 'Admin', role: 'admin', adminAt: Date.now() }
+        localStorage.setItem('pepta_admin_session', JSON.stringify(localSession))
+        onLogin(localSession)
+        return
+      }
+      setError('Connection error. Please check your internet and try again.')
     } finally {
       setLoading(false)
     }
