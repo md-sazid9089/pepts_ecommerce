@@ -92,16 +92,6 @@ self.addEventListener('fetch', (event) => {
   event.respondWith(networkFirstStrategy(request, CACHES_CONFIG.DYNAMIC));
 });
 
-  // HTML pages - Network-first with cache fallback
-  if (request.mode === 'navigate' || request.destination === 'document') {
-    event.respondWith(networkFirstStrategy(request, CACHES_CONFIG.DYNAMIC));
-    return;
-  }
-
-  // Default - Cache-first for everything else
-  event.respondWith(cacheFirstStrategy(request, CACHES_CONFIG.DYNAMIC));
-});
-
 /**
  * Cache-First Strategy
  * Try cache first, fall back to network
