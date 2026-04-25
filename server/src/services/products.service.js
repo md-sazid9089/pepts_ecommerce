@@ -36,6 +36,9 @@ function mapProduct(product, full = false) {
     imageUrl: product.imageUrl ?? null,
     images: product.images ? JSON.parse(product.images) : [],
     specs: product.specs ? JSON.parse(product.specs) : null,
+    brand: product.brand,
+    moq: product.moq,
+    casePackSize: product.casePackSize,
     isActive: product.isActive,
     createdAt: product.createdAt,
     updatedAt: product.updatedAt,
@@ -51,7 +54,13 @@ function mapProduct(product, full = false) {
 
     return {
       ...base,
-      bulkPrices: product.bulkPrices ?? [],
+      bulkPrices: product.bulkPrices?.map(bp => ({
+        minQuantity: bp.minQuantity,
+        maxQuantity: bp.maxQuantity,
+        price: bp.price,
+        unit: bp.unit,
+        discount: bp.discount
+      })) ?? [],
       reviewCount: approvedReviews.length,
       rating: avgRating,
     }
@@ -89,6 +98,7 @@ export async function getAll(page = 1, pageSize = 20, filters = {}) {
       const [rawItems, countResult] = await Promise.all([
         prisma.$queryRaw`
           SELECT p.id, p.title, p.price, p.stock, p.imageUrl,
+                 p.brand, p.moq, p.casePackSize,
                  p.isActive, p.createdAt, p.updatedAt, p.categoryId,
                  cat.name AS categoryName
           FROM Product p
@@ -113,6 +123,9 @@ export async function getAll(page = 1, pageSize = 20, filters = {}) {
         stock:      p.stock,
         inStock:    p.stock > 0,
         imageUrl:   p.imageUrl ?? null,
+        brand:      p.brand,
+        moq:        p.moq,
+        casePackSize: p.casePackSize,
         categoryId: p.categoryId,
         category:   p.categoryName ?? null,
         isActive:   Boolean(p.isActive),
@@ -130,6 +143,9 @@ export async function getAll(page = 1, pageSize = 20, filters = {}) {
       price:       true,
       stock:       true,
       imageUrl:    true,
+      brand:       true,
+      moq:         true,
+      casePackSize: true,
       isActive:    true,
       createdAt:   true,
       updatedAt:   true,
@@ -149,6 +165,9 @@ export async function getAll(page = 1, pageSize = 20, filters = {}) {
       stock:      p.stock,
       inStock:    p.stock > 0,
       imageUrl:   p.imageUrl ?? null,
+      brand:      p.brand,
+      moq:        p.moq,
+      casePackSize: p.casePackSize,
       categoryId: p.categoryId,
       category:   p.category?.name ?? null,
       isActive:   p.isActive,
@@ -217,9 +236,21 @@ export async function createProduct(data) {
         price:       data.price,
         stock:       Math.round(data.stock ?? 0),
         categoryId:  category.id,
+        brand:       data.brand?.trim(),
+        moq:         data.moq ?? 1,
+        casePackSize: data.casePackSize,
         specs:       data.specs ? JSON.stringify(data.specs) : null,
+        // Bulk pricing tiers
+        bulkPrices: data.tieredPricing ? {
+          create: data.tieredPricing.map(tier => ({
+            minQuantity: tier.min,
+            maxQuantity: tier.max,
+            price: tier.price,
+            unit: tier.unit || "per unit",
+          }))
+        } : undefined,
       },
-      include: { category: true },
+      include: { category: true, bulkPrices: true },
     })
 
     return mapProduct(product)
@@ -265,10 +296,25 @@ export async function updateProduct(productId, data) {
         ...(data.price       !== undefined && { price:       data.price }),
         ...(data.stock       !== undefined && { stock:       Math.round(data.stock) }),
         ...(data.isActive    !== undefined && { isActive:    data.isActive }),
+        ...(data.brand       !== undefined && { brand:       data.brand?.trim() }),
+        ...(data.moq         !== undefined && { moq:         data.moq }),
+        ...(data.casePackSize !== undefined && { casePackSize: data.casePackSize }),
         ...(data.specs       !== undefined && { specs:       JSON.stringify(data.specs) }),
         categoryId,
+        // Handle tiered pricing update (simplest way: delete all and recreate)
+        ...(data.tieredPricing !== undefined && {
+          bulkPrices: {
+            deleteMany: {},
+            create: data.tieredPricing.map(tier => ({
+              minQuantity: tier.min,
+              maxQuantity: tier.max,
+              price: tier.price,
+              unit: tier.unit || "per unit",
+            }))
+          }
+        }),
       },
-      include: { category: true },
+      include: { category: true, bulkPrices: true },
     })
 
     return mapProduct(updated)
