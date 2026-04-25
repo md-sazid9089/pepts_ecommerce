@@ -37,6 +37,17 @@ export const createProductSchema = z.object({
     .optional()
     .default("General"),
 
+  brand: z.string().trim().max(100).optional(),
+  moq: z.number().int().nonnegative().optional().default(1),
+  casePackSize: z.number().int().nonnegative().optional(),
+
+  tieredPricing: z.array(z.object({
+    min: z.number().int().positive(),
+    max: z.number().int().positive().nullable().optional(),
+    price: z.number().nonnegative(),
+    unit: z.string().trim().max(50).optional().default("per unit"),
+  })).optional(),
+
   specs: z.object({
     height:   z.string().trim().max(100).optional(),
     material: z.string().trim().max(200).optional(),
@@ -52,7 +63,16 @@ export const updateProductSchema = z.object({
   price:        z.number().nonnegative().optional(),
   stock:        z.number().int().nonnegative().optional(),
   categoryName: z.string().trim().min(1).max(100).optional(),
+  brand:        z.string().trim().max(100).optional(),
+  moq:          z.number().int().nonnegative().optional(),
+  casePackSize: z.number().int().nonnegative().optional(),
   isActive:     z.boolean().optional(),
+  tieredPricing: z.array(z.object({
+    min: z.number().int().positive(),
+    max: z.number().int().positive().nullable().optional(),
+    price: z.number().nonnegative(),
+    unit: z.string().trim().max(50).optional().default("per unit"),
+  })).optional(),
   specs: z.object({
     height:   z.string().trim().max(100).optional(),
     material: z.string().trim().max(200).optional(),

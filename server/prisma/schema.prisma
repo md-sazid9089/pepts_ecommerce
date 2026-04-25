@@ -45,6 +45,11 @@ model Product {
   images      String?  @db.Text // JSON array of additional image URLs
   specs       String?  @db.Text // JSON: { height, material, clothing, package, tier, ... }
 
+  // B2B / Wholesale Fields
+  brand       String?
+  moq         Int      @default(1)
+  casePackSize Int?
+
   // Foreign keys
   categoryId  String
   category    Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
@@ -93,7 +98,9 @@ model BulkPrice {
   product     Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
   
   minQuantity Int      // Minimum quantity for this price tier
+  maxQuantity Int?     // Maximum quantity for this tier (null = unlimited)
   price       Float    // Price per unit at this tier
+  unit        String   @default("per unit") // e.g. "per piece", "per set"
   discount    Float?   // Discount percentage (optional)
   
   createdAt   DateTime @default(now())
