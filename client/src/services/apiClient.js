@@ -105,7 +105,8 @@ class ApiClient {
 
   async post(endpoint, data = {}) {
     const url = this._getCleanUrl(endpoint)
-    log(`POST ${url}`)
+    const token = this.getToken()
+    log(`POST ${url} (Auth: ${token ? 'YES (' + token.substring(0, 10) + '...)' : 'NO'})`)
     try {
       const response = await this._fetch(url, {
         method: "POST",

@@ -827,7 +827,8 @@ export default function AdminDashboard() {
       })
 
       if (!response.success) {
-        setFormError(response.message || "Unable to create product")
+        setFormError(response.message || response.error?.message || "Unable to create product")
+        setIsSubmitting(false)
         return
       }
 
