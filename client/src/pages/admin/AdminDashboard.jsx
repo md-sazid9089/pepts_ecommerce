@@ -1643,7 +1643,20 @@ function ReviewsSection() {
   const [reviews, setReviews] = useState([])
   const [loading, setLoading] = useState(true)
   useEffect(() => {
-    reviewsApi.getAll ? reviewsApi.getAll(1,50).then(r=>{ if(r.success) setReviews(r.data?.items||r.data||[]); setLoading(false) }) : setLoading(false)
+    // Reviews API requires productId — fetch products first then get reviews for each
+    productsApi.getAll(1, 100).then(async (pr) => {
+      if (!pr.success) { setLoading(false); return }
+      const products = pr.data?.items || []
+      const all = []
+      await Promise.allSettled(
+        products.slice(0, 10).map(async (p) => {
+          const r = await reviewsApi.getByProduct(p.id, 1, 20)
+          if (r.success) r.data?.items?.forEach(rev => all.push({ ...rev, product: p }))
+        })
+      )
+      setReviews(all)
+      setLoading(false)
+    })
   }, [])
   const stars = (n) => '★'.repeat(n||0) + '☆'.repeat(5-(n||0))
   return (
@@ -1654,8 +1667,8 @@ function ReviewsSection() {
           <thead><tr>{['Product','User','Rating','Comment','Date'].map(h=><th key={h} style={tbl.th}>{h}</th>)}</tr></thead>
           <tbody>{reviews.map((r,i)=>(
             <tr key={r.id||i}>
-              <td style={tbl.td}>{r.product?.title||r.productId||'—'}</td>
-              <td style={tbl.td}>{r.user?.email||r.userId||'—'}</td>
+              <td style={tbl.td}>{r.product?.title||'—'}</td>
+              <td style={tbl.td}>{r.reviewerEmail||r.user?.email||'—'}</td>
               <td style={{...tbl.td,color:'#f59e0b'}}>{stars(r.rating)}</td>
               <td style={{...tbl.td,maxWidth:200,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{r.comment||r.content||'—'}</td>
               <td style={tbl.td}>{r.createdAt?new Date(r.createdAt).toLocaleDateString():'—'}</td>
