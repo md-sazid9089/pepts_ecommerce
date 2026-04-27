@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useCallback } from "react"
 import { useParams, useNavigate } from "react-router-dom"
-import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useQuery } from '@tanstack/react-query'
 import { queryKeys } from '@/lib/queryKeys'
 import { imagePresets } from '@/utils/imageUtils'
 import ProductDetailSkeleton from '@/components/skeletons/ProductDetailSkeleton'
@@ -429,8 +429,6 @@ const overviewPoints = [
 export default function ProductDetailPage() {
   const { id } = useParams()
   const navigate = useNavigate()
-  const queryClient = useQueryClient()
-
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
   const [quantity, setQuantity] = useState(1)
   const [activeTab, setActiveTab] = useState("overview")
@@ -458,11 +456,10 @@ export default function ProductDetailPage() {
       return response.data
     },
     enabled: !!id,
-    // Keep data in cache for 15 minutes for reuse across navigation
-    gcTime: 1000 * 60 * 15,
-    // Data is fresh for 5 minutes after fetching
-    staleTime: 1000 * 60 * 5,
+    gcTime: 1000 * 60 * 5, // Keep in cache for 5 minutes
+    staleTime: 1000 * 60 * 2, // Consider fresh for 2 minutes
     retry: 2,
+    // Always show skeleton on initial mount and when data is missing
   })
 
   // scroll to top on id change

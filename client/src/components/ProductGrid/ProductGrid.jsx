@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from 'react';
+﻿import { useState } from 'react';
 import ProductCard from '@/components/ProductCard/ProductCard';
 import QuickViewModal from '@/components/QuickViewModal/QuickViewModal';
 import { FiPackage } from 'react-icons/fi';
@@ -54,31 +54,6 @@ const animationStyle = `
 
 export default function ProductGrid({ products, columns = 1, layout = 'horizontal' }) {
   const [quickViewProduct, setQuickViewProduct] = useState(null);
-  const [windowWidth, setWindowWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 1024);
-
-  // Handle window resize for responsive gap adjustment
-  useEffect(() => {
-    const handleResize = () => {
-      setWindowWidth(window.innerWidth);
-    };
-
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
-
-  // Get responsive gap based on screen size
-  const getResponsiveGap = () => {
-    if (windowWidth < 768) return '12px'; // Mobile: smaller gap
-    if (windowWidth < 1024) return '14px'; // Tablet: medium gap
-    return '16px'; // Desktop: default gap
-  };
-
-  // Get responsive padding
-  const getResponsivePadding = () => {
-    if (windowWidth < 768) return '12px';
-    if (windowWidth < 1024) return '14px';
-    return '0px';
-  };
 
   if (!products || products.length === 0) {
     return (
@@ -93,16 +68,7 @@ export default function ProductGrid({ products, columns = 1, layout = 'horizonta
 
   // For B2B horizontal layout, always use single column
   // For other layouts, use the specified columns
-  const gridStyle = layout === 'horizontal' ? {
-    ...styles.grid,
-    gap: getResponsiveGap(),
-    padding: getResponsivePadding(),
-  } : { 
-    ...styles.grid, 
-    ...styles.gridMultiColumn,
-    gap: getResponsiveGap(),
-    padding: getResponsivePadding(),
-  };
+  const gridStyle = layout === 'horizontal' ? styles.grid : { ...styles.grid, ...styles.gridMultiColumn };
 
   return (
     <>

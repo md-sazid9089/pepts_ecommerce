@@ -32,17 +32,8 @@ function verifyJwt(request) {
 
 export async function GET(request, { params }) {
   try {
-    // Try different ways to get the ID
-    let id
-    
-    if (typeof params === 'object' && 'id' in params) {
-      id = params.id
-    } else if (params instanceof Promise) {
-      const resolved = await params
-      id = resolved.id
-    }
-    
-    if (!id) {
+    const { id } = await params
+    if (!id || typeof id !== "string") {
       return apiResponse.error("Invalid product ID", 400)
     }
 

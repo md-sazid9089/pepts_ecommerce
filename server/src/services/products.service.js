@@ -193,38 +193,27 @@ export async function getAll(page = 1, pageSize = 20, filters = {}) {
  * @returns {Promise<object|null>}
  */
 export async function getById(productId) {
-  if (!productId) return null
+  try {
+    if (!productId) return null
 
-  // Step 1: Just get the basic product
-  const product = await prisma.product.findFirst({
-    where: { id: productId, isActive: true },
-  })
+    const product = await prisma.product.findUnique({
+      where: { id: productId, isActive: true },
+      include: {
+        category: true,
+        images: { orderBy: { order: "asc" } },
+        bulkPrices: { orderBy: { minQuantity: "asc" } },
+        reviews: {
+          where: { status: "approved" },
+          select: { id: true, rating: true, title: true, comment: true, createdAt: true },
+          orderBy: { createdAt: "desc" },
+          take: 20,
+        },
+      },
+    })
 
-  if (!product) return null
-
-  // Step 2: For now, return it as-is with empty relations
-  // This isolates whether the issue is with relation fetching
-  return {
-    id: product.id,
-    title: product.title,
-    description: product.description,
-    price: product.price,
-    stock: product.stock,
-    inStock: product.stock > 0,
-    categoryId: product.categoryId,
-    category: null,
-    imageUrl: product.imageUrl,
-    images: [],
-    specs: product.specs ? JSON.parse(product.specs) : null,
-    brand: product.brand,
-    moq: product.moq,
-    casePackSize: product.casePackSize,
-    isActive: product.isActive,
-    bulkPrices: [],
-    reviewCount: 0,
-    rating: null,
-    createdAt: product.createdAt,
-    updatedAt: product.updatedAt,
+    return product ? mapProduct(product, true) : null
+  } catch (error) {
+    throw new Error(`Failed to fetch product: ${error.message}`)
   }
 }
 
