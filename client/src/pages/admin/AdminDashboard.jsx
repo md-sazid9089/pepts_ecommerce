@@ -1,8 +1,8 @@
 import { useState, useEffect, useCallback, useMemo, memo } from "react"
+import { useNavigate } from 'react-router-dom'
 import { useQueryClient } from '@tanstack/react-query'
 import { queryKeys } from '@/lib/queryKeys'
 import { productsApi, ordersApi, inquiriesApi, categoriesApi, reviewsApi } from "@/services/api"
-import AdminLogin from "./AdminLogin"
 import {
   FaBars,
   FaTimes,
@@ -599,7 +599,10 @@ const getStatusBadge = (status) => {
   return statusMap[status] || styles.badgePending
 }
 
+const PRODUCTS_PER_PAGE = 10
+
 export default function AdminDashboard() {
+  const navigate = useNavigate()
   // ── Admin login guard ──────────────────────────────────────────────────────
   const [adminUser, setAdminUser] = useState(() => {
     try { return JSON.parse(localStorage.getItem('pepta_admin_session')) } catch { return null }
@@ -610,7 +613,10 @@ export default function AdminDashboard() {
   const [hoveredStat, setHoveredStat] = useState(null)
   const [hoveredTableRow, setHoveredTableRow] = useState(null)
   const [products, setProducts] = useState([])
+  const [totalProducts, setTotalProducts] = useState(0)
   const [loadingProducts, setLoadingProducts] = useState(false)
+  const [productPage, setProductPage] = useState(1)
+  const [deletingId, setDeletingId] = useState(null)
   const adminQueryClient = useQueryClient()
 
   const [stats, setStats] = useState([
@@ -871,13 +877,15 @@ export default function AdminDashboard() {
     { id: "settings", label: "Settings", icon: FaCog },
   ], [])
 
-  const fetchProducts = useCallback(async () => {
+  const fetchProducts = useCallback(async (page = 1) => {
     setLoadingProducts(true)
     setFormError("")
     try {
-      const response = await productsApi.getAll(1, 100)
+      const response = await productsApi.getAll(page, PRODUCTS_PER_PAGE)
       if (response.success) {
         setProducts(response.data?.items || [])
+        setTotalProducts(response.data?.pagination?.total || 0)
+        setProductPage(page)
       } else {
         setFormError(response.message || "Failed to load products")
       }
@@ -888,15 +896,35 @@ export default function AdminDashboard() {
     }
   }, [])
 
+  const handleDeleteProduct = useCallback(async (product) => {
+    if (!window.confirm(`Delete "${product.title}"?\nThis cannot be undone.`)) return
+    setDeletingId(product.id)
+    try {
+      const res = await productsApi.delete(product.id)
+      if (res.success) {
+        // Refresh current page
+        fetchProducts(productPage)
+        adminQueryClient.invalidateQueries({ queryKey: queryKeys.products.all })
+      } else {
+        alert(`Delete failed: ${res.message || 'Unknown error'}`)
+      }
+    } catch (err) {
+      alert(`Delete error: ${err.message}`)
+    } finally {
+      setDeletingId(null)
+    }
+  }, [productPage, fetchProducts, adminQueryClient])
+
   useEffect(() => {
     if (activePage === "products") {
       fetchProducts()
     }
   }, [activePage, fetchProducts])
 
-  // ── Admin login gate — MOVED AFTER HOOKS to avoid React Hook mismatch ───
+  // ── Admin login gate — redirect to /admin/login if not authenticated ───
   if (!adminUser) {
-    return <AdminLogin onLogin={(u) => setAdminUser(u)} />
+    navigate('/admin/login', { replace: true })
+    return null
   }
   // ───────────────────────────────────────────────────────────────────────────
 
@@ -952,6 +980,7 @@ export default function AdminDashboard() {
           localStorage.removeItem('pepta_admin_session')
           localStorage.removeItem('authToken')
           setAdminUser(null)
+          navigate('/admin/login', { replace: true })
         }}>
           <FaSignOutAlt style={styles.navItemIcon} />
           Logout
@@ -1492,95 +1521,173 @@ export default function AdminDashboard() {
             </form>
 
             <div style={{ marginBottom: "1.5rem" }}>
-              <h3 style={{ fontSize: "1rem", fontWeight: 700, marginBottom: "0.75rem", color: "#111827" }}>
-                Current Catalog
-              </h3>
+              {/* Catalog header with pagination info */}
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "0.75rem" }}>
+                <h3 style={{ fontSize: "1rem", fontWeight: 700, color: "#111827", margin: 0 }}>
+                  Current Catalog
+                  <span style={{ marginLeft: "0.625rem", fontSize: "0.8rem", fontWeight: 500, color: "#6b7280" }}>
+                    ({totalProducts} products)
+                  </span>
+                </h3>
+                {totalProducts > PRODUCTS_PER_PAGE && (
+                  <span style={{ fontSize: "0.82rem", color: "#6b7280" }}>
+                    Page {productPage} / {Math.ceil(totalProducts / PRODUCTS_PER_PAGE)}
+                  </span>
+                )}
+              </div>
+
               {loadingProducts ? (
-                <div style={{ color: "#374151" }}>Loading products...</div>
+                <div style={{ color: "#374151", padding: "2rem", textAlign: "center" }}>Loading products...</div>
               ) : (
-                <table style={styles.productTable}>
-                  <thead>
-                    <tr>
-                      <th style={styles.productTableHeader}>Image</th>
-                      <th style={styles.productTableHeader}>Title</th>
-                      <th style={styles.productTableHeader}>Category</th>
-                      <th style={styles.productTableHeader}>Price</th>
-                      <th style={styles.productTableHeader}>Stock</th>
-                      <th style={styles.productTableHeader}>Upload Image</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {products.length > 0 ? (
-                      products.map((product) => (
-                        <tr key={product.id} style={styles.productTableRow}>
-                          <td style={styles.productTableCell}>
-                            {product.imageUrl ? (
-                              <img
-                                src={product.imageUrl}
-                                alt={product.title}
-                                style={{ width: 48, height: 48, objectFit: "cover", borderRadius: "0.375rem", border: "1px solid #E5E7EB" }}
-                              />
-                            ) : (
-                              <div style={{ width: 48, height: 48, borderRadius: "0.375rem", backgroundColor: "#F3F4F6", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "1.25rem" }}>🖼️</div>
-                            )}
-                          </td>
-                          <td style={{ ...styles.productTableCell, maxWidth: 200, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                            {product.title || product.name}
-                          </td>
-                          <td style={styles.productTableCell}>{product.category || "General"}</td>
-                          <td style={styles.productTableCell}>${(product.price || 0).toFixed(2)}</td>
-                          <td style={styles.productTableCell}>{product.stock ?? 0}</td>
-                          <td style={styles.productTableCell}>
-                            <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                              <label
-                                htmlFor={`img-${product.id}`}
-                                style={{
-                                  padding: "0.35rem 0.65rem", borderRadius: "0.375rem",
-                                  backgroundColor: "#EFF6FF", color: "#1D4ED8",
-                                  border: "1px solid #BFDBFE", cursor: "pointer",
-                                  fontSize: "0.78rem", fontWeight: 600, whiteSpace: "nowrap",
-                                }}
-                              >
-                                {uploadImageFile[product.id] ? `${uploadImageFile[product.id].length} Files` : "📷 Choose"}
-                                <input
-                                  id={`img-${product.id}`}
-                                  type="file"
-                                  accept="image/jpeg,image/png,image/webp"
-                                  multiple
-                                  style={{ display: "none" }}
-                                  onChange={(e) => {
-                                    const files = Array.from(e.target.files)
-                                    if (files.length > 0) setUploadImageFile((prev) => ({ ...prev, [product.id]: files }))
-                                  }}
-                                />
-                              </label>
-                              {uploadImageFile[product.id] && (
+                <>
+                  <table style={styles.productTable}>
+                    <thead>
+                      <tr>
+                        <th style={styles.productTableHeader}>Image</th>
+                        <th style={styles.productTableHeader}>Title</th>
+                        <th style={styles.productTableHeader}>Category</th>
+                        <th style={styles.productTableHeader}>Price</th>
+                        <th style={styles.productTableHeader}>Stock</th>
+                        <th style={styles.productTableHeader}>Upload Image</th>
+                        <th style={styles.productTableHeader}>Delete</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {products.length > 0 ? (
+                        products
+                          .map((product) => (
+                            <tr key={product.id} style={styles.productTableRow}>
+                              <td style={styles.productTableCell}>
+                                {product.imageUrl ? (
+                                  <img
+                                    src={product.imageUrl}
+                                    alt={product.title}
+                                    style={{ width: 48, height: 48, objectFit: "cover", borderRadius: "0.375rem", border: "1px solid #E5E7EB" }}
+                                  />
+                                ) : (
+                                  <div style={{ width: 48, height: 48, borderRadius: "0.375rem", backgroundColor: "#F3F4F6", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "1.25rem" }}>🖼️</div>
+                                )}
+                              </td>
+                              <td style={{ ...styles.productTableCell, maxWidth: 180, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                                {product.title || product.name}
+                              </td>
+                              <td style={styles.productTableCell}>{product.category || "General"}</td>
+                              <td style={styles.productTableCell}>${(product.price || 0).toFixed(2)}</td>
+                              <td style={styles.productTableCell}>{product.stock ?? 0}</td>
+                              {/* Upload image */}
+                              <td style={styles.productTableCell}>
+                                <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                                  <label
+                                    htmlFor={`img-${product.id}`}
+                                    style={{
+                                      padding: "0.35rem 0.65rem", borderRadius: "0.375rem",
+                                      backgroundColor: "#EFF6FF", color: "#1D4ED8",
+                                      border: "1px solid #BFDBFE", cursor: "pointer",
+                                      fontSize: "0.78rem", fontWeight: 600, whiteSpace: "nowrap",
+                                    }}
+                                  >
+                                    {uploadImageFile[product.id] ? `${uploadImageFile[product.id].length} Files` : "📷 Choose"}
+                                    <input
+                                      id={`img-${product.id}`}
+                                      type="file"
+                                      accept="image/jpeg,image/png,image/webp"
+                                      multiple
+                                      style={{ display: "none" }}
+                                      onChange={(e) => {
+                                        const files = Array.from(e.target.files)
+                                        if (files.length > 0) setUploadImageFile((prev) => ({ ...prev, [product.id]: files }))
+                                      }}
+                                    />
+                                  </label>
+                                  {uploadImageFile[product.id] && (
+                                    <button
+                                      onClick={() => handleUploadImageForProduct(product.id)}
+                                      disabled={uploadingImage === product.id}
+                                      style={{
+                                        padding: "0.35rem 0.65rem", borderRadius: "0.375rem",
+                                        backgroundColor: "#533638", color: "#fff",
+                                        border: "none", cursor: "pointer",
+                                        fontSize: "0.78rem", fontWeight: 600,
+                                      }}
+                                    >
+                                      {uploadingImage === product.id ? "Uploading..." : "Upload"}
+                                    </button>
+                                  )}
+                                </div>
+                              </td>
+                              {/* Delete */}
+                              <td style={styles.productTableCell}>
                                 <button
-                                  onClick={() => handleUploadImageForProduct(product.id)}
-                                  disabled={uploadingImage === product.id}
+                                  onClick={() => handleDeleteProduct(product)}
+                                  disabled={deletingId === product.id}
+                                  title="Delete product"
                                   style={{
-                                    padding: "0.35rem 0.65rem", borderRadius: "0.375rem",
-                                    backgroundColor: "#533638", color: "#fff",
-                                    border: "none", cursor: "pointer",
-                                    fontSize: "0.78rem", fontWeight: 600,
+                                    padding: "0.4rem 0.75rem", borderRadius: "0.375rem",
+                                    backgroundColor: deletingId === product.id ? "#fca5a5" : "#fee2e2",
+                                    color: "#991b1b", border: "1px solid #fca5a5",
+                                    cursor: deletingId === product.id ? "not-allowed" : "pointer",
+                                    fontSize: "0.8rem", fontWeight: 700,
+                                    transition: "all 0.2s",
                                   }}
+                                  onMouseEnter={e => { if (deletingId !== product.id) e.currentTarget.style.backgroundColor = "#ef4444"; e.currentTarget.style.color = "#fff" }}
+                                  onMouseLeave={e => { e.currentTarget.style.backgroundColor = "#fee2e2"; e.currentTarget.style.color = "#991b1b" }}
                                 >
-                                  {uploadingImage === product.id ? "Uploading..." : "Upload"}
+                                  {deletingId === product.id ? "Deleting…" : "🗑 Delete"}
                                 </button>
-                              )}
-                            </div>
+                              </td>
+                            </tr>
+                          ))
+                      ) : (
+                        <tr>
+                          <td style={styles.productTableCell} colSpan={7}>
+                            No products found in the backend catalog.
                           </td>
                         </tr>
-                      ))
-                    ) : (
-                      <tr>
-                        <td style={styles.productTableCell} colSpan={7}>
-                          No products found in the backend catalog.
-                        </td>
-                      </tr>
-                    )}
-                  </tbody>
-                </table>
+                      )}
+                    </tbody>
+                  </table>
+
+                  {/* Pagination controls */}
+                  {totalProducts > PRODUCTS_PER_PAGE && (
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "0.5rem", marginTop: "1.25rem" }}>
+                      <button
+                        onClick={() => fetchProducts(1)}
+                        disabled={productPage === 1}
+                        style={{ padding: "0.4rem 0.7rem", borderRadius: "0.375rem", border: "1px solid #e5e7eb", background: productPage === 1 ? "#f9fafb" : "#fff", cursor: productPage === 1 ? "not-allowed" : "pointer", color: productPage === 1 ? "#9ca3af" : "#374151", fontSize: "0.85rem" }}
+                      >«</button>
+                      <button
+                        onClick={() => fetchProducts(productPage - 1)}
+                        disabled={productPage === 1}
+                        style={{ padding: "0.4rem 0.8rem", borderRadius: "0.375rem", border: "1px solid #e5e7eb", background: productPage === 1 ? "#f9fafb" : "#fff", cursor: productPage === 1 ? "not-allowed" : "pointer", color: productPage === 1 ? "#9ca3af" : "#374151", fontSize: "0.85rem" }}
+                      >‹ Prev</button>
+
+                      {Array.from({ length: Math.ceil(totalProducts / PRODUCTS_PER_PAGE) }, (_, i) => i + 1).map(pg => (
+                        <button
+                          key={pg}
+                          onClick={() => fetchProducts(pg)}
+                          style={{
+                            padding: "0.4rem 0.75rem", borderRadius: "0.375rem", fontSize: "0.85rem", fontWeight: pg === productPage ? 700 : 400,
+                            border: pg === productPage ? "2px solid #533638" : "1px solid #e5e7eb",
+                            background: pg === productPage ? "#533638" : "#fff",
+                            color: pg === productPage ? "#fff" : "#374151",
+                            cursor: "pointer",
+                          }}
+                        >{pg}</button>
+                      ))}
+
+                      <button
+                        onClick={() => fetchProducts(productPage + 1)}
+                        disabled={productPage === Math.ceil(totalProducts / PRODUCTS_PER_PAGE)}
+                        style={{ padding: "0.4rem 0.8rem", borderRadius: "0.375rem", border: "1px solid #e5e7eb", background: productPage === Math.ceil(totalProducts / PRODUCTS_PER_PAGE) ? "#f9fafb" : "#fff", cursor: productPage === Math.ceil(totalProducts / PRODUCTS_PER_PAGE) ? "not-allowed" : "pointer", color: productPage === Math.ceil(totalProducts / PRODUCTS_PER_PAGE) ? "#9ca3af" : "#374151", fontSize: "0.85rem" }}
+                      >Next ›</button>
+                      <button
+                        onClick={() => fetchProducts(Math.ceil(totalProducts / PRODUCTS_PER_PAGE))}
+                        disabled={productPage === Math.ceil(totalProducts / PRODUCTS_PER_PAGE)}
+                        style={{ padding: "0.4rem 0.7rem", borderRadius: "0.375rem", border: "1px solid #e5e7eb", background: productPage === Math.ceil(totalProducts / PRODUCTS_PER_PAGE) ? "#f9fafb" : "#fff", cursor: productPage === Math.ceil(totalProducts / PRODUCTS_PER_PAGE) ? "not-allowed" : "pointer", color: productPage === Math.ceil(totalProducts / PRODUCTS_PER_PAGE) ? "#9ca3af" : "#374151", fontSize: "0.85rem" }}
+                      >»</button>
+                    </div>
+                  )}
+                </>
               )}
             </div>
           </div>

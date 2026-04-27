@@ -27,6 +27,7 @@ const RegisterPage      = lazy(() => import('./pages/RegisterPage'))
 const ProfilePage       = lazy(() => import('./pages/ProfilePage'))
 const NotFoundPage      = lazy(() => import('./pages/NotFoundPage'))
 const AdminDashboard    = lazy(() => import('./pages/admin/AdminDashboard'))
+const AdminLoginPage    = lazy(() => import('./pages/admin/AdminLoginPage'))
 
 // ── Page loading fallback ───────────────────────────────────────────────────
 function PageLoader() {
@@ -58,6 +59,7 @@ function PageLoader() {
 
 function AppInner() {
   const location = useLocation()
+  const isAdminRoute = location.pathname.startsWith('/admin')
 
   return (
     <AuthProvider>
@@ -65,7 +67,7 @@ function AppInner() {
         <WishlistProvider>
           <ErrorBoundary>
             <div className="bg-white text-slate-900 flex flex-col min-h-screen">
-              <Header />
+              {!isAdminRoute && <Header />}
               <ScrollToTop />
 
               <main className="grow flex flex-col">
@@ -96,7 +98,8 @@ function AppInner() {
                     <Route path="/profile"         element={<ProfilePage />} />
 
                     {/* Admin Routes */}
-                    <Route path="/admin/dashboard" element={<AdminDashboard />} />
+                     <Route path="/admin/login"     element={<AdminLoginPage />} />
+                     <Route path="/admin/dashboard" element={<AdminDashboard />} />
 
                     {/* 404 — must be last */}
                     <Route path="*"               element={<NotFoundPage />} />
@@ -104,7 +107,7 @@ function AppInner() {
                 </Suspense>
               </main>
 
-              <Footer />
+              {!isAdminRoute && <Footer />}
             </div>
           </ErrorBoundary>
         </WishlistProvider>
