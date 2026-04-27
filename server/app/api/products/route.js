@@ -39,7 +39,7 @@ export async function GET(request) {
 
     const raw = {
       page: searchParams.get("page") ?? "1",
-      pageSize: searchParams.get("pageSize") ?? "20",
+      pageSize: searchParams.get("pageSize") ?? "10",
       search: searchParams.get("search") ?? undefined,
       category: searchParams.get("category") ?? undefined,
       sortBy: searchParams.get("sortBy") ?? undefined,
