@@ -196,12 +196,16 @@ export async function getById(productId) {
   try {
     if (!productId) return null
 
-    // Fetch basic product
-    const product = await prisma.product.findUnique({
-      where: { id: productId },
+    console.log(`[getById] Fetching product with ID: ${productId}`)
+
+    // Use findFirst instead of findUnique to see if that works better on serverless
+    const product = await prisma.product.findFirst({
+      where: { id: productId, isActive: true },
     })
 
-    if (!product || !product.isActive) {
+    console.log(`[getById] findFirst result:`, product ? "Found" : "Not found")
+
+    if (!product) {
       return null
     }
 
@@ -224,6 +228,8 @@ export async function getById(productId) {
         take: 20,
       }),
     ])
+
+    console.log(`[getById] Related data fetched`)
 
     // Combine data
     const enriched = {
