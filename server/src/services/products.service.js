@@ -35,7 +35,14 @@ function mapProduct(product, full = false) {
     category: product.category?.name ?? null,
     imageUrl: product.imageUrl ?? null,
     images: Array.isArray(product.images) ? product.images : [],
-    specs: product.specs ? JSON.parse(product.specs) : null,
+    specs: (() => {
+      try {
+        return product.specs ? JSON.parse(product.specs) : null
+      } catch (e) {
+        console.warn(`Failed to parse specs for product ${product.id}:`, e.message)
+        return null
+      }
+    })(),
     brand: product.brand,
     moq: product.moq,
     casePackSize: product.casePackSize,
@@ -196,7 +203,7 @@ export async function getById(productId) {
   try {
     if (!productId) return null
 
-    const product = await prisma.product.findUnique({
+    const product = await prisma.product.findFirst({
       where: { id: productId, isActive: true },
       include: {
         category: true,
@@ -204,7 +211,7 @@ export async function getById(productId) {
         bulkPrices: { orderBy: { minQuantity: "asc" } },
         reviews: {
           where: { status: "approved" },
-          select: { id: true, rating: true, title: true, comment: true, createdAt: true },
+          select: { id: true, rating: true, title: true, comment: true, createdAt: true, status: true },
           orderBy: { createdAt: "desc" },
           take: 20,
         },
@@ -362,7 +369,7 @@ export async function deleteProduct(productId) {
  */
 export async function getBulkPricing(productId) {
   try {
-    const product = await prisma.product.findUnique({
+    const product = await prisma.product.findFirst({
       where: { id: productId, isActive: true },
       include: { bulkPrices: { orderBy: { minQuantity: "asc" } } },
     })

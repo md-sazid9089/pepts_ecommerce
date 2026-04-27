@@ -16,7 +16,7 @@ import prisma from "@/lib/prisma"
 export async function createReview(data) {
   try {
     // Verify the product exists and is active
-    const product = await prisma.product.findUnique({
+    const product = await prisma.product.findFirst({
       where: { id: data.productId, isActive: true },
       select: { id: true, title: true },
     })
