@@ -194,45 +194,87 @@ export async function getAll(page = 1, pageSize = 20, filters = {}) {
  */
 export async function getById(productId) {
   try {
-    if (!productId) return null
-
-    console.log(`[getById] Fetching product with ID: ${productId}`)
-
-    // Simple query first - just the product
-    const product = await prisma.product.findUnique({
-      where: { id: productId },
-    })
-
-    console.log(`[getById] Basic query result:`, product ? "Found" : "Not found")
-
-    if (!product || !product.isActive) {
-      console.log(`[getById] Product not found or inactive`)
+    if (!productId) {
+      console.log(`[getById] No productId provided`)
       return null
     }
 
-    // Now fetch related data separately to avoid query complexity issues
-    const [category, images, bulkPrices, reviews] = await Promise.all([
-      prisma.category.findUnique({
+    console.log(`[getById] Starting query for productId: ${productId}`)
+
+    // Step 1: Fetch basic product
+    console.log(`[getById] Step 1: Fetching basic product`)
+    let product
+    try {
+      product = await prisma.product.findUnique({
+        where: { id: productId },
+      })
+      console.log(`[getById] Step 1 complete:`, product ? "Found" : "Not found")
+    } catch (err) {
+      console.error(`[getById] Step 1 failed:`, err.message)
+      throw err
+    }
+
+    if (!product) {
+      console.log(`[getById] Product not found`)
+      return null
+    }
+
+    if (!product.isActive) {
+      console.log(`[getById] Product is inactive`)
+      return null
+    }
+
+    console.log(`[getById] Step 2: Fetching related data`)
+
+    // Step 2: Fetch each relation separately with detailed logging
+    let category = null
+    let images = []
+    let bulkPrices = []
+    let reviews = []
+
+    try {
+      category = await prisma.category.findUnique({
         where: { id: product.categoryId },
-      }),
-      prisma.productImage.findMany({
+      })
+      console.log(`[getById] Category fetched`)
+    } catch (err) {
+      console.error(`[getById] Category fetch failed:`, err.message)
+    }
+
+    try {
+      images = await prisma.productImage.findMany({
         where: { productId },
         orderBy: { order: "asc" },
-      }),
-      prisma.bulkPrice.findMany({
+      })
+      console.log(`[getById] Images fetched: ${images.length}`)
+    } catch (err) {
+      console.error(`[getById] Images fetch failed:`, err.message)
+    }
+
+    try {
+      bulkPrices = await prisma.bulkPrice.findMany({
         where: { productId },
         orderBy: { minQuantity: "asc" },
-      }),
-      prisma.review.findMany({
+      })
+      console.log(`[getById] BulkPrices fetched: ${bulkPrices.length}`)
+    } catch (err) {
+      console.error(`[getById] BulkPrices fetch failed:`, err.message)
+    }
+
+    try {
+      reviews = await prisma.review.findMany({
         where: { productId, status: "approved" },
         orderBy: { createdAt: "desc" },
         take: 20,
-      }),
-    ])
+      })
+      console.log(`[getById] Reviews fetched: ${reviews.length}`)
+    } catch (err) {
+      console.error(`[getById] Reviews fetch failed:`, err.message)
+    }
 
-    console.log(`[getById] Related data fetched successfully`)
+    console.log(`[getById] Step 3: Combining data`)
 
-    // Combine into product object
+    // Step 3: Combine data
     const enriched = {
       ...product,
       category,
@@ -241,11 +283,13 @@ export async function getById(productId) {
       reviews,
     }
 
+    console.log(`[getById] Step 4: Mapping product`)
     const mapped = mapProduct(enriched, true)
-    console.log(`[getById] Successfully mapped product`)
+    console.log(`[getById] Step 4 complete`)
+
     return mapped
   } catch (error) {
-    console.error(`[getById] Error fetching product ${productId}:`, error)
+    console.error(`[getById] FATAL ERROR for ${productId}:`, error)
     throw new Error(`Failed to fetch product: ${error.message}`)
   }
 }
