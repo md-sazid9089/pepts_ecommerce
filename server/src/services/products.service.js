@@ -195,20 +195,37 @@ export async function getAll(page = 1, pageSize = 20, filters = {}) {
 export async function getById(productId) {
   if (!productId) return null
 
+  // Step 1: Just get the basic product
   const product = await prisma.product.findFirst({
     where: { id: productId, isActive: true },
   })
 
   if (!product) return null
 
-  const [category, images, bulkPrices, reviews] = await Promise.all([
-    prisma.category.findUnique({ where: { id: product.categoryId } }),
-    prisma.productImage.findMany({ where: { productId }, orderBy: { order: "asc" } }),
-    prisma.bulkPrice.findMany({ where: { productId }, orderBy: { minQuantity: "asc" } }),
-    prisma.review.findMany({ where: { productId, status: "approved" }, take: 20 }),
-  ])
-
-  return mapProduct({ ...product, category, images, bulkPrices, reviews }, true)
+  // Step 2: For now, return it as-is with empty relations
+  // This isolates whether the issue is with relation fetching
+  return {
+    id: product.id,
+    title: product.title,
+    description: product.description,
+    price: product.price,
+    stock: product.stock,
+    inStock: product.stock > 0,
+    categoryId: product.categoryId,
+    category: null,
+    imageUrl: product.imageUrl,
+    images: [],
+    specs: product.specs ? JSON.parse(product.specs) : null,
+    brand: product.brand,
+    moq: product.moq,
+    casePackSize: product.casePackSize,
+    isActive: product.isActive,
+    bulkPrices: [],
+    reviewCount: 0,
+    rating: null,
+    createdAt: product.createdAt,
+    updatedAt: product.updatedAt,
+  }
 }
 
 /**
