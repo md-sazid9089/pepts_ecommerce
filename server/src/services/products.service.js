@@ -199,97 +199,40 @@ export async function getById(productId) {
       return null
     }
 
-    console.log(`[getById] Starting query for productId: ${productId}`)
+    console.log(`[getById] SIMPLIFIED: Fetching product ${productId}`)
 
-    // Step 1: Fetch basic product
-    console.log(`[getById] Step 1: Fetching basic product`)
-    let product
-    try {
-      product = await prisma.product.findUnique({
-        where: { id: productId },
-      })
-      console.log(`[getById] Step 1 complete:`, product ? "Found" : "Not found")
-    } catch (err) {
-      console.error(`[getById] Step 1 failed:`, err.message)
-      throw err
-    }
+    // SIMPLIFIED: Just get the product, then manually add empty relations
+    const product = await prisma.product.findUnique({
+      where: { id: productId },
+    })
+
+    console.log(`[getById] SIMPLIFIED: Product query result:`, product ? "Found" : "Not found")
 
     if (!product) {
-      console.log(`[getById] Product not found`)
+      console.log(`[getById] SIMPLIFIED: Product not found`)
       return null
     }
 
     if (!product.isActive) {
-      console.log(`[getById] Product is inactive`)
+      console.log(`[getById] SIMPLIFIED: Product is inactive`)
       return null
     }
 
-    console.log(`[getById] Step 2: Fetching related data`)
-
-    // Step 2: Fetch each relation separately with detailed logging
-    let category = null
-    let images = []
-    let bulkPrices = []
-    let reviews = []
-
-    try {
-      category = await prisma.category.findUnique({
-        where: { id: product.categoryId },
-      })
-      console.log(`[getById] Category fetched`)
-    } catch (err) {
-      console.error(`[getById] Category fetch failed:`, err.message)
-    }
-
-    try {
-      images = await prisma.productImage.findMany({
-        where: { productId },
-        orderBy: { order: "asc" },
-      })
-      console.log(`[getById] Images fetched: ${images.length}`)
-    } catch (err) {
-      console.error(`[getById] Images fetch failed:`, err.message)
-    }
-
-    try {
-      bulkPrices = await prisma.bulkPrice.findMany({
-        where: { productId },
-        orderBy: { minQuantity: "asc" },
-      })
-      console.log(`[getById] BulkPrices fetched: ${bulkPrices.length}`)
-    } catch (err) {
-      console.error(`[getById] BulkPrices fetch failed:`, err.message)
-    }
-
-    try {
-      reviews = await prisma.review.findMany({
-        where: { productId, status: "approved" },
-        orderBy: { createdAt: "desc" },
-        take: 20,
-      })
-      console.log(`[getById] Reviews fetched: ${reviews.length}`)
-    } catch (err) {
-      console.error(`[getById] Reviews fetch failed:`, err.message)
-    }
-
-    console.log(`[getById] Step 3: Combining data`)
-
-    // Step 3: Combine data
+    // For now, just return the basic product with empty relations to test
     const enriched = {
       ...product,
-      category,
-      images,
-      bulkPrices,
-      reviews,
+      category: null,
+      images: [],
+      bulkPrices: [],
+      reviews: [],
     }
 
-    console.log(`[getById] Step 4: Mapping product`)
+    console.log(`[getById] SIMPLIFIED: About to map product`)
     const mapped = mapProduct(enriched, true)
-    console.log(`[getById] Step 4 complete`)
-
+    console.log(`[getById] SIMPLIFIED: Successfully mapped and returning`)
     return mapped
   } catch (error) {
-    console.error(`[getById] FATAL ERROR for ${productId}:`, error)
+    console.error(`[getById] SIMPLIFIED: FATAL ERROR:`, error)
     throw new Error(`Failed to fetch product: ${error.message}`)
   }
 }
