@@ -196,27 +196,56 @@ export async function getById(productId) {
   try {
     if (!productId) return null
 
-    // Find product by ID first, then check if active
+    console.log(`[getById] Fetching product with ID: ${productId}`)
+
+    // Simple query first - just the product
     const product = await prisma.product.findUnique({
       where: { id: productId },
-      include: {
-        category: true,
-        images: { orderBy: { order: "asc" } },
-        bulkPrices: { orderBy: { minQuantity: "asc" } },
-        reviews: {
-          where: { status: "approved" },
-          select: { id: true, rating: true, title: true, comment: true, createdAt: true },
-          orderBy: { createdAt: "desc" },
-          take: 20,
-        },
-      },
     })
 
-    // Return null if not found or not active
-    if (!product || !product.isActive) return null
+    console.log(`[getById] Basic query result:`, product ? "Found" : "Not found")
 
-    return mapProduct(product, true)
+    if (!product || !product.isActive) {
+      console.log(`[getById] Product not found or inactive`)
+      return null
+    }
+
+    // Now fetch related data separately to avoid query complexity issues
+    const [category, images, bulkPrices, reviews] = await Promise.all([
+      prisma.category.findUnique({
+        where: { id: product.categoryId },
+      }),
+      prisma.productImage.findMany({
+        where: { productId },
+        orderBy: { order: "asc" },
+      }),
+      prisma.bulkPrice.findMany({
+        where: { productId },
+        orderBy: { minQuantity: "asc" },
+      }),
+      prisma.review.findMany({
+        where: { productId, status: "approved" },
+        orderBy: { createdAt: "desc" },
+        take: 20,
+      }),
+    ])
+
+    console.log(`[getById] Related data fetched successfully`)
+
+    // Combine into product object
+    const enriched = {
+      ...product,
+      category,
+      images,
+      bulkPrices,
+      reviews,
+    }
+
+    const mapped = mapProduct(enriched, true)
+    console.log(`[getById] Successfully mapped product`)
+    return mapped
   } catch (error) {
+    console.error(`[getById] Error fetching product ${productId}:`, error)
     throw new Error(`Failed to fetch product: ${error.message}`)
   }
 }
