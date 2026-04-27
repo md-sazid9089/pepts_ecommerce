@@ -196,8 +196,9 @@ export async function getById(productId) {
   try {
     if (!productId) return null
 
-    const product = await prisma.product.findFirst({
-      where: { id: productId, isActive: true },
+    // Find product by ID first, then check if active
+    const product = await prisma.product.findUnique({
+      where: { id: productId },
       include: {
         category: true,
         images: { orderBy: { order: "asc" } },
@@ -211,7 +212,10 @@ export async function getById(productId) {
       },
     })
 
-    return product ? mapProduct(product, true) : null
+    // Return null if not found or not active
+    if (!product || !product.isActive) return null
+
+    return mapProduct(product, true)
   } catch (error) {
     throw new Error(`Failed to fetch product: ${error.message}`)
   }
