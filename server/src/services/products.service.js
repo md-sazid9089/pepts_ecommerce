@@ -194,45 +194,49 @@ export async function getAll(page = 1, pageSize = 20, filters = {}) {
  */
 export async function getById(productId) {
   try {
-    if (!productId) {
-      console.log(`[getById] No productId provided`)
-      return null
-    }
+    if (!productId) return null
 
-    console.log(`[getById] SIMPLIFIED: Fetching product ${productId}`)
-
-    // SIMPLIFIED: Just get the product, then manually add empty relations
+    // Fetch basic product
     const product = await prisma.product.findUnique({
       where: { id: productId },
     })
 
-    console.log(`[getById] SIMPLIFIED: Product query result:`, product ? "Found" : "Not found")
-
-    if (!product) {
-      console.log(`[getById] SIMPLIFIED: Product not found`)
+    if (!product || !product.isActive) {
       return null
     }
 
-    if (!product.isActive) {
-      console.log(`[getById] SIMPLIFIED: Product is inactive`)
-      return null
-    }
+    // Fetch all related data in parallel
+    const [category, images, bulkPrices, reviews] = await Promise.all([
+      prisma.category.findUnique({
+        where: { id: product.categoryId },
+      }),
+      prisma.productImage.findMany({
+        where: { productId },
+        orderBy: { order: "asc" },
+      }),
+      prisma.bulkPrice.findMany({
+        where: { productId },
+        orderBy: { minQuantity: "asc" },
+      }),
+      prisma.review.findMany({
+        where: { productId, status: "approved" },
+        orderBy: { createdAt: "desc" },
+        take: 20,
+      }),
+    ])
 
-    // For now, just return the basic product with empty relations to test
+    // Combine data
     const enriched = {
       ...product,
-      category: null,
-      images: [],
-      bulkPrices: [],
-      reviews: [],
+      category,
+      images,
+      bulkPrices,
+      reviews,
     }
 
-    console.log(`[getById] SIMPLIFIED: About to map product`)
-    const mapped = mapProduct(enriched, true)
-    console.log(`[getById] SIMPLIFIED: Successfully mapped and returning`)
-    return mapped
+    return mapProduct(enriched, true)
   } catch (error) {
-    console.error(`[getById] SIMPLIFIED: FATAL ERROR:`, error)
+    console.error(`[getById] Error fetching product ${productId}:`, error)
     throw new Error(`Failed to fetch product: ${error.message}`)
   }
 }
