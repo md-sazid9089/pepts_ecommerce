@@ -21,16 +21,23 @@ import { PrismaClient } from "@prisma/client"
  */
 let prisma
 
-// Use global pattern for both dev and production (serverless)
-if (!global._prismaClient) {
-  console.log("[Prisma] Creating new PrismaClient instance")
-  global._prismaClient = new PrismaClient({
-    log: process.env.NODE_ENV === "development" ? ["query", "error", "warn"] : ["error"],
-  })
-} else {
-  console.log("[Prisma] Reusing existing global PrismaClient instance")
-}
+try {
+  // Use global pattern for both dev and production (serverless)
+  if (!global._prismaClient) {
+    console.log("[Prisma] Creating new PrismaClient instance")
+    console.log("[Prisma] Database URL exists:", !!process.env.DATABASE_URL)
+    global._prismaClient = new PrismaClient({
+      log: process.env.NODE_ENV === "development" ? ["query", "error", "warn"] : ["error"],
+      errorFormat: "pretty",
+    })
+  } else {
+    console.log("[Prisma] Reusing existing global PrismaClient instance")
+  }
 
-prisma = global._prismaClient
+  prisma = global._prismaClient
+} catch (error) {
+  console.error("[Prisma] Failed to initialize PrismaClient:", error)
+  throw error
+}
 
 export default prisma
