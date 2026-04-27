@@ -196,7 +196,7 @@ export async function getById(productId) {
   try {
     if (!productId) return null
 
-    const product = await prisma.product.findUnique({
+    const product = await prisma.product.findFirst({
       where: { id: productId, isActive: true },
       include: {
         category: true,
