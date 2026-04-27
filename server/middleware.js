@@ -1,15 +1,30 @@
 import { NextResponse } from 'next/server'
 
-// Allowed CORS origins from environment variable
-const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:5173"
-const allowedOrigins = FRONTEND_URL.split(",").map((u) => u.trim())
+/**
+ * Returns the list of allowed CORS origins, parsed fresh at runtime.
+ * IMPORTANT: Must be called inside the middleware function (not at module level)
+ * so that Vercel Edge Runtime has fully loaded the environment variables.
+ */
+function getAllowedOrigins() {
+  const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:5173"
+  return FRONTEND_URL.split(",").map((u) => u.trim())
+}
+
+/**
+ * Returns the single matching origin to use in Access-Control-Allow-Origin,
+ * or null if the request origin is not allowed.
+ */
+function resolveAllowedOrigin(origin) {
+  if (!origin) return null   // no origin = same-site / server-to-server, skip CORS
+  const allowedOrigins = getAllowedOrigins()
+  if (allowedOrigins.includes(origin)) return origin
+  if (origin.includes('localhost') || origin.includes('127.0.0.1')) return origin
+  if (origin.endsWith('.vercel.app')) return origin
+  return null
+}
 
 function isAllowedOrigin(origin) {
-  if (!origin) return true
-  if (allowedOrigins.includes(origin)) return true
-  if (origin.includes('localhost') || origin.includes('127.0.0.1')) return true
-  if (origin.endsWith('.vercel.app')) return true
-  return false
+  return resolveAllowedOrigin(origin) !== null
 }
 
 /**
@@ -32,17 +47,18 @@ function decodeJwtPayload(token) {
 export function middleware(request) {
   const { pathname } = request.nextUrl
   const origin = request.headers.get('origin')
-  const allowed = isAllowedOrigin(origin)
+  const resolvedOrigin = resolveAllowedOrigin(origin)
 
   // ─── 1. Handle Preflight (OPTIONS) ───
   if (request.method === 'OPTIONS') {
     const response = new NextResponse(null, { status: 204 })
-    if (allowed) {
-      response.headers.set('Access-Control-Allow-Origin', origin || '*')
+    if (resolvedOrigin) {
+      response.headers.set('Access-Control-Allow-Origin', resolvedOrigin)
       response.headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS')
       response.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept, Cache-Control, Pragma, Expires')
       response.headers.set('Access-Control-Allow-Credentials', 'true')
       response.headers.set('Access-Control-Max-Age', '86400')
+      response.headers.set('Vary', 'Origin')
     }
     return response
   }
@@ -57,9 +73,10 @@ export function middleware(request) {
         { success: false, code: 401, message: "Unauthorized — Invalid or missing token" },
         { status: 401 }
       )
-      if (allowed) {
-        response.headers.set('Access-Control-Allow-Origin', origin || '*')
+      if (resolvedOrigin) {
+        response.headers.set('Access-Control-Allow-Origin', resolvedOrigin)
         response.headers.set('Access-Control-Allow-Credentials', 'true')
+        response.headers.set('Vary', 'Origin')
       }
       return response
     }
@@ -71,18 +88,20 @@ export function middleware(request) {
     requestHeaders.set("x-user-role", decoded.role || "customer")
     
     const response = NextResponse.next({ request: { headers: requestHeaders } })
-    if (allowed) {
-      response.headers.set('Access-Control-Allow-Origin', origin || '*')
+    if (resolvedOrigin) {
+      response.headers.set('Access-Control-Allow-Origin', resolvedOrigin)
       response.headers.set('Access-Control-Allow-Credentials', 'true')
+      response.headers.set('Vary', 'Origin')
     }
     return response
   }
 
   // ─── 3. Handle Regular Requests ───
   const response = NextResponse.next()
-  if (allowed) {
-    response.headers.set('Access-Control-Allow-Origin', origin || '*')
+  if (resolvedOrigin) {
+    response.headers.set('Access-Control-Allow-Origin', resolvedOrigin)
     response.headers.set('Access-Control-Allow-Credentials', 'true')
+    response.headers.set('Vary', 'Origin')
   }
 
   return response
