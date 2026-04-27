@@ -1,88 +1,98 @@
 /**
  * ProductCardSkeleton — animated placeholder while products are loading.
- * Matches the dimensions of ProductCard to prevent layout shift.
+ * Matches the dimensions of ProductCard (responsive) to prevent layout shift.
  */
 
-const shimmer = {
-  background: 'linear-gradient(90deg, #f0e8e8 25%, #f9f0f0 50%, #f0e8e8 75%)',
-  backgroundSize: '200% 100%',
-  animation: 'shimmer 1.5s infinite',
-}
+const CSS = `
+  @keyframes shimmer {
+    0%   { background-position: -200% 0; }
+    100% { background-position:  200% 0; }
+  }
+  .pcs-card {
+    background: #fff;
+    border-radius: 12px;
+    border: 1px solid #EAEAEA;
+    display: grid;
+    grid-template-columns: 300px 1fr;
+    min-height: 360px;
+    overflow: hidden;
+  }
+  .pcs-shimmer {
+    background: linear-gradient(90deg, #f0e8e8 25%, #f9f0f0 50%, #f0e8e8 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+  }
+  .pcs-image {
+    min-height: 360px;
+  }
+  .pcs-content {
+    padding: 22px 28px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .pcs-line {
+    border-radius: 6px;
+    height: 14px;
+  }
+  .pcs-btn-row {
+    display: grid;
+    grid-template-columns: 1.3fr 1fr 1fr;
+    gap: 10px;
+    margin-top: auto;
+  }
+  .pcs-btn {
+    height: 42px;
+    border-radius: 8px;
+  }
 
-const styles = {
-  card: {
-    backgroundColor: 'white',
-    borderRadius: '8px',
-    border: '1px solid #EAEAEA',
-    display: 'grid',
-    gridTemplateColumns: '340px 1fr',
-    minHeight: '400px',
-    overflow: 'hidden',
-  },
-  imageSection: {
-    ...shimmer,
-    minHeight: '400px',
-  },
-  contentSection: {
-    padding: '24px',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '16px',
-  },
-  line: (width, height = 14) => ({
-    ...shimmer,
-    height,
-    borderRadius: '6px',
-    width,
-  }),
-  priceBlock: {
-    ...shimmer,
-    height: 36,
-    borderRadius: '6px',
-    width: '50%',
-  },
-  buttonRow: {
-    display: 'grid',
-    gridTemplateColumns: '1.2fr 0.9fr 0.9fr',
-    gap: '12px',
-    marginTop: 'auto',
-  },
-  btn: {
-    ...shimmer,
-    height: 46,
-    borderRadius: '6px',
-  },
-}
+  @media (max-width: 700px) {
+    .pcs-card {
+      grid-template-columns: 1fr;
+      grid-template-rows: 220px auto;
+      min-height: unset;
+    }
+    .pcs-image {
+      min-height: 220px;
+      height: 220px;
+    }
+    .pcs-content {
+      padding: 16px 18px;
+    }
+    .pcs-btn-row {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
+  @media (max-width: 420px) {
+    .pcs-image { height: 190px; min-height: 190px; }
+  }
+`;
 
 export default function ProductCardSkeleton() {
   return (
     <>
-      <style>{`
-        @keyframes shimmer {
-          0%   { background-position: -200% 0; }
-          100% { background-position:  200% 0; }
-        }
-      `}</style>
-      <div style={styles.card} aria-hidden="true">
-        {/* Left: image placeholder */}
-        <div style={styles.imageSection} />
+      <style>{CSS}</style>
+      <div className="pcs-card" aria-hidden="true">
+        {/* Image placeholder */}
+        <div className="pcs-shimmer pcs-image" />
 
-        {/* Right: content placeholders */}
-        <div style={styles.contentSection}>
-          <div style={styles.line('60%', 12)} />
-          <div style={styles.line('85%', 22)} />
-          <div style={styles.line('90%', 14)} />
-          <div style={styles.line('75%', 14)} />
-          <div style={styles.priceBlock} />
-          <div style={styles.line('40%', 18)} />
-          <div style={{ ...styles.line('100%', 1), marginTop: '8px', background: '#F3F4F6' }} />
-          <div style={styles.buttonRow}>
-            <div style={styles.btn} />
-            <div style={styles.btn} />
-            <div style={styles.btn} />
+        {/* Content placeholders */}
+        <div className="pcs-content">
+          <div className="pcs-shimmer pcs-line" style={{ width: '55%', height: '11px' }} />
+          <div className="pcs-shimmer pcs-line" style={{ width: '80%', height: '20px' }} />
+          <div className="pcs-shimmer pcs-line" style={{ width: '90%' }} />
+          <div className="pcs-shimmer pcs-line" style={{ width: '70%' }} />
+          <div className="pcs-shimmer pcs-line" style={{ width: '48%', height: '28px' }} />
+          <div className="pcs-shimmer pcs-line" style={{ width: '38%', height: '16px' }} />
+          <div style={{ background: '#F3F4F6', height: '1px', margin: '4px 0' }} />
+          <div className="pcs-btn-row">
+            <div className="pcs-shimmer pcs-btn" />
+            <div className="pcs-shimmer pcs-btn" />
+            <div className="pcs-shimmer pcs-btn" />
           </div>
         </div>
       </div>
     </>
-  )
+  );
 }
