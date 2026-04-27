@@ -31,7 +31,7 @@ class PerformanceMonitor {
               timestamp: new Date().toISOString(),
             };
             if (this.isDevelopment) {
-              console.info('LCP:', entry.renderTime || entry.loadTime, 'ms');
+              // LCP Info removed
             }
           }
           if (entry.entryType === 'layout-shift' && !entry.hadRecentInput) {
@@ -80,11 +80,7 @@ class PerformanceMonitor {
     });
 
     if (this.isDevelopment) {
-      console.info(`Image loaded: ${src}`, {
-        dimensions: `${width}x${height}`,
-        format,
-        loadTime: `${loadTime}ms`,
-      });
+      // Image load info removed
     }
   }
 
@@ -110,12 +106,7 @@ class PerformanceMonitor {
     this.metrics.apiMetrics[endpoint] = existing;
 
     if (this.isDevelopment) {
-      console.info(`API: ${endpoint}`, {
-        status,
-        duration: `${duration}ms`,
-        retries,
-        avgDuration: `${existing.avgDuration.toFixed(0)}ms`,
-      });
+      // API request info removed
     }
   }
 
@@ -159,13 +150,7 @@ class PerformanceMonitor {
    * Log metrics to browser console for debugging
    */
   logReport() {
-    const report = this.getReport();
-    console.group('📊 Performance Report');
-    console.table(report.summary);
-    console.log('Core Web Vitals:', report.metrics.coreWebVitals);
-    console.log('API Metrics:', report.metrics.apiMetrics);
-    console.log('Image Metrics:', report.metrics.imageMetrics);
-    console.groupEnd();
+    // Report logging removed for production cleanup
   }
 }
 

@@ -2,8 +2,8 @@ import { useState } from 'react'
 import { authApi } from '@/services/api'
 import apiClient from '@/services/apiClient'
 
-const ADMIN_EMAIL = 'maruflol62@gmail.com'
-const ADMIN_PASS  = 'Maruf$@21REDO&'
+const ADMIN_EMAIL = import.meta.env.VITE_ADMIN_EMAIL || 'maruflol62@gmail.com'
+const ADMIN_PASS  = import.meta.env.VITE_ADMIN_PASS  || 'Maruf$@21REDO&'
 
 export default function AdminLogin({ onLogin }) {
   const [email, setEmail] = useState('')

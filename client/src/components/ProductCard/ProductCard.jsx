@@ -1,7 +1,12 @@
-import { useState } from 'react';
+import { useState, useCallback, memo } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
 import { useCart } from '@/context/CartContext';
-import { formatPrice } from '@/data/products';
-import { FiHeart, FiCheck, FiExternalLink } from 'react-icons/fi';
+import { formatPrice } from '@/data/utils/pricing';
+import { imagePresets } from '@/utils/imageUtils';
+import { queryKeys } from '@/lib/queryKeys';
+import productsApi from '@/services/api/products.api';
+import { FiHeart, FiCheck, FiExternalLink, FiMessageSquare } from 'react-icons/fi';
 import { FaStar, FaCheck } from 'react-icons/fa';
 import { MdVerified } from 'react-icons/md';
 
@@ -273,79 +278,79 @@ const styles = {
   },
 };
 
-export default function ProductCard({ product, onQuickView }) {
+function ProductCard({ product, onQuickView }) {
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const { addItem, items } = useCart();
   const [wished, setWished] = useState(false);
   const [imageError, setImageError] = useState(false);
   const [isHovering, setIsHovering] = useState(false);
   const [imageHovering, setImageHovering] = useState(false);
-  const [supplierHover, setSupplierHover] = useState(false);
 
-  const FALLBACK_IMAGE = `https://via.placeholder.com/260x260?text=${encodeURIComponent(product.name || product.title || 'Product')}`;
-  const displayImage = imageError ? FALLBACK_IMAGE : (product.image || product.imageUrl || FALLBACK_IMAGE);
+  const FALLBACK_IMAGE = '/placeholder-product.jpg';
 
-  // B2B Wholesale Data
-  const supplier = product.supplier || {
-    name: 'Supplier Co.',
+  // Optimized 400x400 image for the card thumbnail
+  const rawImageUrl = (product.imageUrl && product.imageUrl.trim() !== '') ? product.imageUrl : null;
+  const displayImage = imageError
+    ? FALLBACK_IMAGE
+    : (imagePresets.thumbnail(rawImageUrl) || FALLBACK_IMAGE);
+
+  // Prefetch product detail on hover so clicking is instant
+  const handleMouseEnterCard = useCallback(() => {
+    setIsHovering(true);
+    if (product.id) {
+      queryClient.prefetchQuery({
+        queryKey: queryKeys.products.detail(product.id),
+        queryFn: () => productsApi.getById(product.id),
+        staleTime: 1000 * 60,
+      });
+    }
+  }, [product.id, queryClient]);
+
+  // Remove debug log in production — no longer needed
+
+  // B2B Wholesale Data (Use real data from product object where available)
+  const supplier = {
+    name: product.brand || 'Verified Manufacturer',
     verified: true,
-    certifications: ['Audited', 'CE', 'UKCA'],
-    rating: 4.8,
-    reviews: 128,
+    certifications: ['Audited', 'CE', 'Certified'],
+    rating: product.rating || 4.8,
+    reviews: product.reviewCount || 128,
   };
 
-  const priceRange = product.priceRange || {
-    min: product.price,
-    max: product.price ? product.price * 1.2 : 0,
-    unit: 'FOB Price',
-  };
+  const moq = product.moq ? `${product.moq} Piece(s)` : '1 Piece';
 
-  const moq = product.moq || '1 Piece';
+  // Parse specifications if they are a JSON string
+  let specifications = [];
+  try {
+    const specs = typeof product.specs === 'string' ? JSON.parse(product.specs) : product.specs;
+    if (specs && typeof specs === 'object') {
+      specifications = Object.entries(specs).slice(0, 4).map(([label, value]) => ({ label, value }));
+    }
+  } catch (e) {
+    console.error("Failed to parse product specs", e);
+  }
 
-  const specifications = product.specifications || [
-    { label: 'Material', value: 'Polyester' },
-    { label: 'Color', value: 'Multi Color' },
-    { label: 'Size', value: 'Customizable' },
-    { label: 'Manufacturer', value: 'Yes' },
-  ];
+  // Fallback specs if none available
+  if (specifications.length === 0) {
+    specifications = [
+      { label: 'Material', value: 'Premium Grade' },
+      { label: 'Category', value: product.category || 'Wholesale' },
+      { label: 'Stock', value: product.stock > 0 ? 'Available' : 'Out of Stock' },
+      { label: 'Manufacturer', value: 'Yes' },
+    ];
+  }
 
-  // Wholesale metadata
-  const isBestSeller = product.isHot || false;
-  const isBulkSave = product.tieredPricing || false;
-  const isNew = product.isNew || false;
-  const inStock = product.inStock !== false;
-
-  const handleImageError = () => {
-    setImageError(true);
-  };
-
-  const handleWish = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setWished(w => !w);
-  };
-
-  const handleSendInquiry = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    alert(`Send inquiry for: ${product.name}`);
-  };
-
-  const handleChatNow = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    alert(`Chat now about: ${product.name}`);
-  };
-
-  const handleView = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    window.location.href = `/product/${product.id}`;
-  };
+  const handleImageError = useCallback(() => { setImageError(true); }, []);
+  const handleWish = useCallback((e) => { e.preventDefault(); e.stopPropagation(); setWished(w => !w); }, []);
+  const handleSendInquiry = useCallback((e) => { e.preventDefault(); e.stopPropagation(); navigate(`/contact?product=${product.id}`); }, [navigate, product.id]);
+  const handleChatNow = useCallback((e) => { e.preventDefault(); e.stopPropagation(); alert(`Chat now about: ${product.title || product.name}`); }, [product.title, product.name]);
+  const handleView = useCallback((e) => { e.preventDefault(); e.stopPropagation(); navigate(`/product/${product.id}`); }, [navigate, product.id]);
 
   return (
-    <div 
+    <div
       style={{...styles.card, ...(isHovering ? styles.cardHover : {})}}
-      onMouseEnter={() => setIsHovering(true)}
+      onMouseEnter={handleMouseEnterCard}
       onMouseLeave={() => setIsHovering(false)}
       onClick={handleView}
     >
@@ -358,7 +363,7 @@ export default function ProductCard({ product, onQuickView }) {
         <div style={styles.imageContainer}>
           <img 
             src={displayImage} 
-            alt={product.name} 
+            alt={product.title || 'Product Image'} 
             style={{...styles.image, ...(imageHovering ? styles.imageHover : {})}}
             loading="lazy"
             onError={handleImageError}
@@ -410,14 +415,18 @@ export default function ProductCard({ product, onQuickView }) {
 
         {/* 3. Product Title */}
         <h3 style={styles.productTitle}>
-          {product.name || product.title}
+          {product.title}
         </h3>
 
         {/* 4. Price & MOQ Area */}
         <div style={styles.priceArea}>
           <div>
             <span style={styles.priceLabel}>
-              US${formatPrice(priceRange.min).replace('$', '')} - {formatPrice(priceRange.max).replace('$', '')}
+              {product.bulkPrices && product.bulkPrices.length > 0 ? (
+                `US$${formatPrice(Math.min(...product.bulkPrices.map(t => t.price))).replace('$', '')} - ${formatPrice(Math.max(...product.bulkPrices.map(t => t.price))).replace('$', '')}`
+              ) : (
+                `US$${formatPrice(product.price).replace('$', '')}`
+              )}
             </span>
             <span style={styles.fobPrice}>(FOB Price)</span>
           </div>
@@ -499,7 +508,7 @@ export default function ProductCard({ product, onQuickView }) {
   );
 }
 
-
-
-
+// Memoized export — prevents re-renders when parent state changes
+// but this card's product prop hasn't changed (e.g. sort dropdown changes)
+export default memo(ProductCard);
 

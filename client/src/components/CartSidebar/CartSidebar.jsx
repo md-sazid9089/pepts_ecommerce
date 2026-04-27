@@ -1,8 +1,8 @@
-﻿// // import Image from 'next/image'; // Use <img> instead // Use <img> instead
+// // import Image from 'next/image'; // Use <img> instead // Use <img> instead
 import { Link } from 'react-router-dom'
 import { useCart } from '@/context/CartContext';
 import { FiX, FiTrash2, FiShoppingBag, FiPlus, FiMinus, FiAlertCircle, FiCheckCircle } from 'react-icons/fi';
-import { formatPrice } from '@/data/products';
+import { formatPrice } from '@/data/utils/pricing';
 
 
 export default function CartSidebar() {

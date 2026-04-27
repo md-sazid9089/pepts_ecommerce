@@ -1,7 +1,7 @@
 'use client';
 
 import { createContext, useContext, useReducer, useEffect } from 'react';
-import { calculateTieredPrice } from '@/data/products';
+import { calculateTieredPrice } from '@/data/utils/pricing';
 
 const CartContext = createContext(null);
 

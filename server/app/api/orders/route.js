@@ -34,6 +34,12 @@ const createOrderSchema = z.object({
       })
     )
     .min(1, "Order must have at least one item"),
+  companyName: z.string().optional(),
+  contactName: z.string().optional(),
+  contactEmail: z.string().email("Invalid email").optional(),
+  contactPhone: z.string().optional(),
+  shippingAddress: z.string().optional(),
+  notes: z.string().optional(),
 })
 
 // ─── GET /api/orders ─────────────────────────────────────────────────────────
@@ -83,7 +89,8 @@ export async function POST(request) {
       return apiResponse.validationError("Validation failed", errors)
     }
 
-    const order = await ordersService.createOrder(user.userId, parsed.data.items)
+    const { items, ...metadata } = parsed.data
+    const order = await ordersService.createOrder(user.userId, items, metadata)
     return apiResponse.created(order, "Order placed successfully")
   } catch (error) {
     if (error.code === "STOCK_VALIDATION_FAILED") {

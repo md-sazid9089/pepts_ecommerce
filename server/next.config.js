@@ -21,21 +21,31 @@ const primaryOrigin = allowedOrigins[0]
 const nextConfig = {
   reactStrictMode: true,
 
+  // Allow Prisma to work on Vercel serverless:
+  serverExternalPackages: ['@prisma/client', 'prisma'],
+
   // ✅ Compress API responses
   compress: true,
   productionBrowserSourceMaps: false,
 
-  // ✅ CORS + Security headers for all API routes
+  // ✅ CORS + Security + Cache headers for all API routes
   async headers() {
     return [
       {
         source: "/api/:path*",
         headers: [
+          // ✅ CORS Headers
+          { key: "Access-Control-Allow-Credentials", value: "true" },
+          { key: "Access-Control-Allow-Origin",      value: "*" }, // In production, replace * with FRONTEND_URL
+          { key: "Access-Control-Allow-Methods",     value: "GET,DELETE,PATCH,POST,PUT,OPTIONS" },
+          { key: "Access-Control-Allow-Headers",     value: "X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, Authorization" },
+          // ✅ Cache-Control
+          { key: "Cache-Control",          value: "no-store, no-cache, must-revalidate" },
           // Security headers
-          { key: "X-Content-Type-Options",           value: "nosniff" },
-          { key: "X-Frame-Options",                  value: "DENY" },
-          { key: "X-XSS-Protection",                 value: "1; mode=block" },
-          { key: "Referrer-Policy",                  value: "strict-origin-when-cross-origin" },
+          { key: "X-Content-Type-Options", value: "nosniff" },
+          { key: "X-Frame-Options",        value: "DENY" },
+          { key: "X-XSS-Protection",       value: "1; mode=block" },
+          { key: "Referrer-Policy",        value: "strict-origin-when-cross-origin" },
         ],
       },
     ]

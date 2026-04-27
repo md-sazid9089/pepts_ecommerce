@@ -30,7 +30,7 @@ export function usePWA() {
           scope: '/',
         });
 
-        console.log('[PWA] Service Worker registered:', registration);
+        // PWA logging removed for production cleanup
         setSwRegistration(registration);
 
         // Check for updates every 60 seconds
@@ -46,7 +46,7 @@ export function usePWA() {
 
           newWorker.addEventListener('statechange', () => {
             if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-              console.log('[PWA] New Service Worker available');
+                            setHasUpdate(true);
               setHasUpdate(true);
               // Notify user of update
               notifyUpdate();
@@ -69,7 +69,6 @@ export function usePWA() {
       event.preventDefault();
       setDeferredPrompt(event);
       setIsInstallable(true);
-      console.log('[PWA] Install prompt available');
     };
 
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
@@ -82,7 +81,7 @@ export function usePWA() {
   // Listen for app installed event
   useEffect(() => {
     const handleAppInstalled = () => {
-      console.log('[PWA] App installed successfully');
+            setDeferredPrompt(null);
       setDeferredPrompt(null);
       setIsInstallable(false);
     };
@@ -98,12 +97,12 @@ export function usePWA() {
   useEffect(() => {
     const handleOnline = () => {
       setIsOnline(true);
-      console.log('[PWA] Online');
+            setIsOnline(true);
     };
 
     const handleOffline = () => {
       setIsOnline(false);
-      console.log('[PWA] Offline');
+            setIsOnline(false);
     };
 
     window.addEventListener('online', handleOnline);
@@ -127,7 +126,7 @@ export function usePWA() {
     deferredPrompt.prompt();
     const { outcome } = await deferredPrompt.userChoice;
 
-    console.log(`[PWA] User response to install prompt: ${outcome}`);
+        // User response to install prompt recorded
 
     if (outcome === 'accepted') {
       setDeferredPrompt(null);
@@ -167,7 +166,7 @@ export function usePWA() {
     const sw = swRegistration.active || swRegistration.waiting;
     if (sw) {
       sw.postMessage({ type: 'CLEAR_CACHE' });
-      console.log('[PWA] Cache cleared');
+            // Cache cleared locally
     }
   }, [swRegistration]);
 
@@ -184,7 +183,7 @@ export function usePWA() {
       const sw = swRegistration.active || swRegistration.waiting;
       if (sw) {
         sw.postMessage({ type: 'CACHE_URLS', payload: { urls } });
-        console.log('[PWA] Pre-caching URLs:', urls);
+                // URLs pre-cached
       }
     },
     [swRegistration]
@@ -199,7 +198,6 @@ export function usePWA() {
         if ('serviceWorker' in navigator && 'SyncManager' in window) {
           const registration = await navigator.serviceWorker.ready;
           await registration.sync.register(tag);
-          console.log('[PWA] Background sync registered:', tag);
         }
       } catch (error) {
         console.error('[PWA] Failed to register background sync:', error);

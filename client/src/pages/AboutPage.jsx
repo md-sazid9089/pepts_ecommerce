@@ -1,4 +1,5 @@
 import { useState } from "react"
+import { useNavigate } from "react-router-dom"
 import { FiCheck, FiTrendingUp, FiBox, FiTruck, FiHeadphones, FiAward } from "react-icons/fi"
 
 const colors = {
@@ -267,6 +268,7 @@ const ctaStyles = {
 // ABOUT PAGE COMPONENT
 // ====================================
 export default function AboutPage() {
+  const navigate = useNavigate()
   const [hoveredCard, setHoveredCard] = useState(null)
   const [hoveredStep, setHoveredStep] = useState(null)
   const [hoveredPrimaryBtn, setHoveredPrimaryBtn] = useState(false)
@@ -400,7 +402,7 @@ export default function AboutPage() {
             }}
             onMouseEnter={() => setHoveredPrimaryBtn(true)}
             onMouseLeave={() => setHoveredPrimaryBtn(false)}
-            onClick={() => {}}
+            onClick={() => navigate('/products')}
           >
             Browse Products
           </button>
@@ -412,7 +414,7 @@ export default function AboutPage() {
             }}
             onMouseEnter={() => setHoveredSecondaryBtn(true)}
             onMouseLeave={() => setHoveredSecondaryBtn(false)}
-            onClick={() => {}}
+            onClick={() => navigate('/contact')}
           >
             Contact / Request Quote
           </button>

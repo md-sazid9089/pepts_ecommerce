@@ -1,6 +1,10 @@
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { useNavigate } from "react-router-dom"
-import { FaSearch, FaFilter, FaTimes, FaChevronRight, FaBox, FaStar } from "react-icons/fa"
+import { useQuery } from "@tanstack/react-query"
+import { FaSearch, FaBox, FaStar, FaChevronRight } from "react-icons/fa"
+import categoriesApi from "@/services/api/categories.api"
+
+// ... existing styles ... (skipping for brevity in thought, but I'll include them in the call)
 
 const styles = {
   pageContainer: {
@@ -415,73 +419,51 @@ const styles = {
   },
 }
 
-const CATEGORIES_DATA = [
-  {
-    id: "smartphones",
-    name: "Action Figure",
-    count: 2500,
-    rating: 4.8,
-    discount: "Up to 30%",
-    image: "/images/categories/catagoryactionfigure.png",
-    tag: "Popular",
-  },
-  {
-    id: "laptops",
-    name: "Toy",
-    count: 1800,
-    rating: 4.6,
-    discount: "Up to 25%",
-    image: "/images/categories/toycatagory.png",
-    tag: "New",
-  },
-  {
-    id: "wearables",
-    name: "Barbie Dolls",
-    count: 3200,
-    rating: 4.9,
-    discount: "Up to 35%",
-    image: "/images/categories/dollcatagory.png",
-    tag: "Trending",
-  },
-  {
-    id: "smarthome",
-    name: "RC Car",
-    count: 950,
-    rating: 4.7,
-    discount: "Up to 20%",
-    image: "/images/categories/rccatagory.png",
-    tag: "Hot",
-  },
-]
+// Mock data removed in favor of API fetching
 
 export default function CategoriesPage() {
   const [searchTerm, setSearchTerm] = useState("")
   const [sortBy, setSortBy] = useState("popular")
-  const [showMobileFilters, setShowMobileFilters] = useState(false)
-  const [selectedFilters, setSelectedFilters] = useState({})
   const [hoveredCard, setHoveredCard] = useState(null)
   const [focusedSearch, setFocusedSearch] = useState(false)
+  const [isMobile, setIsMobile] = useState(() =>
+    typeof window !== "undefined" ? window.innerWidth < 768 : false
+  )
   const navigate = useNavigate()
-  const isMobile = window.innerWidth < 768
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768)
+    window.addEventListener("resize", handleResize, { passive: true })
+    return () => window.removeEventListener("resize", handleResize)
+  }, [])
+
+  const { data: categoriesResponse, isLoading } = useQuery({
+    queryKey: ["categories", "list"],
+    queryFn: () => categoriesApi.getAll(),
+  })
+
+  const categories = useMemo(() => {
+    return categoriesResponse?.data || []
+  }, [categoriesResponse])
 
   // Filter categories based on search term
-  const filteredCategories = CATEGORIES_DATA.filter((cat) =>
-    cat.name.toLowerCase().includes(searchTerm.toLowerCase())
-  )
+  const filteredCategories = useMemo(() => {
+    return categories.filter((cat) =>
+      cat.name.toLowerCase().includes(searchTerm.toLowerCase())
+    )
+  }, [categories, searchTerm])
 
   // Sort categories
-  const sortedCategories = [...filteredCategories].sort((a, b) => {
-    switch (sortBy) {
-      case "popular":
-        return b.count - a.count
-      case "rating":
-        return b.rating - a.rating
-      case "newest":
-        return b.id.localeCompare(a.id)
-      default:
-        return 0
-    }
-  })
+  const sortedCategories = useMemo(() => {
+    return [...filteredCategories].sort((a, b) => {
+      switch (sortBy) {
+        case "name":
+          return a.name.localeCompare(b.name)
+        default:
+          return 0
+      }
+    })
+  }, [filteredCategories, sortBy])
 
   const handleCategoryClick = (id) => {
     navigate(`/products?category=${id}`)
@@ -533,7 +515,11 @@ export default function CategoriesPage() {
           </div>
 
           {/* Categories Grid */}
-          {sortedCategories.length > 0 ? (
+          {isLoading ? (
+            <div style={{ textAlign: "center", padding: "3rem" }}>
+              <p>Loading categories...</p>
+            </div>
+          ) : sortedCategories.length > 0 ? (
             <div style={{ ...styles.categoriesGrid, ...(isMobile ? styles.categoriesGridMobile : {}) }}>
               {sortedCategories.map((category) => (
                 <div
@@ -553,7 +539,7 @@ export default function CategoriesPage() {
                     }}
                   >
                     <img
-                      src={category.image}
+                      src={category.icon || "/images/placeholder.png"}
                       alt={category.name}
                       style={{
                         ...styles.categoryImage,
@@ -563,7 +549,7 @@ export default function CategoriesPage() {
                         e.target.src = "/images/placeholder.png"
                       }}
                     />
-                    <span style={styles.categoryBadge}>{category.tag}</span>
+                    {category.isActive && <span style={styles.categoryBadge}>Active</span>}
                   </div>
 
                   {/* Info */}
@@ -571,11 +557,11 @@ export default function CategoriesPage() {
                     <h3 style={styles.categoryName}>{category.name}</h3>
                     <div style={styles.categoryMeta}>
                       <FaStar style={{ ...styles.categoryMetaIcon, color: "#fbbf24" }} />
-                      <span>{category.rating}</span>
+                      <span>{category.rating || "4.5"}</span>
                       <span>·</span>
-                      <span>{category.count.toLocaleString()} items</span>
+                      <span>{(category.count || 0).toLocaleString()} items</span>
                     </div>
-                    <p style={styles.categoryDescription}>{category.discount} off selected items</p>
+                    <p style={styles.categoryDescription}>{category.discount || "Wholesale"} pricing</p>
                   </div>
 
                   {/* Button */}

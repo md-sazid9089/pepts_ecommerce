@@ -30,7 +30,8 @@ function verifyJwt(request) {
   if (!token) return null
   try {
     return jwt.verify(token, process.env.JWT_SECRET)
-  } catch {
+  } catch (err) {
+    console.error("[Auth] Token verification failed:", err.message)
     return null
   }
 }
@@ -59,86 +60,72 @@ export async function POST(request, { params }) {
       return apiResponse.error("Invalid form data", 400)
     }
 
-    const file = formData.get("image")
-    if (!file || typeof file === "string") {
-      return apiResponse.error("No image file provided. Include a file field named 'image'.", 400)
+    const files = formData.getAll("images")
+    if (!files || files.length === 0) {
+      return apiResponse.error("No image files provided. Include files under 'images'.", 400)
     }
 
-    // Validate file type
+    if (files.length > 10) {
+      return apiResponse.error("Maximum 10 images allowed.", 400)
+    }
+
     const allowedTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp", "image/gif"]
-    if (!allowedTypes.includes(file.type)) {
-      return apiResponse.error(
-        `Invalid file type "${file.type}". Allowed: JPEG, PNG, WebP, GIF.`,
-        400
-      )
-    }
-
-    // Validate file size (max 10MB)
     const MAX_SIZE = 10 * 1024 * 1024
-    if (file.size > MAX_SIZE) {
-      return apiResponse.error("File too large. Maximum size is 10MB.", 400)
-    }
 
-    // 5. Convert file to buffer and upload to Cloudinary
-    const arrayBuffer = await file.arrayBuffer()
-    const buffer = Buffer.from(arrayBuffer)
+    const uploadedUrls = []
 
-    const uploadResult = await new Promise((resolve, reject) => {
-      const uploadStream = cloudinary.uploader.upload_stream(
-        {
-          folder:         "pepta/products",
-          public_id:      `product_${id}_${Date.now()}`,
-          transformation: [
-            { width: 1200, height: 1200, crop: "limit" }, // Max 1200×1200
-            { quality: "auto:good" },
-            { fetch_format: "auto" },
-          ],
-          tags: ["product", id],
-        },
-        (error, result) => {
-          if (error) reject(error)
-          else resolve(result)
-        }
-      )
-      uploadStream.end(buffer)
-    })
-
-    // 6. Delete old image from Cloudinary if it exists
-    if (product.imageUrl) {
-      try {
-        // Extract public_id from old URL
-        const urlParts = product.imageUrl.split("/")
-        const folderAndFile = urlParts.slice(-2).join("/")
-        const publicId = folderAndFile.replace(/\.[^.]+$/, "") // Remove extension
-        await cloudinary.uploader.destroy(publicId)
-      } catch {
-        // Non-critical — old image deletion failure doesn't block the update
-        console.warn("Could not delete old Cloudinary image for product:", id)
+    for (const file of files) {
+      if (!allowedTypes.includes(file.type)) {
+        return apiResponse.error(`Invalid file type "${file.type}". Allowed: JPEG, PNG, WebP, GIF.`, 400)
       }
+      if (file.size > MAX_SIZE) {
+        return apiResponse.error("File too large. Maximum size is 10MB.", 400)
+      }
+
+      const arrayBuffer = await file.arrayBuffer()
+      const buffer = Buffer.from(arrayBuffer)
+
+      const uploadResult = await new Promise((resolve, reject) => {
+        const uploadStream = cloudinary.uploader.upload_stream(
+          {
+            folder:         "pepta/products",
+            public_id:      `product_${id}_${Date.now()}_${Math.random().toString(36).substring(7)}`,
+            transformation: [
+              { width: 1200, height: 1200, crop: "limit" },
+              { quality: "auto:good" },
+              { fetch_format: "auto" },
+            ],
+            tags: ["product", id],
+          },
+          (error, result) => {
+            if (error) reject(error)
+            else resolve(result)
+          }
+        )
+        uploadStream.end(buffer)
+      })
+
+      uploadedUrls.push(uploadResult.secure_url)
     }
 
-    // 7. Save Cloudinary URL to MySQL
-    const updatedProduct = await prisma.product.update({
-      where: { id },
-      data:  { imageUrl: uploadResult.secure_url },
-      include: { category: true },
+    // Replace all images in DB for this product
+    await prisma.productImage.deleteMany({
+      where: { productId: id }
     })
+
+    if (uploadedUrls.length > 0) {
+      await prisma.productImage.createMany({
+        data: uploadedUrls.map((url, index) => ({
+          url,
+          order: index,
+          productId: id,
+        })),
+      })
+    }
 
     return apiResponse.success(
-      {
-        imageUrl:  uploadResult.secure_url,
-        publicId:  uploadResult.public_id,
-        width:     uploadResult.width,
-        height:    uploadResult.height,
-        format:    uploadResult.format,
-        bytes:     uploadResult.bytes,
-        product:   {
-          id:       updatedProduct.id,
-          title:    updatedProduct.title,
-          imageUrl: updatedProduct.imageUrl,
-        },
-      },
-      "Image uploaded successfully"
+      { urls: uploadedUrls },
+      `${uploadedUrls.length} image(s) uploaded successfully`
     )
   } catch (error) {
     console.error("POST /api/products/:id/upload-image error:", error)

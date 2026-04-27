@@ -1,9 +1,10 @@
-import { useState, useMemo, useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
-import { products as fallbackProducts } from '@/data/products';
+import { useState, useMemo } from 'react';
+import { useSearchParams } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import productsApi from '@/services/api/products.api';
 import ProductCard from '@/components/ProductCard/ProductCard';
-import { FiSliders, FiX, FiSearch, FiChevronDown } from 'react-icons/fi';
+import ProductCardSkeleton from '@/components/skeletons/ProductCardSkeleton';
+import { queryKeys } from '@/lib/queryKeys';
 
 const styles = {
   container: {
@@ -252,31 +253,18 @@ const styles = {
 };
 
 export default function ProductsPage() {
-  const location = useLocation();
+  const [searchParams] = useSearchParams();
+  const searchQuery = searchParams.get('search') || '';
   const [sortBy, setSortBy] = useState('popular');
   const [displayCount, setDisplayCount] = useState(20);
-  const [productsList, setProductsList] = useState([]); // Initialize empty to prevent stale data flicker
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
 
-  useEffect(() => {
-    const fetchProducts = async () => {
-      setLoading(true);
-      const response = await productsApi.getAll(1, 100);
+  const { data: productsList = [], isLoading: loading, isError, error: queryError } = useQuery({
+    queryKey: queryKeys.products.list({ page: 1, pageSize: 100, search: searchQuery }),
+    queryFn: () => productsApi.getAll(1, 100, { search: searchQuery }),
+    select: (response) => response?.data?.items || [],
+  });
 
-      if (response.success) {
-        setProductsList(response.data?.items || fallbackProducts);
-        setError(null);
-      } else {
-        setError(response.message || 'Failed to load products');
-        setProductsList(fallbackProducts);
-      }
-
-      setLoading(false);
-    };
-
-    fetchProducts();
-  }, [location.key]); // Refetch on every navigation/back action
+  const error = isError ? (queryError?.message || 'Failed to load products') : null;
 
   // Filter and sort products (Simplified to only Sorting)
   const displayedProducts = useMemo(() => {
@@ -302,7 +290,7 @@ export default function ProductsPage() {
         break;
     }
     return results;
-  }, [sortBy]);
+  }, [sortBy, productsList]);
 
   const visibleProducts = displayedProducts.slice(0, displayCount);
 
@@ -311,7 +299,9 @@ export default function ProductsPage() {
       {/* Page Header */}
       <div style={styles.pageHeader} data-page-header>
         <div style={styles.headerContent}>
-          <h1 style={styles.title}>All Products</h1>
+          <h1 style={styles.title}>
+            {searchQuery ? `Results for "${searchQuery}"` : 'All Products'}
+          </h1>
           <p style={styles.subtitle}>
             Showing {visibleProducts.length} of {displayedProducts.length} items
           </p>
@@ -343,8 +333,10 @@ export default function ProductsPage() {
           </div>
 
           {loading && (
-            <div style={{ padding: '16px', color: '#374151', fontWeight: 600 }}>
-              Loading products from the backend...
+            <div style={styles.grid}>
+              {Array.from({ length: 8 }).map((_, i) => (
+                <ProductCardSkeleton key={i} />
+              ))}
             </div>
           )}
           {error && (

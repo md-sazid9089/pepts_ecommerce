@@ -20,7 +20,7 @@ const isDev = import.meta.env.DEV
 const log = isDev ? (...args) => console.log("[API]", ...args) : () => {}
 const logError = isDev ? (...args) => console.error("[API]", ...args) : () => {}
 
-const DEFAULT_TIMEOUT_MS = 45_000
+const DEFAULT_TIMEOUT_MS = 90_000
 
 class ApiClient {
   constructor(baseURL) {

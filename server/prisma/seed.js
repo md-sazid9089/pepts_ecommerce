@@ -28,6 +28,7 @@ const products = [
     description: 'Premium handcrafted plush toy featuring soft texture and institutional-grade durability. Perfect for retail collections, specialty gift shops, and premium toy boutiques.',
     price: 850,
     stock: 250,
+    imageUrl: 'https://images.unsplash.com/photo-1558021211-6d1403321394?q=80&w=800&auto=format&fit=crop',
     tieredPricing: [
       { minQuantity: 10,  price: 850,  discount: null },
       { minQuantity: 51,  price: 720,  discount: 15.3 },
@@ -41,6 +42,7 @@ const products = [
     description: 'Cat Toy Cartoon Customized Hot Selling Plush Toy New Baby OEM Creative cute Gift Stuffed Toy. Toys logo Figure. Ideal for specialty gift shops.',
     price: 1250,
     stock: 120,
+    imageUrl: 'https://images.unsplash.com/photo-1559715541-51832d29d9fa?q=80&w=800&auto=format&fit=crop',
     tieredPricing: [
       { minQuantity: 5,   price: 1250, discount: null },
       { minQuantity: 26,  price: 1050, discount: 16 },
@@ -54,6 +56,7 @@ const products = [
     description: 'Modern-styled fashion dolls ideal for younger collectors. Bulk-friendly pricing for retailers.',
     price: 720,
     stock: 380,
+    imageUrl: 'https://images.unsplash.com/photo-1596461404969-9ae70f2830c1?q=80&w=800&auto=format&fit=crop',
     tieredPricing: [
       { minQuantity: 15,  price: 720, discount: null },
       { minQuantity: 76,  price: 600, discount: 16.7 },
@@ -69,6 +72,7 @@ const products = [
     description: 'New Design OEM Cute Fluffy Animal dolls cake stuffed food Pendant Funny Plush Toy. High-end collectible series for specialty boutiques.',
     price: 2800,
     stock: 45,
+    imageUrl: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?q=80&w=800&auto=format&fit=crop',
     tieredPricing: [
       { minQuantity: 2,   price: 2800, discount: null },
       { minQuantity: 11,  price: 2400, discount: 14.3 },
@@ -82,6 +86,7 @@ const products = [
     description: 'Classic Victorian-inspired porcelain dolls with authentic period details and finest ceramics.',
     price: 2200,
     stock: 68,
+    imageUrl: 'https://images.unsplash.com/photo-1566576721346-d4a3b4eaad5b?q=80&w=800&auto=format&fit=crop',
     tieredPricing: [
       { minQuantity: 3,   price: 2200, discount: null },
       { minQuantity: 21,  price: 1900, discount: 13.6 },
@@ -95,6 +100,7 @@ const products = [
     description: 'Authentic Asian-inspired porcelain dolls in traditional costumes. Cultural collectible series for specialty retailers.',
     price: 1950,
     stock: 92,
+    imageUrl: 'https://images.unsplash.com/photo-1591189863430-ab87e120f312?q=80&w=800&auto=format&fit=crop',
     tieredPricing: [
       { minQuantity: 4,   price: 1950, discount: null },
       { minQuantity: 31,  price: 1650, discount: 15.4 },
@@ -110,6 +116,7 @@ const products = [
     description: 'Premium articulated action figures with superb detail. High-demand toys for retailers and collectors.',
     price: 450,
     stock: 450,
+    imageUrl: 'https://images.unsplash.com/photo-1608889175123-8ee362201f81?q=80&w=800&auto=format&fit=crop',
     tieredPricing: [
       { minQuantity: 12,  price: 450, discount: null },
       { minQuantity: 101, price: 380, discount: 15.6 },
@@ -123,6 +130,7 @@ const products = [
     description: 'Popular anime character figures with high-quality sculpts. Perfect for specialty shops and collector markets.',
     price: 520,
     stock: 310,
+    imageUrl: 'https://images.unsplash.com/photo-1612036782180-6f0b6cd846fe?q=80&w=800&auto=format&fit=crop',
     tieredPricing: [
       { minQuantity: 10,  price: 520, discount: null },
       { minQuantity: 81,  price: 440, discount: 15.4 },
@@ -136,6 +144,7 @@ const products = [
     description: 'Highly detailed fantasy character figures with realistic accessories. Collector-grade quality for enthusiasts.',
     price: 680,
     stock: 178,
+    imageUrl: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?q=80&w=800&auto=format&fit=crop',
     tieredPricing: [
       { minQuantity: 8,   price: 680, discount: null },
       { minQuantity: 61,  price: 580, discount: 14.7 },
@@ -151,6 +160,7 @@ const products = [
     description: 'Exquisite Victorian-style dollhouse with authentic architectural details. Handcrafted excellence for luxury retail.',
     price: 8500,
     stock: 22,
+    imageUrl: 'https://images.unsplash.com/photo-1591189863430-ab87e120f312?q=80&w=800&auto=format&fit=crop',
     tieredPricing: [
       { minQuantity: 1,  price: 8500, discount: null },
       { minQuantity: 6,  price: 7500, discount: 11.8 },
@@ -164,6 +174,7 @@ const products = [
     description: 'Contemporary townhouse dollhouse with LED lighting. Popular with modern collectors and design-forward retailers.',
     price: 5200,
     stock: 38,
+    imageUrl: 'https://images.unsplash.com/photo-1516062423079-7ca13cdc7f5a?q=80&w=800&auto=format&fit=crop',
     tieredPricing: [
       { minQuantity: 2,   price: 5200, discount: null },
       { minQuantity: 11,  price: 4600, discount: 11.5 },
@@ -177,6 +188,7 @@ const products = [
     description: 'Charming country cottage-style dollhouse. Affordable luxury for mainstream retailers and family toy stores.',
     price: 3800,
     stock: 54,
+    imageUrl: 'https://images.unsplash.com/photo-1598901861713-54ad16a7e70e?q=80&w=800&auto=format&fit=crop',
     tieredPricing: [
       { minQuantity: 3,   price: 3800, discount: null },
       { minQuantity: 16,  price: 3200, discount: 15.8 },
@@ -192,6 +204,7 @@ const products = [
     description: 'Premium doll clothing sets with diverse styles. High-volume seller for accessory retailers and toy stores.',
     price: 280,
     stock: 890,
+    imageUrl: 'https://images.unsplash.com/photo-1559563458-527298cb282e?q=80&w=800&auto=format&fit=crop',
     tieredPricing: [
       { minQuantity: 20,   price: 280, discount: null },
       { minQuantity: 151,  price: 240, discount: 14.3 },
@@ -205,6 +218,7 @@ const products = [
     description: 'Complete furniture sets for dollhouses. Essential accessory for dollhouse retailers.',
     price: 450,
     stock: 240,
+    imageUrl: 'https://images.unsplash.com/photo-1534349762230-e0cadf78f5dd?q=80&w=800&auto=format&fit=crop',
     tieredPricing: [
       { minQuantity: 10,  price: 450, discount: null },
       { minQuantity: 76,  price: 380, discount: 15.6 },
@@ -218,6 +232,7 @@ const products = [
     description: 'Miniature accessories to complement doll collections. Ultra-high-volume bestseller for all toy retailers.',
     price: 180,
     stock: 1260,
+    imageUrl: 'https://images.unsplash.com/photo-1560243563-062bff001d68?q=80&w=800&auto=format&fit=crop',
     tieredPricing: [
       { minQuantity: 30,   price: 180, discount: null },
       { minQuantity: 201,  price: 150, discount: 16.7 },
@@ -257,9 +272,11 @@ async function main() {
       product = await prisma.product.update({
         where: { id: existing.id },
         data: {
+          title:       prod.title,
           description: prod.description,
           price:       prod.price,
           stock:       prod.stock,
+          imageUrl:    prod.imageUrl,
           categoryId,
           isActive:    true,
         },
@@ -272,6 +289,7 @@ async function main() {
           description: prod.description,
           price:       prod.price,
           stock:       prod.stock,
+          imageUrl:    prod.imageUrl,
           categoryId,
         },
       });

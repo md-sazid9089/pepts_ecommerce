@@ -1,7 +1,8 @@
-import { useState, useEffect, useMemo } from 'react'
 import { useSearchParams, Link } from 'react-router-dom'
+import { useQuery } from '@tanstack/react-query'
 import productsApi from '@/services/api/products.api'
 import ProductCard from '@/components/ProductCard/ProductCard'
+import { queryKeys } from '@/lib/queryKeys'
 import { FiSearch, FiArrowLeft, FiFilter } from 'react-icons/fi'
 
 const styles = {
@@ -114,37 +115,16 @@ const styles = {
 export default function SearchPage() {
   const [searchParams] = useSearchParams()
   const query = searchParams.get('q') || ''
-  
-  const [products, setProducts] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
 
-  useEffect(() => {
-    const performSearch = async () => {
-      if (!query.trim()) {
-        setProducts([])
-        setLoading(false)
-        return
-      }
+  const { data: products = [], isLoading: loading, isError, error: queryError } = useQuery({
+    queryKey: queryKeys.products.list({ search: query }),
+    queryFn: () => productsApi.getAll(1, 50, { search: query }),
+    select: (response) => response?.data?.items || [],
+    enabled: !!query.trim(),  // don't fetch if query is empty
+    staleTime: 0,             // search results always refetch — never serve stale
+  })
 
-      setLoading(true)
-      try {
-        const response = await productsApi.getAll(1, 50, { search: query })
-        if (response.success) {
-          setProducts(response.data?.items || [])
-          setError(null)
-        } else {
-          setError(response.message || 'Failed to fetch search results')
-        }
-      } catch (err) {
-        setError('An unexpected error occurred. Please try again.')
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    performSearch()
-  }, [query])
+  const error = isError ? (queryError?.message || 'Failed to fetch search results') : null
 
   return (
     <div style={styles.container}>

@@ -64,13 +64,9 @@ export async function GET(request) {
 
     const response = apiResponse.paginated(items, total, page, pageSize, "Products fetched successfully")
 
-    // Cache for 60s on CDN/browser, serve stale for 30s while revalidating
-    // Skip cache on search queries to always return fresh results
-    if (!search) {
-      response.headers.set("Cache-Control", "public, max-age=60, stale-while-revalidate=30")
-    } else {
-      response.headers.set("Cache-Control", "no-store")
-    }
+    // React Query handles all client-side caching.
+    // The API always returns fresh data — no browser/CDN caching.
+    response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate')
 
     return response
   } catch (error) {

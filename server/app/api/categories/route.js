@@ -20,3 +20,21 @@ export async function GET(request) {
     return apiResponse.serverError("Failed to fetch categories", error)
   }
 }
+
+export async function POST(request) {
+  try {
+    const body = await request.json()
+    if (!body.name) {
+      return apiResponse.error("Category name is required", 400)
+    }
+
+    const category = await categoriesService.create(body)
+    return apiResponse.success(category, "Category created successfully", 201)
+  } catch (error) {
+    if (error.message.includes("already exists")) {
+      return apiResponse.error(error.message, 400)
+    }
+    console.error("POST /api/categories error:", error)
+    return apiResponse.serverError("Failed to create category", error)
+  }
+}

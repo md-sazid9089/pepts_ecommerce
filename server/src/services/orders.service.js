@@ -22,9 +22,10 @@ function generateOrderNumber() {
  * Create a new order with stock validation (transactional)
  * @param {string} userId
  * @param {Array<{ productId: string, quantity: number }>} items
+ * @param {object} metadata - { shippingAddress, contactName, companyName, contactEmail, contactPhone, notes }
  * @returns {Promise<object>} created order
  */
-export async function createOrder(userId, items) {
+export async function createOrder(userId, items, metadata = {}) {
   if (!items || items.length === 0) {
     throw new Error("Order must have at least one item")
   }
@@ -79,6 +80,15 @@ export async function createOrder(userId, items) {
         userId,
         totalAmount: Math.round(totalAmount * 100) / 100,
         status: "pending",
+        
+        // Metadata fields
+        companyName:   metadata.companyName   || null,
+        contactName:   metadata.contactName   || null,
+        contactEmail:  metadata.contactEmail  || null,
+        contactPhone:  metadata.contactPhone  || null,
+        shippingAddress: metadata.shippingAddress || null,
+        notes:         metadata.notes         || null,
+
         items: {
           create: items.map((item) => ({
             productId: item.productId,
@@ -94,6 +104,8 @@ export async function createOrder(userId, items) {
         user: { select: { id: true, email: true, firstName: true, lastName: true } },
       },
     })
+  }, {
+    timeout: 15000, // Increase timeout for remote DB latency
   })
 
   return order

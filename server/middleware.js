@@ -5,10 +5,10 @@ const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:5173"
 const allowedOrigins = FRONTEND_URL.split(",").map((u) => u.trim())
 
 function isAllowedOrigin(origin) {
-  if (!origin) return true // Allow server-to-server requests
+  if (!origin) return true
   if (allowedOrigins.includes(origin)) return true
+  if (origin.includes('localhost') || origin.includes('127.0.0.1')) return true
   if (origin.endsWith('.vercel.app')) return true
-  if (origin.startsWith('http://localhost')) return true
   return false
 }
 

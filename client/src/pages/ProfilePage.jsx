@@ -118,7 +118,7 @@ export default function ProfilePage() {
               </div>
               <div>
                 <label style={s.label}>Email</label>
-                <input style={s.input} type="email" value={form.email} disabled style={{ ...s.input, background: '#f9fafb', color: '#9ca3af' }} />
+                <input type="email" value={form.email} disabled style={{ ...s.input, background: '#f9fafb', color: '#9ca3af' }} />
               </div>
             </div>
             <div style={s.row}>

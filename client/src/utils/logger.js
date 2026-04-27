@@ -31,6 +31,7 @@ class Logger {
    * Log info messages
    */
   info(module, message, data, fn) {
+    if (!this.isDevelopment) return;
     const formatted = this.formatMessage('info', module, message, fn);
     console.info(`%c${formatted}`, 'color: #0066cc; font-weight: bold;', data || {});
   }
@@ -114,6 +115,7 @@ class Logger {
    * Log API/async operation
    */
   logAsync(module, operation, status, data, fn) {
+    if (!this.isDevelopment) return;
     const statusColor = status === 'start' ? '#0066cc' : status === 'success' ? '#4caf50' : '#f44336';
     const statusSymbol = status === 'start' ? '⏳' : status === 'success' ? '✅' : '❌';
     
@@ -140,7 +142,9 @@ class Logger {
         const durationMs = duration.toFixed(2);
         const color = duration > 1000 ? '#f44336' : duration > 100 ? '#ff9800' : '#4caf50';
         
-        console.log(`%c⏱️  ${label}: ${durationMs}ms`, `color: ${color}; font-weight: bold;`);
+        if (this.isDevelopment) {
+          console.log(`%c⏱️  ${label}: ${durationMs}ms`, `color: ${color}; font-weight: bold;`);
+        }
         return duration;
       },
     };

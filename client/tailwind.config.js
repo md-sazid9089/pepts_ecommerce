@@ -49,6 +49,7 @@ const config = {
           200: '#E2E8F0',
           400: '#94A3B8',
           600: '#475569',
+          700: '#334155',
           800: '#1E293B',
           900: '#111827',
         },
@@ -353,7 +354,7 @@ const config = {
 
         // Button components
         '.btn': {
-          '@apply inline-flex items-center justify-center px-lg py-md rounded-lg font-btn transition-all duration-300 cursor-pointer': {},
+          '@apply inline-flex items-center justify-center px-lg py-md rounded-lg text-btn transition-all duration-300 cursor-pointer': {},
         },
         '.btn-primary': {
           '@apply bg-charcoal-900 text-white hover:bg-charcoal-800': {},
@@ -398,7 +399,7 @@ const config = {
 
         // Badge components
         '.badge': {
-          '@apply inline-flex items-center px-md py-xs rounded-full font-label': {},
+          '@apply inline-flex items-center px-md py-xs rounded-full text-label': {},
         },
         '.badge-primary': {
           '@apply bg-cobalt-50 text-cobalt-700': {},

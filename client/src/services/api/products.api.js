@@ -66,6 +66,7 @@ export const productsApi = {
   getById: async (productId) => {
     try {
       const response = await apiClient.get(`/api/products/${productId}`)
+      console.log('API RESPONSE SHAPE:', response)
       return response
     } catch (error) {
       return {
@@ -210,36 +211,64 @@ export const productsApi = {
     }
   },
   /**
-   * Upload a product image to Cloudinary (admin only)
+   * Upload product images to Cloudinary (admin only)
    * @param {string} productId - Product ID
-   * @param {File} file - Image file from file input
+   * @param {File[]} files - Array of image files from file input
    * @param {string} token - Admin JWT token
-   * @returns {Promise<object>} - { imageUrl, publicId, width, height, product }
-   *
-   * EXAMPLE:
-   * const fileInput = document.getElementById('imageInput');
-   * const response = await productsApi.uploadImage("prod_123", fileInput.files[0], token);
-   * if (response.success) console.log(response.data.imageUrl);
+   * @returns {Promise<object>}
    */
-  uploadImage: async (productId, file, token) => {
+  uploadImage: async (productId, files, token) => {
     try {
       const formData = new FormData()
-      formData.append("image", file)
-
-      const apiBase = import.meta.env.VITE_API_URL || "http://localhost:3000"
-      const res = await fetch(`${apiBase}/api/products/${productId}/upload-image`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          // Do NOT set Content-Type — browser sets it automatically with boundary for multipart
-        },
-        body: formData,
+      files.forEach(file => {
+        formData.append("images", file)
       })
 
-      const data = await res.json()
+      // Use the same base URL as the rest of the API client
+      const apiBase = import.meta.env.VITE_API_URL || "http://localhost:3000"
+
+      // 60s timeout for image uploads (Cloudinary can be slow)
+      const controller = new AbortController()
+      const timer = setTimeout(() => controller.abort(), 60_000)
+
+      let res
+      try {
+        res = await fetch(`${apiBase}/api/products/${productId}/upload-image`, {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            // Do NOT set Content-Type — browser sets it automatically with boundary for multipart
+          },
+          body: formData,
+          signal: controller.signal,
+        })
+      } finally {
+        clearTimeout(timer)
+      }
+
+      // Try to parse JSON — if the server returned HTML/text, handle gracefully
+      let data
+      const contentType = res.headers.get("content-type") || ""
+      if (contentType.includes("application/json")) {
+        data = await res.json()
+      } else {
+        const text = await res.text()
+        console.error("[uploadImage] Non-JSON response:", text)
+        return { success: false, message: `Upload failed (HTTP ${res.status}): ${text.slice(0, 200)}` }
+      }
+
+      if (!res.ok) {
+        console.error("[uploadImage] Server error:", data)
+        return { success: false, message: data?.message || `Upload failed with HTTP ${res.status}` }
+      }
+
       return data
     } catch (error) {
-      return { success: false, message: error.message }
+      const msg = error.name === "AbortError"
+        ? "Image upload timed out after 60 seconds"
+        : error.message
+      console.error("[uploadImage] fetch error:", msg)
+      return { success: false, message: msg }
     }
   },
 

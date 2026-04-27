@@ -34,7 +34,7 @@ function mapProduct(product, full = false) {
     categoryId: product.categoryId,
     category: product.category?.name ?? null,
     imageUrl: product.imageUrl ?? null,
-    images: product.images ? JSON.parse(product.images) : [],
+    images: Array.isArray(product.images) ? product.images : [],
     specs: product.specs ? JSON.parse(product.specs) : null,
     brand: product.brand,
     moq: product.moq,
@@ -79,101 +79,106 @@ function mapProduct(product, full = false) {
 export async function getAll(page = 1, pageSize = 20, filters = {}) {
   try {
     const skip = (page - 1) * pageSize
-
-    const where = { isActive: true }
-
-    if (filters.category) {
-      where.category = { name: { equals: filters.category } }
-    }
+    const take = pageSize
 
     // Sort configuration
     const sortField = ["createdAt", "price", "title"].includes(filters.sortBy) ? filters.sortBy : "createdAt"
-    const sortDir   = filters.sortOrder === "asc" ? "ASC" : "DESC"
-    const orderBy   = { [sortField]: filters.sortOrder ?? "desc" }
+    const sortDir = filters.sortOrder === "asc" ? "asc" : "desc"
+    const orderBy = { [sortField]: sortDir }
 
-    // ── Search path: use LOWER() for true case-insensitive MySQL search ──────
+    // Build the "where" clause for Prisma findMany
+    const where = { isActive: true }
+
+    // Handle category filter (support both ID and Name)
+    if (filters.category) {
+      // If it looks like a cuid, filter by ID, otherwise by Name
+      if (filters.category.length > 20) {
+        where.categoryId = filters.category
+      } else {
+        where.category = { name: { equals: filters.category } }
+      }
+    }
+
+    // Handle search filter
     if (filters.search) {
-      const term = `%${filters.search.trim().toLowerCase()}%`
-
-      const [rawItems, countResult] = await Promise.all([
-        prisma.$queryRaw`
-          SELECT p.id, p.title, p.price, p.stock, p.imageUrl,
-                 p.brand, p.moq, p.casePackSize,
-                 p.isActive, p.createdAt, p.updatedAt, p.categoryId,
-                 cat.name AS categoryName
-          FROM Product p
-          LEFT JOIN Category cat ON cat.id = p.categoryId
-          WHERE p.isActive = 1
-            AND (LOWER(p.title) LIKE ${term} OR LOWER(p.description) LIKE ${term})
-          ORDER BY p.createdAt DESC
-          LIMIT ${pageSize} OFFSET ${skip}
-        `,
-        prisma.$queryRaw`
-          SELECT COUNT(*) AS total FROM Product p
-          WHERE p.isActive = 1
-            AND (LOWER(p.title) LIKE ${term} OR LOWER(p.description) LIKE ${term})
-        `,
-      ])
-
-      const total = Number(countResult[0]?.total ?? 0)
-      const items = rawItems.map((p) => ({
-        id:         p.id,
-        title:      p.title,
-        price:      p.price,
-        stock:      p.stock,
-        inStock:    p.stock > 0,
-        imageUrl:   p.imageUrl ?? null,
-        brand:      p.brand,
-        moq:        p.moq,
-        casePackSize: p.casePackSize,
-        categoryId: p.categoryId,
-        category:   p.categoryName ?? null,
-        isActive:   Boolean(p.isActive),
-        createdAt:  p.createdAt,
-        updatedAt:  p.updatedAt,
-      }))
-
-      return { items, total }
+      const searchLower = filters.search.trim().toLowerCase()
+      where.OR = [
+        { title: { contains: searchLower } },
+        { description: { contains: searchLower } },
+        { brand: { contains: searchLower } }
+      ]
     }
 
-    // ── Non-search path: use indexed findMany (fast) ─────────────────────────
-    const select = {
-      id:          true,
-      title:       true,
-      price:       true,
-      stock:       true,
-      imageUrl:    true,
-      brand:       true,
-      moq:         true,
-      casePackSize: true,
-      isActive:    true,
-      createdAt:   true,
-      updatedAt:   true,
-      categoryId:  true,
-      category:    { select: { id: true, name: true } },
-    }
-
+    // Execute query
     const [rawItems, total] = await Promise.all([
-      prisma.product.findMany({ where, skip, take: pageSize, orderBy, select }),
+      prisma.product.findMany({
+        where,
+        skip,
+        take,
+        orderBy,
+        select: {
+          id: true,
+          title: true,
+          price: true,
+          stock: true,
+          imageUrl: true,
+          brand: true,
+          moq: true,
+          casePackSize: true,
+          categoryId: true,
+          isActive: true,
+          createdAt: true,
+          updatedAt: true,
+          category: { select: { id: true, name: true } },
+          bulkPrices: {
+            select: { minQuantity: true, maxQuantity: true, price: true, unit: true },
+            orderBy: { minQuantity: "asc" }
+          },
+          reviews: {
+            where: { status: "approved" },
+            select: { rating: true }
+          },
+          images: {
+            orderBy: { order: "asc" }
+          }
+        },
+      }),
       prisma.product.count({ where }),
     ])
 
-    const items = rawItems.map((p) => ({
-      id:         p.id,
-      title:      p.title,
-      price:      p.price,
-      stock:      p.stock,
-      inStock:    p.stock > 0,
-      imageUrl:   p.imageUrl ?? null,
-      brand:      p.brand,
-      moq:        p.moq,
-      casePackSize: p.casePackSize,
-      categoryId: p.categoryId,
-      category:   p.category?.name ?? null,
-      isActive:   p.isActive,
-      createdAt:  p.createdAt,
-      updatedAt:  p.updatedAt,
-    }))
+    // Map to response shape
+    const items = rawItems.map((p) => {
+      const approvedReviews = p.reviews || []
+      const avgRating = approvedReviews.length > 0
+        ? Math.round((approvedReviews.reduce((s, r) => s + r.rating, 0) / approvedReviews.length) * 10) / 10
+        : 4.5 // Fallback to 4.5 for better UI if no reviews yet
+
+      return {
+        id: p.id,
+        title: p.title,
+        price: p.price,
+        stock: p.stock,
+        inStock: p.stock > 0,
+        imageUrl: p.imageUrl ?? (p.images && p.images[0]?.url) ?? null,
+        images: p.images || [],
+        brand: p.brand,
+        moq: p.moq,
+        casePackSize: p.casePackSize,
+        categoryId: p.categoryId,
+        category: p.category?.name ?? null,
+        isActive: p.isActive,
+        createdAt: p.createdAt,
+        updatedAt: p.updatedAt,
+        rating: avgRating,
+        reviewCount: approvedReviews.length,
+        bulkPrices: p.bulkPrices?.map(bp => ({
+          minQuantity: bp.minQuantity,
+          maxQuantity: bp.maxQuantity,
+          price: bp.price,
+          unit: bp.unit,
+        })) ?? []
+      }
+    })
 
     return { items, total }
   } catch (error) {
@@ -195,6 +200,7 @@ export async function getById(productId) {
       where: { id: productId, isActive: true },
       include: {
         category: true,
+        images: { orderBy: { order: "asc" } },
         bulkPrices: { orderBy: { minQuantity: "asc" } },
         reviews: {
           where: { status: "approved" },

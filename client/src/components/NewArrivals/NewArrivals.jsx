@@ -1,6 +1,9 @@
 import { useState } from "react"
+import { useNavigate } from "react-router-dom"
+import { useQuery } from "@tanstack/react-query"
+import productsApi from "@/services/api/products.api"
+import { formatPrice } from "@/data/utils/pricing"
 import { FiStar, FiShoppingCart, FiHeart } from "react-icons/fi"
-import { products } from "../../data/mock/products"
 
 const colors = {
   darkBrown: "#4A3535",
@@ -203,10 +206,16 @@ const styles = {
 }
 
 export default function NewArrivals() {
+  const navigate = useNavigate()
   const [hoveredCard, setHoveredCard] = useState(null)
   const [hoveredButtons, setHoveredButtons] = useState({})
 
-  const newProducts = products.filter((product) => product.isNew).slice(0, 4)
+  const { data: productsResponse, isLoading } = useQuery({
+    queryKey: ["products", "new-arrivals"],
+    queryFn: () => productsApi.getAll(1, 4, { sortBy: "createdAt", sortOrder: "desc" }),
+  })
+
+  const newProducts = productsResponse?.data?.items || []
 
   const handleAddToCart = (productId) => {
     // Add to cart logic
@@ -227,6 +236,17 @@ export default function NewArrivals() {
             color={colors.logoOrange}
           />
         ))}
+      </div>
+    )
+  }
+
+  if (isLoading) {
+    return (
+      <div style={styles.container}>
+        <div style={styles.headerSection}>
+          <h2 style={styles.title}>New Arrivals</h2>
+          <p style={styles.subtitle}>Loading latest products...</p>
+        </div>
       </div>
     )
   }
@@ -266,11 +286,15 @@ export default function NewArrivals() {
             onMouseLeave={() => setHoveredCard(null)}
           >
             {/* Image Container */}
-            <div style={styles.imageContainer}>
+            <div 
+              style={styles.imageContainer}
+              onClick={() => navigate(`/product/${product.id}`)}
+            >
               <img
-                src={product.image}
-                alt={product.name}
+                src={product.imageUrl || "/images/placeholder.png"}
+                alt={product.title}
                 style={styles.productImage}
+                onError={(e) => { e.target.src = "/images/placeholder.png" }}
               />
               {product.isNew && <div style={styles.newBadge}>New</div>}
               {product.discount > 0 && (
@@ -280,23 +304,28 @@ export default function NewArrivals() {
 
             {/* Product Info */}
             <div style={styles.productInfo}>
-              <p style={styles.brand}>{product.brand}</p>
-              <h3 style={styles.productName}>{product.name}</h3>
+              <p style={styles.brand}>{product.brand || "Pepta"}</p>
+              <h3 
+                style={{ ...styles.productName, cursor: 'pointer' }}
+                onClick={() => navigate(`/product/${product.id}`)}
+              >
+                {product.title}
+              </h3>
 
               {/* Rating */}
               <div style={styles.ratingSection}>
                 {renderStars(product.rating)}
                 <span style={styles.ratingText}>
-                  ({product.reviews} reviews)
+                  ({product.reviewsCount || 0} reviews)
                 </span>
               </div>
 
               {/* Price */}
               <div style={styles.priceSection}>
-                <span style={styles.price}>₹{product.price.toLocaleString()}</span>
-                {product.originalPrice && (
+                <span style={styles.price}>{formatPrice(product.price)}</span>
+                {product.oldPrice && (
                   <span style={styles.originalPrice}>
-                    ₹{product.originalPrice.toLocaleString()}
+                    {formatPrice(product.oldPrice)}
                   </span>
                 )}
               </div>

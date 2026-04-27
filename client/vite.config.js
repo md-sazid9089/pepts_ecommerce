@@ -28,18 +28,23 @@ export default defineConfig({
         drop_debugger: true,
       },
     },
+    chunkSizeWarningLimit: 500,
     rollupOptions: {
       output: {
         manualChunks(id) {
-          // Core React — always needed
+          // React core — loaded on every page, cached indefinitely
           if (id.includes('node_modules/react/') || id.includes('node_modules/react-dom/')) {
             return 'react-core'
           }
-          // Router — needed on every page but separate from React
+          // React Router — needed on every page but separate chunk
           if (id.includes('node_modules/react-router')) {
             return 'react-router'
           }
-          // Large icon library — lazy load separately
+          // React Query — separate chunk so it can update independently
+          if (id.includes('node_modules/@tanstack')) {
+            return 'react-query'
+          }
+          // Icons — large library, rarely changes
           if (id.includes('node_modules/react-icons')) {
             return 'react-icons'
           }
@@ -47,7 +52,7 @@ export default defineConfig({
           if (id.includes('node_modules/framer-motion')) {
             return 'framer-motion'
           }
-          // All other node_modules go in a vendor chunk
+          // All other node_modules → vendor chunk
           if (id.includes('node_modules/')) {
             return 'vendor'
           }

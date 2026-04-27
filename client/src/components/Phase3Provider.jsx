@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Phase 3 Provider Component
  * Initializes PWA, Web Vitals monitoring, and analytics
  * Should be wrapped around the app in layout.jsx
@@ -15,10 +15,7 @@ export function Phase3Provider({ children }) {
   const webVitals = useWebVitals();
 
   useEffect(() => {
-    // Log initialization
-    console.log('[Phase 3] PWA & Web Vitals Initialized');
-    console.log('[Phase 3] Online Status:', pwa.isOnline);
-    console.log('[Phase 3] Installable:', pwa.isInstallable);
+    // PWA & Web Vitals are now active — no-op render
   }, [pwa.isOnline, pwa.isInstallable]);
 
   return <>{children}</>;

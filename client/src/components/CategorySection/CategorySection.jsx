@@ -1,4 +1,7 @@
 import { useState, useEffect } from "react"
+import { useNavigate } from "react-router-dom"
+import { useQuery } from "@tanstack/react-query"
+import categoriesApi from "@/services/api/categories.api"
 
 // ====================================
 // THEME COLORS
@@ -133,6 +136,7 @@ const styles = {
 
 
 export default function CategorySection() {
+  const navigate = useNavigate()
   const [hoveredCard, setHoveredCard] = useState(null)
   const [hoveredViewAll, setHoveredViewAll] = useState(false)
   const [windowWidth, setWindowWidth] = useState(typeof window !== "undefined" ? window.innerWidth : 1024)
@@ -143,38 +147,12 @@ export default function CategorySection() {
     return () => window.removeEventListener("resize", handleResize)
   }, [])
 
-  const categories = [
-    {
-      id: 1,
-      name: "Action Figures",
-      imgUrl: "/images/categories/catagoryactionfigure.png",
-    },
-    {
-      id: 2,
-      name: "RC Toys",
-      imgUrl: "/images/categories/rccatagory.png",
-    },
-    {
-      id: 3,
-      name: "Dolls",
-      imgUrl: "/images/categories/dollcatagory.png",
-    },
-    {
-      id: 4,
-      name: "Building Sets",
-      imgUrl: "/images/categories/toycatagory.png",
-    },
-    {
-      id: 5,
-      name: "Collectibles",
-      imgUrl: "/images/categories/catagoryactionfigure.png",
-    },
-    {
-      id: 6,
-      name: "Toy Cars",
-      imgUrl: "/images/categories/rccatagory.png",
-    },
-  ]
+  const { data: categoriesResponse, isLoading } = useQuery({
+    queryKey: ["categories", "home-section"],
+    queryFn: () => categoriesApi.getAll(),
+  })
+
+  const categories = categoriesResponse?.data?.slice(0, 6) || []
 
   const getCardStyle = () => {
     if (windowWidth < 640) {
@@ -185,12 +163,12 @@ export default function CategorySection() {
     return styles.cardWrapper
   }
 
-  const handleCategoryClick = (categoryId, categoryName) => {
-    // Navigate to category
+  const handleCategoryClick = (categoryId) => {
+    navigate(`/products?category=${categoryId}`)
   }
 
   const handleViewAll = () => {
-    // Navigate to all categories
+    navigate("/categories")
   }
 
   return (
@@ -222,7 +200,7 @@ export default function CategorySection() {
               ...getCardStyle(),
               ...(hoveredCard === category.id ? styles.cardWrapperHover : {}),
             }}
-            onClick={() => handleCategoryClick(category.id, category.name)}
+            onClick={() => handleCategoryClick(category.id)}
             onMouseEnter={() => setHoveredCard(category.id)}
             onMouseLeave={() => setHoveredCard(null)}
             role="button"
@@ -230,7 +208,7 @@ export default function CategorySection() {
             aria-label={`Shop ${category.name}`}
             onKeyPress={(e) => {
               if (e.key === "Enter" || e.key === " ") {
-                handleCategoryClick(category.id, category.name)
+                handleCategoryClick(category.id)
               }
             }}
           >
@@ -241,9 +219,10 @@ export default function CategorySection() {
               }}
             >
               <img
-                src={category.imgUrl}
+                src={category.icon || "/images/placeholder.png"}
                 alt={category.name}
                 style={styles.image}
+                onError={(e) => { e.target.src = "/images/placeholder.png" }}
               />
             </div>
 

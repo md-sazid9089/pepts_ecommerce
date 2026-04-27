@@ -59,11 +59,7 @@ export function useWebVitals() {
 
       // Always log to console
       const style = getMetricStyle(data.rating);
-      console.log(
-        `%c[Web Vitals] ${name}: ${data.value.toFixed(2)}ms (${data.rating})`,
-        style,
-        data
-      );
+      // Console logging removed for production cleanup
 
       // Send to telemetry in production
       if (!isDev) {
@@ -214,9 +210,7 @@ export function useWebVitals() {
         return;
       }
 
-      console.group('[Web Vitals] Session Summary');
-      console.table(metrics);
-      console.groupEnd();
+      // Session summary logging removed for production cleanup
 
       // Send comprehensive telemetry
       if (process.env.NODE_ENV !== 'development') {

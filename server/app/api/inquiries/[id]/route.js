@@ -1,14 +1,15 @@
 /**
  * ============================================================================
- * INQUIRIES BY ID — Admin Update
- * PATCH /api/inquiries/:id  — update status/notes (admin only)
+ * INQUIRY MANAGEMENT
+ * GET    /api/inquiries/:id — get inquiry details (admin)
+ * PUT    /api/inquiries/:id — update inquiry (admin)
+ * DELETE /api/inquiries/:id — delete inquiry (admin)
  * ============================================================================
  */
 
 import jwt from "jsonwebtoken"
 import apiResponse from "@/src/utils/apiResponse"
 import * as inquiriesService from "@/src/services/inquiries.service"
-import { updateInquirySchema } from "@/src/validators/inquiry.validator"
 
 function verifyJwt(request) {
   const authHeader = request.headers.get("authorization")
@@ -24,34 +25,22 @@ function verifyJwt(request) {
   }
 }
 
-export async function PATCH(request, { params }) {
+export async function PUT(request, { params }) {
   try {
     const user = verifyJwt(request)
     if (!user) return apiResponse.unauthorized("Authentication required")
     if (user.role !== "admin") return apiResponse.forbidden("Admin access required")
 
     const { id } = await params
-    if (!id) return apiResponse.error("Invalid inquiry ID", 400)
+    const body = await request.json()
 
-    let body
-    try {
-      body = await request.json()
-    } catch {
-      return apiResponse.error("Invalid JSON in request body", 400)
-    }
-
-    const parsed = updateInquirySchema.safeParse(body)
-    if (!parsed.success) {
-      const errors = {}
-      parsed.error.errors.forEach((e) => { errors[e.path.join(".")] = e.message })
-      return apiResponse.validationError("Validation failed", errors)
-    }
-
-    const inquiry = await inquiriesService.updateInquiry(id, parsed.data)
-    return apiResponse.success(inquiry, "Inquiry updated successfully")
+    const updated = await inquiriesService.updateInquiry(id, body)
+    return apiResponse.success(updated, "Inquiry updated successfully")
   } catch (error) {
-    if (error.code === "NOT_FOUND") return apiResponse.notFound(error.message)
-    console.error("PATCH /api/inquiries/:id error:", error)
+    if (error.code === "NOT_FOUND") {
+      return apiResponse.notFound(error.message)
+    }
+    console.error("PUT /api/inquiries/:id error:", error)
     return apiResponse.serverError("Failed to update inquiry", error)
   }
 }

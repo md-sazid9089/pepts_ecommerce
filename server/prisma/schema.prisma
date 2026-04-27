@@ -1,8 +1,6 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
-  provider = "prisma-client-js"
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "rhel-openssl-1.0.x"]
 }
 
 datasource db {
@@ -10,211 +8,164 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// ============================================================================
-// USERS MODEL
-// ============================================================================
-// Stores admin and customer user accounts
 model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  password  String   // Hashed password
+  id        String    @id @default(cuid())
+  email     String    @unique
+  password  String
   firstName String?
   lastName  String?
-  role      String   @default("customer") // customer, admin, vendor
-  isActive  Boolean  @default(true)
-  
-  // Relations
+  role      String    @default("customer")
+  isActive  Boolean   @default(true)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
   inquiries Inquiry[]
   orders    Order[]
-  
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
 }
 
-// ============================================================================
-// PRODUCT MODEL
-// ============================================================================
-// Stores product information
 model Product {
-  id          String   @id @default(cuid())
-  title       String
-  description String
-  price       Float    // Retail price
-  stock       Int      @default(0)
-  imageUrl    String?  // Primary Cloudinary image URL
-  images      String?  @db.Text // JSON array of additional image URLs
-  specs       String?  @db.Text // JSON: { height, material, clothing, package, tier, ... }
-
-  // B2B / Wholesale Fields
-  brand       String?
-  moq         Int      @default(1)
+  id           String      @id @default(cuid())
+  title        String
+  description  String
+  price        Float
+  stock        Int         @default(0)
+  categoryId   String
+  isActive     Boolean     @default(true)
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+  imageUrl     String?
+  specs        String?     @db.Text
+  brand        String?
   casePackSize Int?
+  moq          Int         @default(1)
+  bulkPrices   BulkPrice[]
+  orderItems   OrderItem[]
+  category     Category       @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  reviews      Review[]
+  images       ProductImage[]
 
-  // Foreign keys
-  categoryId  String
-  category    Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
-
-  // Relations
-  bulkPrices  BulkPrice[]
-  orderItems  OrderItem[]
-  reviews     Review[]
-
-  isActive    Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  // Indexes for frequent query patterns
-  @@index([isActive, createdAt])   // Default list: active products sorted by date
-  @@index([isActive, price])       // Price-sorted product lists
-  @@index([categoryId, isActive])  // Category filter
-  @@index([title])                 // Search by title
+  @@index([isActive, createdAt])
+  @@index([isActive, price])
+  @@index([categoryId, isActive])
+  @@index([title])
 }
 
-// ============================================================================
-// CATEGORY MODEL
-// ============================================================================
-// Stores product categories
 model Category {
-  id          String   @id @default(cuid())
-  name        String   @unique
+  id          String    @id @default(cuid())
+  name        String    @unique
   description String?
-  icon        String?  // Icon/image filename
-  
-  // Relations
+  icon        String?
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
   products    Product[]
-  
-  isActive    Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
 }
 
-// ============================================================================
-// BULK PRICING MODEL (B2B CRITICAL)
-// ============================================================================
-// Stores tiered pricing for wholesale/bulk orders
 model BulkPrice {
   id          String   @id @default(cuid())
   productId   String
-  product     Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
-  
-  minQuantity Int      // Minimum quantity for this price tier
-  maxQuantity Int?     // Maximum quantity for this tier (null = unlimited)
-  price       Float    // Price per unit at this tier
-  unit        String   @default("per unit") // e.g. "per piece", "per set"
-  discount    Float?   // Discount percentage (optional)
-  
+  minQuantity Int
+  price       Float
+  discount    Float?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
-  
+  maxQuantity Int?
+  unit        String   @default("per unit")
+  product     Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
   @@unique([productId, minQuantity])
 }
 
-// ============================================================================
-// ORDER MODEL
-// ============================================================================
-// Stores customer orders
 model Order {
-  id          String   @id @default(cuid())
-  orderNumber String   @unique
-  
-  userId      String
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
-  status      String   @default("pending") // pending, processing, shipped, completed, cancelled
-  totalAmount Float
-  
-  // Relations
-  items       OrderItem[]
-  
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id              String      @id @default(cuid())
+  orderNumber     String      @unique
+  userId          String
+  status          String      @default("pending")
+  totalAmount     Float
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+  companyName     String?
+  contactEmail    String?
+  contactName     String?
+  contactPhone    String?
+  notes           String?     @db.Text
+  shippingAddress String?     @db.Text
+  user            User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items           OrderItem[]
+
+  @@index([userId], map: "Order_userId_fkey")
 }
 
-// ============================================================================
-// ORDER ITEM MODEL
-// ============================================================================
-// Individual items in an order
 model OrderItem {
   id        String   @id @default(cuid())
   orderId   String
-  order     Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  
   productId String
-  product   Product  @relation(fields: [productId], references: [id], onDelete: Restrict)
-  
   quantity  Int
   unitPrice Float
-  
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  order     Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product   Product  @relation(fields: [productId], references: [id])
+
+  @@index([orderId], map: "OrderItem_orderId_fkey")
+  @@index([productId], map: "OrderItem_productId_fkey")
 }
 
-// ============================================================================
-// INQUIRY MODEL (B2B CRITICAL)
-// ============================================================================
-// Stores wholesale/B2B inquiries and lead generation
 model Inquiry {
-  id        String   @id @default(cuid())
-  
-  userId    String?
-  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
-  
-  companyName   String
-  contactEmail  String
-  contactPhone  String?
-  
-  // Product inquiry details
-  productId     String?
-  productName   String
+  id                String   @id @default(cuid())
+  userId            String?
+  companyName       String
+  contactEmail      String
+  contactPhone      String?
+  productId         String?
+  productName       String
   requestedQuantity Int
-  
-  // Inquiry metadata
-  message       String?
-  status        String   @default("new") // new, replied, converted, lost
-  
-  // Admin notes
-  notes         String?
-  assignedTo    String?  // Admin user ID
-  
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  message           String?
+  status            String   @default("new")
+  notes             String?
+  assignedTo        String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  user              User?    @relation(fields: [userId], references: [id])
+
+  @@index([userId], map: "Inquiry_userId_fkey")
 }
 
-// ============================================================================
-// REVIEW MODEL
-// ============================================================================
-// Stores product reviews
 model Review {
   id        String   @id @default(cuid())
   productId String
-  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
-  
-  rating    Int      // 1-5
+  rating    Int
   title     String
   comment   String
-  
-  email     String?  // Reviewer email
-  status    String   @default("pending") // pending, approved, rejected
-  
+  email     String?
+  status    String   @default("pending")
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([productId, status])
+  @@index([productId], map: "Review_productId_fkey")
 }
 
-// ============================================================================
-// PROMO CODE MODEL (Optional - for future use)
-// ============================================================================
 model PromoCode {
+  id           String    @id @default(cuid())
+  code         String    @unique
+  discount     Float
+  discountType String    @default("percentage")
+  maxUses      Int?
+  usedCount    Int       @default(0)
+  expiresAt    DateTime?
+  isActive     Boolean   @default(true)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+}
+
+model ProductImage {
   id        String   @id @default(cuid())
-  code      String   @unique
-  discount  Float    // Discount percentage or amount
-  discountType String @default("percentage") // percentage, fixed
-  
-  maxUses   Int?     // Maximum times code can be used
-  usedCount Int      @default(0)
-  
-  expiresAt DateTime?
-  isActive  Boolean  @default(true)
-  
+  url       String
+  order     Int      @default(0)
+  productId String
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+
+  @@index([productId])
 }

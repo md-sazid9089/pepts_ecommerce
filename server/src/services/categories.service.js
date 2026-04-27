@@ -50,4 +50,47 @@ export async function getByName(name) {
   }
 }
 
-export default { getAll, getByName }
+/**
+ * Create a new category
+ * @param {object} data - { name, description, icon }
+ * @returns {Promise<object>} created category
+ */
+export async function create(data) {
+  try {
+    const existing = await prisma.category.findUnique({
+      where: { name: data.name },
+    })
+
+    if (existing) {
+      throw new Error(`Category with name "${data.name}" already exists`)
+    }
+
+    return await prisma.category.create({
+      data: {
+        name: data.name,
+        description: data.description || null,
+        icon: data.icon || null,
+      },
+    })
+  } catch (error) {
+    throw error
+  }
+}
+
+/**
+ * Delete a category (soft delete)
+ * @param {string} id
+ * @returns {Promise<object>}
+ */
+export async function deleteCategory(id) {
+  try {
+    return await prisma.category.update({
+      where: { id },
+      data: { isActive: false },
+    })
+  } catch (error) {
+    throw new Error(`Failed to delete category: ${error.message}`)
+  }
+}
+
+export default { getAll, getByName, create, deleteCategory }

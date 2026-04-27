@@ -1,4 +1,6 @@
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect, useCallback, useMemo, memo } from "react"
+import { useQueryClient } from '@tanstack/react-query'
+import { queryKeys } from '@/lib/queryKeys'
 import { productsApi, ordersApi, inquiriesApi, categoriesApi, reviewsApi } from "@/services/api"
 import AdminLogin from "./AdminLogin"
 import {
@@ -602,10 +604,6 @@ export default function AdminDashboard() {
   const [adminUser, setAdminUser] = useState(() => {
     try { return JSON.parse(localStorage.getItem('pepta_admin_session')) } catch { return null }
   })
-
-  if (!adminUser) {
-    return <AdminLogin onLogin={(u) => setAdminUser(u)} />
-  }
   // ───────────────────────────────────────────────────────────────────────────
   const [activePage, setActivePage] = useState("dashboard")
   const [sidebarOpen, setSidebarOpen] = useState(false)
@@ -613,6 +611,7 @@ export default function AdminDashboard() {
   const [hoveredTableRow, setHoveredTableRow] = useState(null)
   const [products, setProducts] = useState([])
   const [loadingProducts, setLoadingProducts] = useState(false)
+  const adminQueryClient = useQueryClient()
 
   const [stats, setStats] = useState([
     { label: "Total Orders", value: "0", change: "...", icon: FaShoppingCart, bgColor: colors.info },
@@ -625,6 +624,7 @@ export default function AdminDashboard() {
 
   // Fetch real dashboard data
   useEffect(() => {
+    if (!adminUser) return // don't fetch if not logged in
     const fetchDashboardData = async () => {
       try {
         // 1. Fetch Orders & Revenue
@@ -671,7 +671,7 @@ export default function AdminDashboard() {
     if (activePage === "dashboard") {
       fetchDashboardData()
     }
-  }, [activePage])
+  }, [activePage, adminUser])
   const defaultPricingRow = () => ({ min: "", max: "", price: "", unit: "per unit" })
   const [productForm, setProductForm] = useState({
     title: "",
@@ -696,8 +696,8 @@ export default function AdminDashboard() {
   }
   const addPricingRow = () => setPricingRows((prev) => [...prev, defaultPricingRow()])
   const removePricingRow = (index) => setPricingRows((prev) => prev.filter((_, i) => i !== index))
-  const [imageFile, setImageFile] = useState(null)
-  const [imagePreview, setImagePreview] = useState(null)
+  const [imageFiles, setImageFiles] = useState([])
+  const [imagePreviewUrls, setImagePreviewUrls] = useState([])
   const [uploadingImage, setUploadingImage] = useState(null) // productId being uploaded
   const [uploadImageFile, setUploadImageFile] = useState({}) // { [productId]: File }
   const [formMessage, setFormMessage] = useState("")
@@ -705,93 +705,77 @@ export default function AdminDashboard() {
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   // Responsive — recalculate on window resize instead of every render
-  const [isMobile, setIsMobile] = useState(() => window.innerWidth < 768)
+  const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' ? window.innerWidth < 768 : false)
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 768)
     window.addEventListener("resize", handleResize, { passive: true })
     return () => window.removeEventListener("resize", handleResize)
   }, [])
 
-  const navigationItems = [
-    { id: "dashboard", label: "Dashboard", icon: FaChartLine },
-    { id: "products", label: "Products", icon: FaBox },
-    { id: "categories", label: "Categories", icon: FaList },
-    { id: "bulk-pricing", label: "Bulk Pricing", icon: FaMoneyBillWave },
-    { id: "orders", label: "Orders", icon: FaShoppingCart },
-    { id: "inquiries", label: "Inquiries", icon: FaInbox },
-    { id: "users", label: "Users", icon: FaUsers },
-    { id: "reviews", label: "Reviews", icon: FaStar },
-    { id: "settings", label: "Settings", icon: FaCog },
-  ]
-
-  useEffect(() => {
-    if (activePage !== "products") return
-
-    const fetchProducts = async () => {
-      setLoadingProducts(true)
-      setFormError("")
-      try {
-        const response = await productsApi.getAll(1, 100)
-        if (response.success) {
-          setProducts(response.data?.items || [])
-        } else {
-          setFormError(response.message || "Failed to load products")
-        }
-      } catch (error) {
-        setFormError(error.message || "Failed to load products")
-      } finally {
-        setLoadingProducts(false)
-      }
-    }
-
-    fetchProducts()
-  }, [activePage])
-
-  const handleFormChange = (field) => (event) => {
+  const handleFormChange = useCallback((field) => (event) => {
     setProductForm((prev) => ({
       ...prev,
       [field]: event.target.value,
     }))
-  }
+  }, [])
 
-  const handleImageFileChange = (e) => {
-    const file = e.target.files[0]
-    if (!file) return
-    setImageFile(file)
-    setImagePreview(URL.createObjectURL(file))
-  }
+  const handleImageFileChange = useCallback((e) => {
+    const files = Array.from(e.target.files)
+    if (files.length === 0) return
+    if (files.length > 10) {
+      alert("Maximum 10 images allowed")
+      return
+    }
+    setImageFiles(files)
+    setImagePreviewUrls(files.map(f => URL.createObjectURL(f)))
+  }, [])
 
-  const handleUploadImageForProduct = async (productId) => {
-    const file = uploadImageFile[productId]
-    if (!file) return
+  const handleUploadImageForProduct = useCallback(async (productId) => {
+    const files = uploadImageFile[productId]
+    if (!files || files.length === 0) {
+      alert("Please select files first")
+      return
+    }
+    
     const token = localStorage.getItem("authToken")
+    if (!token) {
+      alert("Authentication token missing. Please log in again.")
+      return
+    }
+
     setUploadingImage(productId)
     try {
-      const res = await productsApi.uploadImage(productId, file, token)
-      if (res.success) {
+      const res = await productsApi.uploadImage(productId, files, token)
+      
+      if (res.success && res.data) {
         setProducts((prev) =>
           prev.map((p) =>
             p.id === productId ? { ...p, imageUrl: res.data.imageUrl } : p
           )
         )
         setUploadImageFile((prev) => ({ ...prev, [productId]: null }))
+        // Invalidate React Query cache so storefront reflects new image
+        adminQueryClient.invalidateQueries({ queryKey: queryKeys.products.all })
+        adminQueryClient.invalidateQueries({ queryKey: queryKeys.products.detail(productId) })
+        alert("Image uploaded successfully!")
       } else {
-        alert(res.message || "Image upload failed")
+        console.error("[Admin] Upload failed:", res.message)
+        alert(`Upload failed: ${res.message || "Unknown error"}`)
       }
     } catch (e) {
-      alert(e.message)
+      console.error("[Admin] Upload exception:", e)
+      alert(`System error: ${e.message}`)
     } finally {
       setUploadingImage(null)
     }
-  }
+  }, [uploadImageFile, adminQueryClient])
 
-  const handleCreateProduct = async (event) => {
+  const handleCreateProduct = useCallback(async (event) => {
     event.preventDefault()
     setFormError("")
     setFormMessage("")
     setIsSubmitting(true)
 
-    // Build tieredPricing from rows (filter out empty rows)
     const tieredPricing = pricingRows
       .filter((row) => row.min !== "" && row.price !== "")
       .map((row) => ({
@@ -801,7 +785,6 @@ export default function AdminDashboard() {
         unit: row.unit || "per unit",
       }))
 
-
     try {
       const specs = {
         height:   productForm.specHeight.trim()   || undefined,
@@ -810,7 +793,6 @@ export default function AdminDashboard() {
         package:  productForm.specPackage.trim()  || undefined,
         tier:     productForm.specTier.trim()     || undefined,
       }
-      // Remove undefined keys so we only send filled fields
       Object.keys(specs).forEach((k) => specs[k] === undefined && delete specs[k])
 
       const response = await productsApi.create({
@@ -827,6 +809,11 @@ export default function AdminDashboard() {
       })
 
       if (!response.success) {
+        if (response.message?.includes("timed out") || response.code === 408) {
+          setFormMessage("⚠️ Request timed out (slow database connection). The product was likely saved — please refresh to confirm, then upload the image separately if needed.")
+          setIsSubmitting(false)
+          return
+        }
         setFormError(response.message || response.error?.message || "Unable to create product")
         setIsSubmitting(false)
         return
@@ -834,48 +821,84 @@ export default function AdminDashboard() {
 
       const newProductId = response.data?.id
 
-      // If an image was selected, upload it now
-      if (imageFile && newProductId) {
+      if (imageFiles.length > 0 && newProductId) {
         const token = localStorage.getItem("authToken")
-        const imgRes = await productsApi.uploadImage(newProductId, imageFile, token)
-        if (!imgRes.success) {
-          setFormMessage(`Product created, but image upload failed: ${imgRes.message}`)
+        if (!token) {
+          setFormMessage("Product created ✅, but image upload skipped (no auth token found — please log out and log in again).")
         } else {
-          setFormMessage("Product created and image uploaded successfully! ✅")
+          const imgRes = await productsApi.uploadImage(newProductId, imageFiles, token)
+          if (!imgRes.success) {
+            setFormError(`❌ Image upload failed: ${imgRes.message || "Unknown error"}`)
+            setFormMessage("Product was created, but image was NOT saved. See error above.")
+          } else {
+            setFormMessage("✅ Product created and images uploaded successfully!")
+          }
         }
       } else {
         setFormMessage("Product created successfully.")
       }
 
       setProductForm({
-        title: "",
-        brand: "",
-        description: "",
-        price: "",
-        stock: "",
-        categoryName: "General",
-        moq: "",
-        casePackSize: "",
-        specHeight: "",
-        specMaterial: "",
-        specClothing: "",
-        specPackage: "",
-        specTier: "",
+        title: "", brand: "", description: "", price: "", stock: "", categoryName: "General",
+        moq: "", casePackSize: "", specHeight: "", specMaterial: "", specClothing: "", specPackage: "", specTier: "",
       })
       setPricingRows([defaultPricingRow()])
-      setImageFile(null)
-      setImagePreview(null)
+      setImageFiles([])
+      setImagePreviewUrls([])
 
       const refreshed = await productsApi.getAll(1, 100)
-      if (refreshed.success) {
-        setProducts(refreshed.data?.items || [])
-      }
+      if (refreshed.success) setProducts(refreshed.data?.items || [])
+      adminQueryClient.invalidateQueries({ queryKey: queryKeys.products.all })
     } catch (error) {
       setFormError(error.message || "Unable to create product")
     } finally {
       setIsSubmitting(false)
     }
+  }, [productForm, pricingRows, imageFiles, adminQueryClient])
+
+  // ───────────────────────────────────────────────────────────────────────────
+  // ───────────────────────────────────────────────────────────────────────────
+
+  const navigationItems = useMemo(() => [
+    { id: "dashboard", label: "Dashboard", icon: FaChartLine },
+    { id: "products", label: "Products", icon: FaBox },
+    { id: "categories", label: "Categories", icon: FaList },
+    { id: "bulk-pricing", label: "Bulk Pricing", icon: FaMoneyBillWave },
+    { id: "orders", label: "Orders", icon: FaShoppingCart },
+    { id: "inquiries", label: "Inquiries", icon: FaInbox },
+    { id: "users", label: "Users", icon: FaUsers },
+    { id: "reviews", label: "Reviews", icon: FaStar },
+    { id: "settings", label: "Settings", icon: FaCog },
+  ], [])
+
+  const fetchProducts = useCallback(async () => {
+    setLoadingProducts(true)
+    setFormError("")
+    try {
+      const response = await productsApi.getAll(1, 100)
+      if (response.success) {
+        setProducts(response.data?.items || [])
+      } else {
+        setFormError(response.message || "Failed to load products")
+      }
+    } catch (error) {
+      setFormError(error.message || "Failed to load products")
+    } finally {
+      setLoadingProducts(false)
+    }
+  }, [])
+
+  useEffect(() => {
+    if (activePage === "products") {
+      fetchProducts()
+    }
+  }, [activePage, fetchProducts])
+
+  // ── Admin login gate — MOVED AFTER HOOKS to avoid React Hook mismatch ───
+  if (!adminUser) {
+    return <AdminLogin onLogin={(u) => setAdminUser(u)} />
   }
+  // ───────────────────────────────────────────────────────────────────────────
 
   return (
     <div style={{ ...styles.container, ...(isMobile ? styles.containerMobile : {}) }}>
@@ -1405,8 +1428,8 @@ export default function AdminDashboard() {
 
               {/* Image Upload */}
               <div style={styles.formGroup}>
-                <label style={styles.formLabel} htmlFor="productImage">Product Image (Cloudinary)</label>
-                <div style={{ display: "flex", alignItems: "center", gap: "1rem", flexWrap: "wrap" }}>
+                <label style={styles.formLabel} htmlFor="productImage">Product Images (Cloudinary)</label>
+                <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
                   <label
                     htmlFor="productImage"
                     style={{
@@ -1415,36 +1438,51 @@ export default function AdminDashboard() {
                       border: "2px dashed #533638", cursor: "pointer",
                       color: "#533638", fontWeight: 600, fontSize: "0.9rem",
                       backgroundColor: "#FFF5F5", transition: "all 0.2s",
+                      width: "fit-content"
                     }}
                   >
-                    📷 {imageFile ? imageFile.name : "Choose Image"}
+                    📷 {imageFiles.length > 0 ? `${imageFiles.length} Images Selected` : "Choose Images"}
                     <input
                       id="productImage"
                       type="file"
                       accept="image/jpeg,image/png,image/webp,image/gif"
+                      multiple
                       style={{ display: "none" }}
                       onChange={handleImageFileChange}
                     />
                   </label>
-                  {imagePreview && (
-                    <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
-                      <img
-                        src={imagePreview}
-                        alt="Preview"
-                        style={{ width: 64, height: 64, objectFit: "cover", borderRadius: "0.5rem", border: "1px solid #E5E7EB" }}
-                      />
-                      <button
-                        type="button"
-                        onClick={() => { setImageFile(null); setImagePreview(null) }}
-                        style={{ background: "#fee2e2", border: "none", color: "#991b1b", borderRadius: "0.375rem", padding: "0.3rem 0.6rem", cursor: "pointer", fontSize: "0.8rem" }}
-                      >
-                        ✕ Remove
-                      </button>
+                  {imagePreviewUrls.length > 0 && (
+                    <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap" }}>
+                      {imagePreviewUrls.map((url, idx) => (
+                        <div key={idx} style={{ position: "relative" }}>
+                          <img
+                            src={url}
+                            alt={`Preview ${idx + 1}`}
+                            style={{ width: 64, height: 64, objectFit: "cover", borderRadius: "0.5rem", border: "1px solid #E5E7EB" }}
+                          />
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setImageFiles(prev => prev.filter((_, i) => i !== idx));
+                              setImagePreviewUrls(prev => prev.filter((_, i) => i !== idx));
+                            }}
+                            style={{
+                              position: "absolute", top: -5, right: -5,
+                              background: "#fee2e2", border: "none", color: "#991b1b",
+                              borderRadius: "50%", width: 20, height: 20,
+                              display: "flex", alignItems: "center", justifyContent: "center",
+                              cursor: "pointer", fontSize: "0.7rem", fontWeight: "bold"
+                            }}
+                          >
+                            ×
+                          </button>
+                        </div>
+                      ))}
                     </div>
                   )}
                 </div>
                 <p style={{ fontSize: "0.8rem", color: "#6b7280", marginTop: "0.25rem" }}>
-                  JPG, PNG, WebP or GIF · Max 10MB · Will be uploaded to Cloudinary automatically
+                  JPG, PNG, WebP or GIF · Max 10MB per image · Up to 10 images · Will be uploaded to Cloudinary automatically
                 </p>
               </div>
 
@@ -1503,15 +1541,16 @@ export default function AdminDashboard() {
                                   fontSize: "0.78rem", fontWeight: 600, whiteSpace: "nowrap",
                                 }}
                               >
-                                {uploadImageFile[product.id] ? "✓ Ready" : "📷 Choose"}
+                                {uploadImageFile[product.id] ? `${uploadImageFile[product.id].length} Files` : "📷 Choose"}
                                 <input
                                   id={`img-${product.id}`}
                                   type="file"
                                   accept="image/jpeg,image/png,image/webp"
+                                  multiple
                                   style={{ display: "none" }}
                                   onChange={(e) => {
-                                    const file = e.target.files[0]
-                                    if (file) setUploadImageFile((prev) => ({ ...prev, [product.id]: file }))
+                                    const files = Array.from(e.target.files)
+                                    if (files.length > 0) setUploadImageFile((prev) => ({ ...prev, [product.id]: files }))
                                   }}
                                 />
                               </label>
@@ -1584,7 +1623,7 @@ const tbl = {
   btn: { padding:'0.4rem 0.9rem', borderRadius:'0.375rem', border:'none', cursor:'pointer', fontSize:'0.8rem', fontWeight:600 },
 }
 
-function OrdersSection() {
+const OrdersSection = memo(function OrdersSection() {
   const [orders, setOrders] = useState([])
   const [loading, setLoading] = useState(true)
   const statusColors = { pending:'#f59e0b', processing:'#3b82f6', shipped:'#8b5cf6', completed:'#10b981', cancelled:'#ef4444' }
@@ -1610,9 +1649,9 @@ function OrdersSection() {
       )}
     </div>
   )
-}
+})
 
-function InquiriesSection() {
+const InquiriesSection = memo(function InquiriesSection() {
   const [inquiries, setInquiries] = useState([])
   const [loading, setLoading] = useState(true)
   const statusColors = { new:'#f59e0b', replied:'#10b981', closed:'#6b7280' }
@@ -1643,9 +1682,9 @@ function InquiriesSection() {
       )}
     </div>
   )
-}
+})
 
-function CategoriesSection() {
+const CategoriesSection = memo(function CategoriesSection() {
   const [cats, setCats] = useState([])
   const [loading, setLoading] = useState(true)
   const [newCat, setNewCat] = useState('')
@@ -1681,9 +1720,9 @@ function CategoriesSection() {
       )}
     </div>
   )
-}
+})
 
-function ReviewsSection() {
+const ReviewsSection = memo(function ReviewsSection() {
   const [reviews, setReviews] = useState([])
   const [loading, setLoading] = useState(true)
   useEffect(() => {
@@ -1722,9 +1761,9 @@ function ReviewsSection() {
       )}
     </div>
   )
-}
+})
 
-function UsersSection() {
+const UsersSection = memo(function UsersSection() {
   const [users, setUsers] = useState([])
   const [loading, setLoading] = useState(true)
   useEffect(() => {
@@ -1752,7 +1791,7 @@ function UsersSection() {
       )}
     </div>
   )
-}
+})
 
 function BulkPricingSection() {
   return (
