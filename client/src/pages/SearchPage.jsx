@@ -2,6 +2,7 @@ import { useSearchParams, Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import productsApi from '@/services/api/products.api'
 import ProductCard from '@/components/ProductCard/ProductCard'
+import ProductGridSkeleton from '@/components/skeletons/ProductGridSkeleton'
 import { queryKeys } from '@/lib/queryKeys'
 import { FiSearch, FiArrowLeft, FiFilter } from 'react-icons/fi'
 
@@ -146,9 +147,8 @@ export default function SearchPage() {
 
       <main style={styles.content}>
         {loading ? (
-          <div style={styles.loadingContainer}>
-            <div style={styles.loader} />
-            <p style={{ marginTop: '20px', color: '#533638', fontWeight: 600 }}>Searching our wholesale catalog...</p>
+          <div style={{ padding: '2rem 0' }}>
+            <ProductGridSkeleton count={6} />
           </div>
         ) : error ? (
           <div style={styles.errorContainer}>

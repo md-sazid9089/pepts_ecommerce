@@ -68,7 +68,7 @@ function AppInner() {
               <Header />
               <ScrollToTop />
 
-              <main className="flex-grow flex flex-col">
+              <main className="grow flex flex-col">
                 <Suspense fallback={<PageLoader />}>
                   {/*
                     key={location.key} forces a full remount of the matched route

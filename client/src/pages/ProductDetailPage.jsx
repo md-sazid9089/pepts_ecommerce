@@ -1,8 +1,9 @@
 import { useState, useEffect, useMemo, useCallback } from "react"
 import { useParams, useNavigate } from "react-router-dom"
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { queryKeys } from '@/lib/queryKeys'
 import { imagePresets } from '@/utils/imageUtils'
+import ProductDetailSkeleton from '@/components/skeletons/ProductDetailSkeleton'
 import {
   FaChevronLeft,
   FaChevronRight,
@@ -427,9 +428,9 @@ const overviewPoints = [
 
 export default function ProductDetailPage() {
   const { id } = useParams()
-  console.log('ID ON MOUNT:', id);
-  console.log('STEP 1 - ID from URL:', id);
   const navigate = useNavigate()
+  const queryClient = useQueryClient()
+
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
   const [quantity, setQuantity] = useState(1)
   const [activeTab, setActiveTab] = useState("overview")
@@ -452,15 +453,15 @@ export default function ProductDetailPage() {
   const { data: product, isLoading: loading, isError, error } = useQuery({
     queryKey: queryKeys.products.detail(id),
     queryFn: async () => {
-      console.log('STEP 2 - Fetching product with ID:', id);
       const response = await productsApi.getById(id)
-      console.log('STEP 3 - Raw API response:', JSON.stringify(response.data));
       if (!response.success) throw new Error(response.message || "Failed to fetch product")
       return response.data
     },
     enabled: !!id,
-    refetchOnMount: true,
-    staleTime: 0,
+    // Keep data in cache for 15 minutes for reuse across navigation
+    gcTime: 1000 * 60 * 15,
+    // Data is fresh for 5 minutes after fetching
+    staleTime: 1000 * 60 * 5,
     retry: 2,
   })
 
@@ -628,45 +629,12 @@ export default function ProductDetailPage() {
     setImageLoaded(false)
   }, [id])
 
-  console.log('STEP 4 - Product state at render:', product, 'Loading:', loading);
-
-  if (loading) {
+  if (loading || !product) {
     return (
       <div style={styles.pageContainer}>
-        <div style={styles.breadcrumb}>
-          <div className="animate-pulse bg-gray-200 h-4 w-48 rounded" />
-        </div>
         <div style={styles.header}>
-          <div className="animate-pulse bg-gray-200 h-10 w-1/3 rounded mb-4" />
-          <div className="animate-pulse bg-gray-200 h-4 w-1/2 rounded" />
-        </div>
-        <div style={layoutStyle} className="mt-8">
-          <div style={styles.galleryCard} className="animate-pulse">
-            <div className="bg-gray-200 rounded-xl w-full min-h-[420px]" />
-            <div className="grid grid-cols-4 gap-3 mt-4">
-               <div className="bg-gray-200 h-24 rounded-xl" />
-               <div className="bg-gray-200 h-24 rounded-xl" />
-               <div className="bg-gray-200 h-24 rounded-xl" />
-               <div className="bg-gray-200 h-24 rounded-xl" />
-            </div>
-          </div>
-          <div style={styles.productPanel} className="animate-pulse">
-            <div className="bg-gray-200 h-8 w-1/3 rounded-full mb-2" />
-            <div className="bg-gray-200 h-10 w-3/4 rounded mb-4" />
-            <div className="bg-gray-200 h-12 w-1/2 rounded mb-6" />
-            
-            <div className="space-y-4 mb-8">
-              <div className="bg-gray-200 h-10 w-full rounded" />
-              <div className="bg-gray-200 h-10 w-full rounded" />
-              <div className="bg-gray-200 h-10 w-full rounded" />
-            </div>
-
-            <div className="bg-gray-200 h-24 w-full rounded mb-6" />
-            
-            <div className="grid grid-cols-2 gap-4">
-              <div className="bg-gray-200 h-16 rounded" />
-              <div className="bg-gray-200 h-16 rounded" />
-            </div>
+          <div style={{ padding: '2rem' }}>
+            <ProductDetailSkeleton />
           </div>
         </div>
       </div>
@@ -692,10 +660,6 @@ export default function ProductDetailPage() {
     )
   }
 
-  if (!product) {
-    return null;
-  }
-
   return (
     <div style={styles.pageContainer}>
       <div style={styles.breadcrumb}>
@@ -715,7 +679,7 @@ export default function ProductDetailPage() {
         <div style={styles.galleryCard}>
           <div style={styles.imageCard}>
             {(() => {
-              console.log('IMAGE URL ON RENDER:', product?.images, product?.imageUrl, product?.image);
+
               const raw = images[currentImageIndex] || product?.imageUrl || product?.image || '';
               const src = (raw && typeof raw === 'string' && raw.trim() !== '') ? imagePresets.detail(raw) : '';
               

@@ -2,6 +2,7 @@ import { useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { useQuery } from "@tanstack/react-query"
 import productsApi from "@/services/api/products.api"
+import ProductGridSkeleton from "@/components/skeletons/ProductGridSkeleton"
 import { formatPrice } from "@/data/utils/pricing"
 import { FiStar, FiShoppingCart, FiHeart } from "react-icons/fi"
 
@@ -245,8 +246,9 @@ export default function NewArrivals() {
       <div style={styles.container}>
         <div style={styles.headerSection}>
           <h2 style={styles.title}>New Arrivals</h2>
-          <p style={styles.subtitle}>Loading latest products...</p>
+          <p style={styles.subtitle}>Discover our latest products</p>
         </div>
+        <ProductGridSkeleton count={4} />
       </div>
     )
   }

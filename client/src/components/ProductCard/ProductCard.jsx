@@ -1,4 +1,4 @@
-import { useState, useCallback, memo } from 'react';
+import { useState, useCallback, memo, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import { useCart } from '@/context/CartContext';
@@ -10,8 +10,16 @@ import { FiHeart, FiCheck, FiExternalLink, FiMessageSquare } from 'react-icons/f
 import { FaStar, FaCheck } from 'react-icons/fa';
 import { MdVerified } from 'react-icons/md';
 
+// Media query helper
+const getResponsiveStyles = () => {
+  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+  const isTablet = typeof window !== 'undefined' && window.innerWidth >= 768 && window.innerWidth < 1024;
+  
+  return { isMobile, isTablet };
+};
+
 const styles = {
-  // B2B Horizontal Card Layout (Redesigned for Large Image)
+  // B2B Horizontal Card Layout (Responsive)
   card: {
     backgroundColor: 'white',
     borderRadius: '8px',
@@ -20,12 +28,20 @@ const styles = {
     border: '1px solid #EAEAEA',
     transition: 'all 0.3s ease',
     display: 'grid',
-    gridTemplateColumns: '340px 1fr', // Large image focus
+    gridTemplateColumns: '340px 1fr', // Desktop: Large image focus
     minHeight: '400px',
     gap: '0px',
     padding: '0px',
     position: 'relative',
     cursor: 'pointer',
+    '@media (max-width: 1024px)': {
+      gridTemplateColumns: '280px 1fr',
+      minHeight: '350px',
+    },
+    '@media (max-width: 768px)': {
+      gridTemplateColumns: '1fr', // Mobile: Stack vertically
+      minHeight: 'auto',
+    },
   },
   cardHover: {
     boxShadow: '0 8px 24px rgba(0,0,0,0.12)',
@@ -40,6 +56,11 @@ const styles = {
     alignItems: 'center',
     justifyContent: 'center',
     overflow: 'hidden',
+    minHeight: '300px',
+    '@media (max-width: 768px)': {
+      minHeight: '250px',
+      padding: '16px',
+    },
   },
   imageContainer: {
     position: 'relative',
@@ -51,6 +72,7 @@ const styles = {
     alignItems: 'center',
     justifyContent: 'center',
     overflow: 'hidden',
+    aspectRatio: '1',
   },
   image: {
     width: '100%',
@@ -89,6 +111,12 @@ const styles = {
     flexDirection: 'column',
     padding: '24px 32px',
     backgroundColor: 'white',
+    '@media (max-width: 1024px)': {
+      padding: '20px 24px',
+    },
+    '@media (max-width: 768px)': {
+      padding: '16px 16px',
+    },
   },
 
   // Supplier Header (Top Right)
@@ -155,6 +183,15 @@ const styles = {
     WebkitLineClamp: 3,
     WebkitBoxOrient: 'vertical',
     overflow: 'hidden',
+    '@media (max-width: 1024px)': {
+      fontSize: '18px',
+      margin: '10px 0',
+    },
+    '@media (max-width: 768px)': {
+      fontSize: '16px',
+      margin: '8px 0',
+      WebkitLineClamp: 2,
+    },
   },
 
   // Price Area
@@ -166,17 +203,29 @@ const styles = {
     fontWeight: '800',
     color: '#111',
     marginRight: '8px',
+    '@media (max-width: 1024px)': {
+      fontSize: '22px',
+    },
+    '@media (max-width: 768px)': {
+      fontSize: '20px',
+    },
   },
   fobPrice: {
     fontSize: '14px',
     color: '#666',
     fontWeight: '500',
+    '@media (max-width: 768px)': {
+      fontSize: '12px',
+    },
   },
   moqArea: {
     fontSize: '16px',
     fontWeight: '600',
     color: '#333',
     marginTop: '4px',
+    '@media (max-width: 768px)': {
+      fontSize: '14px',
+    },
   },
 
   // Specifications (2 Column Dots)
@@ -187,6 +236,12 @@ const styles = {
     margin: '20px 0',
     padding: '16px 0',
     borderTop: '1px solid #F3F4F6',
+    '@media (max-width: 768px)': {
+      gridTemplateColumns: '1fr',
+      gap: '8px',
+      margin: '12px 0',
+      padding: '12px 0',
+    },
   },
   specItem: {
     display: 'flex',
@@ -194,6 +249,9 @@ const styles = {
     gap: '8px',
     fontSize: '13px',
     color: '#666',
+    '@media (max-width: 768px)': {
+      fontSize: '12px',
+    },
   },
   specDot: {
     width: '4px',
@@ -247,6 +305,14 @@ const styles = {
     display: 'grid',
     gridTemplateColumns: '1.2fr 0.9fr 0.9fr',
     gap: '12px',
+    '@media (max-width: 1024px)': {
+      gridTemplateColumns: '1.1fr 0.9fr 0.9fr',
+      gap: '10px',
+    },
+    '@media (max-width: 768px)': {
+      gridTemplateColumns: '1fr 1fr', // 2 columns on mobile
+      gap: '8px',
+    },
   },
   btn: {
     height: '46px',
@@ -260,6 +326,11 @@ const styles = {
     gap: '6px',
     transition: 'all 0.2s ease',
     textTransform: 'uppercase',
+    '@media (max-width: 768px)': {
+      height: '40px',
+      fontSize: '12px',
+      borderRadius: '4px',
+    },
   },
   inquiryBtn: {
     backgroundColor: '#533638', // Reverted to brown as requested
@@ -286,14 +357,141 @@ function ProductCard({ product, onQuickView }) {
   const [imageError, setImageError] = useState(false);
   const [isHovering, setIsHovering] = useState(false);
   const [imageHovering, setImageHovering] = useState(false);
+  const [windowWidth, setWindowWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 1024);
 
   const FALLBACK_IMAGE = '/placeholder-product.jpg';
+
+  // Handle window resize for responsive behavior
+  useEffect(() => {
+    const handleResize = () => {
+      setWindowWidth(window.innerWidth);
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   // Optimized 400x400 image for the card thumbnail
   const rawImageUrl = (product.imageUrl && product.imageUrl.trim() !== '') ? product.imageUrl : null;
   const displayImage = imageError
     ? FALLBACK_IMAGE
     : (imagePresets.thumbnail(rawImageUrl) || FALLBACK_IMAGE);
+
+  // Calculate responsive card styles
+  const getCardStyle = () => {
+    const baseStyle = { ...styles.card };
+    if (typeof window !== 'undefined') {
+      const width = window.innerWidth;
+      if (width < 768) {
+        return {
+          ...baseStyle,
+          gridTemplateColumns: '1fr',
+          minHeight: 'auto',
+        };
+      } else if (width < 1024) {
+        return {
+          ...baseStyle,
+          gridTemplateColumns: '280px 1fr',
+          minHeight: '350px',
+        };
+      }
+    }
+    return baseStyle;
+  };
+
+  // Calculate responsive content section styles
+  const getContentStyle = () => {
+    const baseStyle = { ...styles.contentSection };
+    if (typeof window !== 'undefined') {
+      const width = window.innerWidth;
+      if (width < 768) {
+        return { ...baseStyle, padding: '16px 16px' };
+      } else if (width < 1024) {
+        return { ...baseStyle, padding: '20px 24px' };
+      }
+    }
+    return baseStyle;
+  };
+
+  // Calculate responsive title styles
+  const getTitleStyle = () => {
+    const baseStyle = { ...styles.productTitle };
+    if (typeof window !== 'undefined') {
+      const width = window.innerWidth;
+      if (width < 768) {
+        return { ...baseStyle, fontSize: '16px', margin: '8px 0', WebkitLineClamp: 2 };
+      } else if (width < 1024) {
+        return { ...baseStyle, fontSize: '18px', margin: '10px 0' };
+      }
+    }
+    return baseStyle;
+  };
+
+  // Calculate responsive price label styles
+  const getPriceLabelStyle = () => {
+    const baseStyle = { ...styles.priceLabel };
+    if (typeof window !== 'undefined') {
+      const width = window.innerWidth;
+      if (width < 768) {
+        return { ...baseStyle, fontSize: '20px' };
+      } else if (width < 1024) {
+        return { ...baseStyle, fontSize: '22px' };
+      }
+    }
+    return baseStyle;
+  };
+
+  // Calculate responsive image section styles
+  const getImageSectionStyle = () => {
+    const baseStyle = { ...styles.imageSection };
+    if (typeof window !== 'undefined') {
+      const width = window.innerWidth;
+      if (width < 768) {
+        return { ...baseStyle, minHeight: '250px', padding: '16px' };
+      } else if (width < 1024) {
+        return { ...baseStyle, minHeight: '300px' };
+      }
+    }
+    return baseStyle;
+  };
+
+  // Calculate responsive button section styles
+  const getActionsSectionStyle = () => {
+    const baseStyle = { ...styles.actionsSection };
+    if (typeof window !== 'undefined') {
+      const width = window.innerWidth;
+      if (width < 768) {
+        return { ...baseStyle, gridTemplateColumns: '1fr 1fr', gap: '8px' };
+      } else if (width < 1024) {
+        return { ...baseStyle, gridTemplateColumns: '1.1fr 0.9fr 0.9fr', gap: '10px' };
+      }
+    }
+    return baseStyle;
+  };
+
+  // Calculate responsive button styles
+  const getBtnStyle = () => {
+    const baseStyle = { ...styles.btn };
+    if (typeof window !== 'undefined') {
+      const width = window.innerWidth;
+      if (width < 768) {
+        return { ...baseStyle, height: '40px', fontSize: '12px', borderRadius: '4px' };
+      }
+    }
+    return baseStyle;
+  };
+
+  // Calculate responsive spec grid styles
+  const getSpecGridStyle = () => {
+    const baseStyle = { ...styles.specGrid };
+    if (typeof window !== 'undefined') {
+      const width = window.innerWidth;
+      if (width < 768) {
+        return { ...baseStyle, gridTemplateColumns: '1fr', gap: '8px', margin: '12px 0', padding: '12px 0' };
+      }
+    }
+    return baseStyle;
+  };
 
   // Prefetch product detail on hover so clicking is instant
   const handleMouseEnterCard = useCallback(() => {
@@ -302,7 +500,7 @@ function ProductCard({ product, onQuickView }) {
       queryClient.prefetchQuery({
         queryKey: queryKeys.products.detail(product.id),
         queryFn: () => productsApi.getById(product.id),
-        staleTime: 1000 * 60,
+        staleTime: 1000 * 60 * 5, // 5 minutes - matches ProductDetailPage staleTime
       });
     }
   }, [product.id, queryClient]);
@@ -349,14 +547,14 @@ function ProductCard({ product, onQuickView }) {
 
   return (
     <div
-      style={{...styles.card, ...(isHovering ? styles.cardHover : {})}}
+      style={{...getCardStyle(), ...(isHovering ? styles.cardHover : {})}}
       onMouseEnter={handleMouseEnterCard}
       onMouseLeave={() => setIsHovering(false)}
       onClick={handleView}
     >
       {/* LEFT SIDE - Large Product Image */}
       <div 
-        style={styles.imageSection}
+        style={getImageSectionStyle()}
         onMouseEnter={() => setImageHovering(true)}
         onMouseLeave={() => setImageHovering(false)}
       >
@@ -389,7 +587,7 @@ function ProductCard({ product, onQuickView }) {
       </div>
 
       {/* RIGHT SIDE - Information Section */}
-      <div style={styles.contentSection}>
+      <div style={getContentStyle()}>
         
         {/* 1. Supplier Header */}
         <div style={styles.supplierHeader}>
@@ -414,14 +612,14 @@ function ProductCard({ product, onQuickView }) {
         </div>
 
         {/* 3. Product Title */}
-        <h3 style={styles.productTitle}>
+        <h3 style={getTitleStyle()}>
           {product.title}
         </h3>
 
         {/* 4. Price & MOQ Area */}
         <div style={styles.priceArea}>
           <div>
-            <span style={styles.priceLabel}>
+            <span style={getPriceLabelStyle()}>
               {product.bulkPrices && product.bulkPrices.length > 0 ? (
                 `US$${formatPrice(Math.min(...product.bulkPrices.map(t => t.price))).replace('$', '')} - ${formatPrice(Math.max(...product.bulkPrices.map(t => t.price))).replace('$', '')}`
               ) : (
@@ -436,7 +634,7 @@ function ProductCard({ product, onQuickView }) {
         </div>
 
         {/* 5. Specifications Grid */}
-        <div style={styles.specGrid}>
+        <div style={getSpecGridStyle()}>
           {specifications.map((spec, idx) => (
             <div key={idx} style={styles.specItem}>
               <div style={styles.specDot} />
@@ -474,10 +672,10 @@ function ProductCard({ product, onQuickView }) {
         </div>
 
         {/* 7. Action Buttons */}
-        <div style={styles.actionsSection}>
+        <div style={getActionsSectionStyle()}>
           <button 
             onClick={handleSendInquiry}
-            style={{...styles.btn, ...styles.inquiryBtn}}
+            style={{...getBtnStyle(), ...styles.inquiryBtn}}
             onMouseEnter={(e) => e.target.style.backgroundColor = '#3A2627'}
             onMouseLeave={(e) => e.target.style.backgroundColor = '#533638'}
           >
@@ -486,7 +684,7 @@ function ProductCard({ product, onQuickView }) {
           </button>
           <button 
             onClick={handleChatNow}
-            style={{...styles.btn, ...styles.chatBtn}}
+            style={{...getBtnStyle(), ...styles.chatBtn}}
             onMouseEnter={(e) => e.target.style.backgroundColor = '#EFF6FF'}
             onMouseLeave={(e) => e.target.style.backgroundColor = 'white'}
           >
@@ -495,7 +693,7 @@ function ProductCard({ product, onQuickView }) {
           </button>
           <button 
             onClick={handleView}
-            style={{...styles.btn, ...styles.viewBtn}}
+            style={{...getBtnStyle(), ...styles.viewBtn}}
             onMouseEnter={(e) => e.target.style.backgroundColor = '#EAEAEA'}
             onMouseLeave={(e) => e.target.style.backgroundColor = '#F5EDEC'}
           >

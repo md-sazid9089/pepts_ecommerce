@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom"
 import { useQuery } from "@tanstack/react-query"
 import { FaSearch, FaBox, FaStar, FaChevronRight } from "react-icons/fa"
 import categoriesApi from "@/services/api/categories.api"
+import CategoryGridSkeleton from "@/components/skeletons/CategoryGridSkeleton"
 
 // ... existing styles ... (skipping for brevity in thought, but I'll include them in the call)
 
@@ -516,8 +517,8 @@ export default function CategoriesPage() {
 
           {/* Categories Grid */}
           {isLoading ? (
-            <div style={{ textAlign: "center", padding: "3rem" }}>
-              <p>Loading categories...</p>
+            <div style={{ padding: "2rem 0" }}>
+              <CategoryGridSkeleton />
             </div>
           ) : sortedCategories.length > 0 ? (
             <div style={{ ...styles.categoriesGrid, ...(isMobile ? styles.categoriesGridMobile : {}) }}>

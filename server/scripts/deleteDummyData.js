@@ -1,86 +1,93 @@
-const { PrismaClient } = require('@prisma/client');
-const p = new PrismaClient();
+import prisma from '../src/lib/prisma.js';
 
 async function deleteDummyData() {
-  const dummyPatterns = [
-    'test', 'dummy', 'sample', 'mock', 'qa',
-    'audit', 'placeholder', 'temp', 'debug',
-    'deployment test product'
-  ];
+  try {
+    const dummyPatterns = [
+      'test',
+      'dummy',
+      'sample',
+      'mock',
+      'qa',
+      'audit',
+      'placeholder',
+      'temp',
+      'debug',
+      'deployment test product',
+    ];
 
-  const dummyProducts = await p.product.findMany({
-    where: {
-      OR: dummyPatterns.map(pattern => ({
-        title: { contains: pattern } // Note: MySQL doesn't support 'mode: insensitive' out of the box in Prisma, we'll use default which might be CI based on collation
-      }))
-    },
-    select: { id: true, title: true }
-  });
-
-  console.log(`\nFound ${dummyProducts.length} dummy products to delete:`);
-  dummyProducts.forEach(p => console.log(`  - ${p.title} (${p.id})`));
-
-  if (dummyProducts.length > 0) {
-    const ids = dummyProducts.map(p => p.id);
-
-    const deletedTiers = await p.bulkPrice.deleteMany({
-      where: { productId: { in: ids } }
+    const dummyProducts = await prisma.product.findMany({
+      where: {
+        OR: dummyPatterns.map((pattern) => ({
+          title: { contains: pattern },
+        })),
+      },
+      select: { id: true, title: true },
     });
-    console.log(`\nDeleted ${deletedTiers.count} bulk price records`);
 
-    const deletedOrderItems = await p.orderItem.deleteMany({
-      where: { productId: { in: ids } }
-    });
-    console.log(`Deleted ${deletedOrderItems.count} order item records`);
+    console.log(`\n========== DUMMY DATA DELETION ==========\n`);
+    console.log(`Found ${dummyProducts.length} dummy products to delete:`);
+    dummyProducts.forEach((product) => console.log(`  - ${product.title} (${product.id})`));
 
-    const deletedReviews = await p.review.deleteMany({
-      where: { productId: { in: ids } }
-    });
-    console.log(`Deleted ${deletedReviews.count} review records`);
+    if (dummyProducts.length > 0) {
+      const ids = dummyProducts.map((product) => product.id);
 
-    // Inquiries don't have a strict foreign key to products but have productId
-    // But schema says Inquiry has productId String? (not relation) - wait, let me check.
-    // In schema.prisma: productId String?, productName String. No relation to Product.
-    // So we don't need to delete by productId strictly, but we can.
-    const deletedInquiries = await p.inquiry.deleteMany({
-      where: { productId: { in: ids } }
-    });
-    console.log(`Deleted ${deletedInquiries.count} inquiry records by productId`);
+      const deletedTiers = await prisma.bulkPrice.deleteMany({
+        where: { productId: { in: ids } },
+      });
+      console.log(`\nDeleted ${deletedTiers.count} bulk price records`);
 
-    const deletedProducts = await p.product.deleteMany({
-      where: { id: { in: ids } }
+      const deletedOrderItems = await prisma.orderItem.deleteMany({
+        where: { productId: { in: ids } },
+      });
+      console.log(`Deleted ${deletedOrderItems.count} order item records`);
+
+      const deletedReviews = await prisma.review.deleteMany({
+        where: { productId: { in: ids } },
+      });
+      console.log(`Deleted ${deletedReviews.count} review records`);
+
+      const deletedInquiries = await prisma.inquiry.deleteMany({
+        where: { productId: { in: ids } },
+      });
+      console.log(`Deleted ${deletedInquiries.count} inquiry records by productId`);
+
+      const deletedProducts = await prisma.product.deleteMany({
+        where: { id: { in: ids } },
+      });
+      console.log(`Deleted ${deletedProducts.count} products`);
+    } else {
+      console.log('No dummy products found.');
+    }
+
+    const deletedUsers = await prisma.user.deleteMany({
+      where: {
+        OR: [
+          { email: { contains: 'test' } },
+          { email: { contains: 'dummy' } },
+          { email: { contains: 'sample' } },
+          { email: { contains: 'qa@' } },
+        ],
+        NOT: { role: 'admin' },
+      },
     });
-    console.log(`Deleted ${deletedProducts.count} products`);
-  } else {
-    console.log('No dummy products found.');
+    console.log(`Deleted ${deletedUsers.count} test user accounts`);
+
+    const deletedTestInquiries = await prisma.inquiry.deleteMany({
+      where: {
+        OR: [
+          { companyName: { contains: 'test' } },
+          { companyName: { contains: 'dummy' } },
+          { message: { contains: 'test' } },
+        ],
+      },
+    });
+    console.log(`Deleted ${deletedTestInquiries.count} test inquiries`);
+
+    console.log('\n✅ Database cleanup complete.\n');
+  } catch (error) {
+    console.error('Deletion Error:', error.message);
+    process.exit(1);
   }
-
-  const deletedUsers = await p.user.deleteMany({
-    where: {
-      OR: [
-        { email: { contains: 'test' } },
-        { email: { contains: 'dummy' } },
-        { email: { contains: 'sample' } },
-        { email: { contains: 'qa@' } },
-      ],
-      NOT: { role: 'admin' }
-    }
-  });
-  console.log(`Deleted ${deletedUsers.count} test user accounts`);
-
-  const deletedTestInquiries = await p.inquiry.deleteMany({
-    where: {
-      OR: [
-        { companyName: { contains: 'test' } },
-        { companyName: { contains: 'dummy' } },
-        { message: { contains: 'test' } },
-      ]
-    }
-  });
-  console.log(`Deleted ${deletedTestInquiries.count} test inquiries`);
-
-  console.log('\n✅ Database cleanup complete.');
-  await p.$disconnect();
 }
 
-deleteDummyData().catch(console.error);
+deleteDummyData();

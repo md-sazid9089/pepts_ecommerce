@@ -2,6 +2,7 @@ import { useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 import { useQuery } from "@tanstack/react-query"
 import categoriesApi from "@/services/api/categories.api"
+import CategoryGridSkeleton from "@/components/skeletons/CategoryGridSkeleton"
 
 // ====================================
 // THEME COLORS
@@ -192,6 +193,9 @@ export default function CategorySection() {
         </a>
       </div>
 
+      {isLoading ? (
+        <CategoryGridSkeleton />
+      ) : (
       <div style={styles.grid}>
         {categories.map((category) => (
           <div
@@ -237,6 +241,7 @@ export default function CategorySection() {
           </div>
         ))}
       </div>
+      )}
     </section>
   )
 }
