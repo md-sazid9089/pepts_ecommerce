@@ -193,58 +193,22 @@ export async function getAll(page = 1, pageSize = 20, filters = {}) {
  * @returns {Promise<object|null>}
  */
 export async function getById(productId) {
-  try {
-    if (!productId) return null
+  if (!productId) return null
 
-    console.log(`[getById] Fetching product with ID: ${productId}`)
+  const product = await prisma.product.findFirst({
+    where: { id: productId, isActive: true },
+  })
 
-    // Use findFirst instead of findUnique to see if that works better on serverless
-    const product = await prisma.product.findFirst({
-      where: { id: productId, isActive: true },
-    })
+  if (!product) return null
 
-    console.log(`[getById] findFirst result:`, product ? "Found" : "Not found")
+  const [category, images, bulkPrices, reviews] = await Promise.all([
+    prisma.category.findUnique({ where: { id: product.categoryId } }),
+    prisma.productImage.findMany({ where: { productId }, orderBy: { order: "asc" } }),
+    prisma.bulkPrice.findMany({ where: { productId }, orderBy: { minQuantity: "asc" } }),
+    prisma.review.findMany({ where: { productId, status: "approved" }, take: 20 }),
+  ])
 
-    if (!product) {
-      return null
-    }
-
-    // Fetch all related data in parallel
-    const [category, images, bulkPrices, reviews] = await Promise.all([
-      prisma.category.findUnique({
-        where: { id: product.categoryId },
-      }),
-      prisma.productImage.findMany({
-        where: { productId },
-        orderBy: { order: "asc" },
-      }),
-      prisma.bulkPrice.findMany({
-        where: { productId },
-        orderBy: { minQuantity: "asc" },
-      }),
-      prisma.review.findMany({
-        where: { productId, status: "approved" },
-        orderBy: { createdAt: "desc" },
-        take: 20,
-      }),
-    ])
-
-    console.log(`[getById] Related data fetched`)
-
-    // Combine data
-    const enriched = {
-      ...product,
-      category,
-      images,
-      bulkPrices,
-      reviews,
-    }
-
-    return mapProduct(enriched, true)
-  } catch (error) {
-    console.error(`[getById] Error fetching product ${productId}:`, error)
-    throw new Error(`Failed to fetch product: ${error.message}`)
-  }
+  return mapProduct({ ...product, category, images, bulkPrices, reviews }, true)
 }
 
 /**
