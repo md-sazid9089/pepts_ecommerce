@@ -34,7 +34,9 @@ import { NextResponse } from "next/server"
  * return apiResponse.success(products, "Products fetched successfully");
  */
 export const success = (data = null, message = "Success", statusCode = 200) => {
-  const response = NextResponse.json(
+  // CORS headers are handled exclusively by middleware.js — do NOT set them here
+  // to avoid duplicate Access-Control-Allow-Origin headers.
+  return NextResponse.json(
     {
       success: true,
       code: statusCode,
@@ -45,15 +47,6 @@ export const success = (data = null, message = "Success", statusCode = 200) => {
     },
     { status: statusCode }
   )
-
-  // Force CORS headers
-  const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:5173"
-  response.headers.set('Access-Control-Allow-Origin', FRONTEND_URL)
-  response.headers.set('Access-Control-Allow-Credentials', 'true')
-  response.headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS')
-  response.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept')
-
-  return response
 }
 
 /**
@@ -74,7 +67,9 @@ export const error = (
   statusCode = 400,
   errorDetails = null
 ) => {
-  const response = NextResponse.json(
+  // CORS headers are handled exclusively by middleware.js — do NOT set them here
+  // to avoid duplicate Access-Control-Allow-Origin headers.
+  return NextResponse.json(
     {
       success: false,
       code: statusCode,
@@ -88,15 +83,6 @@ export const error = (
     },
     { status: statusCode }
   )
-
-  // Force CORS headers
-  const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:5173"
-  response.headers.set('Access-Control-Allow-Origin', FRONTEND_URL)
-  response.headers.set('Access-Control-Allow-Credentials', 'true')
-  response.headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS')
-  response.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept')
-
-  return response
 }
 
 /**
