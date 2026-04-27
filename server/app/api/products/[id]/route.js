@@ -32,12 +32,31 @@ function verifyJwt(request) {
 
 export async function GET(request, { params }) {
   try {
-    const { id } = await params
+    console.log("[Product Detail GET] Starting request")
+    console.log("[Product Detail GET] Params type:", typeof params)
+    
+    let id
+    // Handle both awaited and non-awaited params formats
+    if (params instanceof Promise) {
+      console.log("[Product Detail GET] Params is a Promise, awaiting...")
+      const resolvedParams = await params
+      id = resolvedParams.id
+    } else {
+      console.log("[Product Detail GET] Params is not a Promise, using directly")
+      id = params.id
+    }
+    
+    console.log("[Product Detail GET] Extracted ID:", id)
+    
     if (!id || typeof id !== "string") {
+      console.log("[Product Detail GET] Invalid ID")
       return apiResponse.error("Invalid product ID", 400)
     }
 
+    console.log("[Product Detail GET] Calling getById service")
     const product = await productsService.getById(id)
+    console.log("[Product Detail GET] Service returned:", product ? "Product found" : "Product not found")
+    
     if (!product) {
       return apiResponse.notFound(`Product with ID "${id}" not found`)
     }
