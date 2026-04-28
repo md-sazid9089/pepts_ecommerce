@@ -240,9 +240,10 @@ export default function HeroSection() {
 
   // Carousel images array
   const carouselImages = [
+    "/images/heroes/marufposterrr.png",
     "/images/heroes/marufposterr.png",
-    "/images/heroes/marufposterr.png",
-    "/images/products/batman.png",
+    "/images/heroes/marufposterrrr.png",
+    "/images/heroes/marufposterrrrr.png",
   ]
 
   // Auto-advance carousel every 5 seconds

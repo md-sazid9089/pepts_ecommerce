@@ -617,6 +617,7 @@ export default function AdminDashboard() {
   const [loadingProducts, setLoadingProducts] = useState(false)
   const [productPage, setProductPage] = useState(1)
   const [deletingId, setDeletingId] = useState(null)
+  const [editingProduct, setEditingProduct] = useState(null)
   const adminQueryClient = useQueryClient()
 
   const [stats, setStats] = useState([
@@ -735,7 +736,6 @@ export default function AdminDashboard() {
     setImageFiles(files)
     setImagePreviewUrls(files.map(f => URL.createObjectURL(f)))
   }, [])
-
   const handleUploadImageForProduct = useCallback(async (productId) => {
     const files = uploadImageFile[productId]
     if (!files || files.length === 0) {
@@ -776,7 +776,54 @@ export default function AdminDashboard() {
     }
   }, [uploadImageFile, adminQueryClient])
 
-  const handleCreateProduct = useCallback(async (event) => {
+  const handleEditClick = useCallback((product) => {
+    setEditingProduct(product)
+    setProductForm({
+      title: product.title || product.name || "",
+      brand: product.brand || "",
+      description: product.description || "",
+      price: product.price || "",
+      stock: product.stock || "",
+      categoryName: product.category || "General",
+      moq: product.moq || "",
+      casePackSize: product.casePackSize || "",
+      specHeight: product.specs?.height || "",
+      specMaterial: product.specs?.material || "",
+      specClothing: product.specs?.clothing || "",
+      specPackage: product.specs?.package || "",
+      specTier: product.specs?.tier || "",
+    })
+    
+    if (product.bulkPrices && product.bulkPrices.length > 0) {
+      setPricingRows(product.bulkPrices.map(tier => ({
+        min: tier.minQuantity ?? tier.min ?? "",
+        max: tier.maxQuantity ?? tier.max ?? "",
+        price: tier.price || "",
+        unit: tier.unit || "per unit"
+      })))
+    } else {
+      setPricingRows([defaultPricingRow()])
+    }
+    
+    setImageFiles([])
+    setImagePreviewUrls([])
+    
+    // Scroll up to the form
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }, [])
+
+  const handleCancelEdit = useCallback(() => {
+    setEditingProduct(null)
+    setProductForm({
+      title: "", brand: "", description: "", price: "", stock: "", categoryName: "General",
+      moq: "", casePackSize: "", specHeight: "", specMaterial: "", specClothing: "", specPackage: "", specTier: "",
+    })
+    setPricingRows([defaultPricingRow()])
+    setImageFiles([])
+    setImagePreviewUrls([])
+  }, [])
+
+  const handleSaveProduct = useCallback(async (event) => {
     event.preventDefault()
     setFormError("")
     setFormMessage("")
@@ -801,7 +848,7 @@ export default function AdminDashboard() {
       }
       Object.keys(specs).forEach((k) => specs[k] === undefined && delete specs[k])
 
-      const response = await productsApi.create({
+      const payload = {
         title:        productForm.title,
         brand:        productForm.brand,
         description:  productForm.description,
@@ -812,7 +859,14 @@ export default function AdminDashboard() {
         casePackSize: Number(productForm.casePackSize),
         tieredPricing,
         specs:        Object.keys(specs).length > 0 ? specs : undefined,
-      })
+      }
+
+      let response
+      if (editingProduct) {
+        response = await productsApi.update(editingProduct.id, payload)
+      } else {
+        response = await productsApi.create(payload)
+      }
 
       if (!response.success) {
         if (response.message?.includes("timed out") || response.code === 408) {
@@ -840,10 +894,13 @@ export default function AdminDashboard() {
             setFormMessage("✅ Product created and images uploaded successfully!")
           }
         }
+      if (editingProduct) {
+        setFormMessage("✅ Product updated successfully!")
       } else {
-        setFormMessage("Product created successfully.")
+        setFormMessage("✅ Product created successfully.")
       }
 
+      setEditingProduct(null)
       setProductForm({
         title: "", brand: "", description: "", price: "", stock: "", categoryName: "General",
         moq: "", casePackSize: "", specHeight: "", specMaterial: "", specClothing: "", specPackage: "", specTier: "",
@@ -852,15 +909,21 @@ export default function AdminDashboard() {
       setImageFiles([])
       setImagePreviewUrls([])
 
-      const refreshed = await productsApi.getAll(1, 100)
-      if (refreshed.success) setProducts(refreshed.data?.items || [])
+      const refreshed = await productsApi.getAll(productPage, PRODUCTS_PER_PAGE)
+      if (refreshed.success) {
+        setProducts(refreshed.data?.items || [])
+        setTotalProducts(refreshed.data?.pagination?.total || 0)
+      }
       adminQueryClient.invalidateQueries({ queryKey: queryKeys.products.all })
+      if (editingProduct) {
+        adminQueryClient.invalidateQueries({ queryKey: queryKeys.products.detail(editingProduct.id) })
+      }
     } catch (error) {
-      setFormError(error.message || "Unable to create product")
+      setFormError(error.message || "Unable to save product")
     } finally {
       setIsSubmitting(false)
     }
-  }, [productForm, pricingRows, imageFiles, adminQueryClient])
+  }, [productForm, pricingRows, imageFiles, adminQueryClient, editingProduct, productPage])
 
   // ───────────────────────────────────────────────────────────────────────────
   // ───────────────────────────────────────────────────────────────────────────
@@ -1186,14 +1249,16 @@ export default function AdminDashboard() {
         {activePage === "products" ? (
           <div style={styles.card}>
             <div style={styles.cardHeader}>
-              <h2 style={styles.cardTitle}>Products</h2>
-              <span style={{ color: "#6b7280" }}>Create new products and manage backend inventory.</span>
+              <h2 style={styles.cardTitle}>{editingProduct ? `Editing: ${editingProduct.title}` : "Create New Product"}</h2>
+              <span style={{ color: "#6b7280" }}>
+                {editingProduct ? "Update existing product details and pricing." : "Create new products and manage backend inventory."}
+              </span>
             </div>
 
             {formMessage && <div style={styles.notificationSuccess}>{formMessage}</div>}
             {formError && <div style={styles.notificationError}>{formError}</div>}
 
-            <form onSubmit={handleCreateProduct} style={{ display: "grid", gap: "1rem", marginBottom: "1.5rem" }}>
+            <form onSubmit={handleSaveProduct} style={{ display: "grid", gap: "1rem", marginBottom: "1.5rem" }}>
               <div style={styles.formGroup}>
                 <label style={styles.formLabel} htmlFor="title">Product Title</label>
                 <input
@@ -1515,9 +1580,20 @@ export default function AdminDashboard() {
                 </p>
               </div>
 
-              <button type="submit" style={styles.submitBtn} disabled={isSubmitting}>
-                {isSubmitting ? "Creating product..." : "Create Wholesale Product"}
-              </button>
+              <div style={{ display: "flex", gap: "1rem" }}>
+                <button type="submit" style={{ ...styles.submitBtn, flex: 1 }} disabled={isSubmitting}>
+                  {isSubmitting ? (editingProduct ? "Updating..." : "Creating...") : (editingProduct ? "Update Wholesale Product" : "Create Wholesale Product")}
+                </button>
+                {editingProduct && (
+                  <button 
+                    type="button" 
+                    onClick={handleCancelEdit}
+                    style={{ ...styles.submitBtn, backgroundColor: "#6b7280", flex: 0.3 }}
+                  >
+                    Cancel
+                  </button>
+                )}
+              </div>
             </form>
 
             <div style={{ marginBottom: "1.5rem" }}>
@@ -1548,7 +1624,8 @@ export default function AdminDashboard() {
                         <th style={styles.productTableHeader}>Category</th>
                         <th style={styles.productTableHeader}>Price</th>
                         <th style={styles.productTableHeader}>Stock</th>
-                        <th style={styles.productTableHeader}>Upload Image</th>
+                        <th style={styles.productTableHeader}>Edit</th>
+                        <th style={styles.productTableHeader}>Upload</th>
                         <th style={styles.productTableHeader}>Delete</th>
                       </tr>
                     </thead>
@@ -1574,16 +1651,31 @@ export default function AdminDashboard() {
                               <td style={styles.productTableCell}>{product.category || "General"}</td>
                               <td style={styles.productTableCell}>${(product.price || 0).toFixed(2)}</td>
                               <td style={styles.productTableCell}>{product.stock ?? 0}</td>
+                              <td style={styles.productTableCell}>
+                                <button
+                                  onClick={() => handleEditClick(product)}
+                                  style={{
+                                    padding: "0.4rem 0.75rem", borderRadius: "0.375rem",
+                                    backgroundColor: editingProduct?.id === product.id ? "#F7B9C4" : "#f3f4f6",
+                                    color: editingProduct?.id === product.id ? "#533638" : "#374151",
+                                    border: "1px solid #d1d5db",
+                                    cursor: "pointer",
+                                    fontSize: "0.8rem", fontWeight: 700,
+                                  }}
+                                >
+                                  {editingProduct?.id === product.id ? "Editing..." : "✏️ Edit"}
+                                </button>
+                              </td>
                               {/* Upload image */}
                               <td style={styles.productTableCell}>
-                                <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                                <div style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
                                   <label
                                     htmlFor={`img-${product.id}`}
                                     style={{
-                                      padding: "0.35rem 0.65rem", borderRadius: "0.375rem",
+                                      padding: "0.35rem 0.5rem", borderRadius: "0.375rem",
                                       backgroundColor: "#EFF6FF", color: "#1D4ED8",
                                       border: "1px solid #BFDBFE", cursor: "pointer",
-                                      fontSize: "0.78rem", fontWeight: 600, whiteSpace: "nowrap",
+                                      fontSize: "0.75rem", fontWeight: 600, whiteSpace: "nowrap",
                                     }}
                                   >
                                     {uploadImageFile[product.id] ? `${uploadImageFile[product.id].length} Files` : "📷 Choose"}
@@ -1604,13 +1696,13 @@ export default function AdminDashboard() {
                                       onClick={() => handleUploadImageForProduct(product.id)}
                                       disabled={uploadingImage === product.id}
                                       style={{
-                                        padding: "0.35rem 0.65rem", borderRadius: "0.375rem",
+                                        padding: "0.35rem 0.5rem", borderRadius: "0.375rem",
                                         backgroundColor: "#533638", color: "#fff",
                                         border: "none", cursor: "pointer",
-                                        fontSize: "0.78rem", fontWeight: 600,
+                                        fontSize: "0.75rem", fontWeight: 600,
                                       }}
                                     >
-                                      {uploadingImage === product.id ? "Uploading..." : "Upload"}
+                                      {uploadingImage === product.id ? "..." : "↑"}
                                     </button>
                                   )}
                                 </div>
@@ -1632,7 +1724,7 @@ export default function AdminDashboard() {
                                   onMouseEnter={e => { if (deletingId !== product.id) e.currentTarget.style.backgroundColor = "#ef4444"; e.currentTarget.style.color = "#fff" }}
                                   onMouseLeave={e => { e.currentTarget.style.backgroundColor = "#fee2e2"; e.currentTarget.style.color = "#991b1b" }}
                                 >
-                                  {deletingId === product.id ? "Deleting…" : "🗑 Delete"}
+                                  {deletingId === product.id ? "..." : "🗑"}
                                 </button>
                               </td>
                             </tr>
