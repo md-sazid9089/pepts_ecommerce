@@ -336,7 +336,7 @@ export default function AboutPage() {
       {/* REAL IMAGE SECTION */}
       <section style={imageStyles.container}>
         <div style={imageStyles.imageWrapper}>
-          <img src="/experience2.png" alt="Pepta Warehouse" style={imageStyles.image} />
+          <img src="images/heroes/marufposterr.png" alt="Pepta Warehouse" style={imageStyles.image} />
         </div>
         <p style={imageStyles.caption}>Serving retailers across Bangladesh with premium products and unmatched service</p>
       </section>

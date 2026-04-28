@@ -540,14 +540,14 @@ export default function CategoriesPage() {
                     }}
                   >
                     <img
-                      src={category.icon || "/images/placeholder.png"}
+                      src={category.icon || "/images/heroes/marufposterrr.png"}
                       alt={category.name}
                       style={{
                         ...styles.categoryImage,
                         ...(hoveredCard === category.id ? styles.categoryImageHover : {}),
                       }}
                       onError={(e) => {
-                        e.target.src = "/images/placeholder.png"
+                        e.target.src = "/images/heroes/marufposterrr.png"
                       }}
                     />
                     {category.isActive && <span style={styles.categoryBadge}>Active</span>}
