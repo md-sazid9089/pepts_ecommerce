@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react"
+﻿import { useState, useEffect } from "react"
 import { Link } from "react-router-dom"
 import {
   FaEnvelope,
@@ -541,7 +541,7 @@ export default function Footer() {
             <h2 style={styles.brandName}>Pepta</h2>
           </Link>
           <p style={styles.description}>
-            Premium technology and gadget wholesale supplier for boutiques and showrooms across Bangladesh. Direct factory prices, bulk discounts, and professional wholesale service.
+            Premium Toy wholesale supplier  across world. Direct factory prices, bulk discounts, and professional wholesale service.
           </p>
 
           <div style={styles.contactInfo}>
@@ -552,7 +552,7 @@ export default function Footer() {
             <div style={styles.contactItem}>
               <FaEnvelope style={styles.contactIcon} />
               <a
-                href="mailto:wholesale@pepta.com.bd"
+                href="mailto:pepta@gmail.com"
                 style={{
                   ...styles.contactText,
                   ...styles.contactLink,
@@ -561,7 +561,7 @@ export default function Footer() {
                 onMouseEnter={() => setHoveredLinks({ ...hoveredLinks, email: true })}
                 onMouseLeave={() => setHoveredLinks({ ...hoveredLinks, email: false })}
               >
-                wholesale@pepta.com.bd
+                pepta@gmail.com
               </a>
             </div>
             <div style={styles.contactItem}>
