@@ -240,8 +240,8 @@ export default function HeroSection() {
 
   // Carousel images array
   const carouselImages = [
-    "/images/products/barbiedoll.jpg",
-    "/images/products/hotwheels.jpg",
+    "/images/heroes/marufposterr.png",
+    "/images/heroes/marufposterr.png",
     "/images/products/batman.png",
   ]
 

@@ -1,4 +1,37 @@
 import { useState, useEffect, useMemo, useCallback } from "react"
+
+const RESPONSIVE_CSS = `
+  .pdp-breadcrumb { padding: 0.85rem 1.25rem; display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap; font-size: 0.85rem; color: #475569; background: #fff; border-bottom: 1px solid #e2e8f0; }
+  .pdp-header { max-width: 1400px; margin: 0 auto; padding: 1.5rem 1.25rem 0; }
+  .pdp-header h1 { margin: 0; font-size: clamp(1.35rem, 4vw, 2rem); font-weight: 700; line-height: 1.1; }
+  .pdp-header p { margin: 0.75rem 0 0; max-width: 760px; color: #64748b; font-size: 0.95rem; line-height: 1.75; }
+  .pdp-layout { max-width: 1800px; margin: 1.5rem auto 3rem; padding: 0 1.25rem; display: grid; grid-template-columns: 1.55fr 0.7fr; gap: 2rem; align-items: start; }
+  .pdp-gallery { display: flex; flex-direction: column; gap: 1rem; }
+  .pdp-image-card { position: relative; background: #fff; border-radius: 1rem; overflow: hidden; min-height: 420px; box-shadow: 0 20px 50px rgba(15,23,42,0.08); }
+  .pdp-thumb-row { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 0.75rem; }
+  .pdp-panel { background: #fff; border-radius: 1rem; padding: 1.75rem; box-shadow: 0 20px 50px rgba(15,23,42,0.08); display: flex; flex-direction: column; gap: 1.25rem; }
+  .pdp-sidebar { display: flex; flex-direction: column; gap: 1rem; }
+  .pdp-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 0.85rem; }
+  .pdp-sticky { display: none; }
+  .pdp-tabs { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 0.6rem; }
+  @media (max-width: 1024px) {
+    .pdp-layout { grid-template-columns: 1fr; gap: 1.25rem; }
+    .pdp-sidebar { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1rem; }
+    .pdp-image-card { min-height: 380px; }
+  }
+  @media (max-width: 640px) {
+    .pdp-breadcrumb { padding: 0.65rem 1rem; font-size: 0.8rem; }
+    .pdp-header { padding: 1rem 1rem 0; }
+    .pdp-layout { padding: 0 0.75rem; margin-top: 1rem; margin-bottom: 5rem; gap: 1rem; }
+    .pdp-image-card { min-height: 280px; border-radius: 0.75rem; }
+    .pdp-thumb-row { grid-template-columns: repeat(4, minmax(0,1fr)); gap: 0.5rem; }
+    .pdp-panel { padding: 1.25rem; gap: 1rem; border-radius: 0.75rem; }
+    .pdp-actions { grid-template-columns: 1fr 1fr; gap: 0.6rem; }
+    .pdp-sidebar { grid-template-columns: 1fr; }
+    .pdp-tabs { grid-template-columns: repeat(3, minmax(0,1fr)); gap: 0.4rem; }
+    .pdp-sticky { display: grid; position: fixed; bottom: 0; left: 0; right: 0; grid-template-columns: 1fr 1fr; gap: 0.6rem; padding: 0.75rem 1rem calc(0.75rem + env(safe-area-inset-bottom)); background: rgba(255,255,255,0.98); border-top: 1px solid #e2e8f0; z-index: 90; backdrop-filter: blur(8px); }
+  }
+`
 import { useParams, useNavigate } from "react-router-dom"
 import { useQuery } from '@tanstack/react-query'
 import { queryKeys } from '@/lib/queryKeys'
@@ -432,21 +465,13 @@ export default function ProductDetailPage() {
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
   const [quantity, setQuantity] = useState(1)
   const [activeTab, setActiveTab] = useState("overview")
-  const [isMobile, setIsMobile] = useState(false)
+
   const [showInquiryModal, setShowInquiryModal] = useState(false)
   const [inquiryData, setInquiryData] = useState({ companyName: "", email: "", phone: "", message: "" })
   const [inquiryStatus, setInquiryStatus] = useState({ loading: false, success: false, error: "" })
   const [imageLoaded, setImageLoaded] = useState(false)
 
-  useEffect(() => {
-    const handleResize = () => {
-      setIsMobile(window.innerWidth < 768)
-    }
 
-    handleResize()
-    window.addEventListener("resize", handleResize)
-    return () => window.removeEventListener("resize", handleResize)
-  }, [])
 
   const { data: product, isLoading: loading, isError, error } = useQuery({
     queryKey: queryKeys.products.detail(id),
@@ -504,15 +529,7 @@ export default function ProductDetailPage() {
     [product, quantity],
   )
 
-  const layoutStyle = useMemo(
-    () => ({ ...styles.layout, ...(isMobile ? styles.layoutMobile : {}) }),
-    [isMobile],
-  )
 
-  const actionGroupStyle = useMemo(
-    () => ({ ...styles.richerActions, ...(isMobile ? styles.richerActionsMobile : {}) }),
-    [isMobile],
-  )
 
   const handleNextImage = useCallback(() => {
     if (!images.length) return
@@ -659,7 +676,8 @@ export default function ProductDetailPage() {
 
   return (
     <div style={styles.pageContainer}>
-      <div style={styles.breadcrumb}>
+      <style>{RESPONSIVE_CSS}</style>
+      <div className="pdp-breadcrumb">
         <span style={styles.breadcrumbLink} onClick={() => navigate("/")}>Home</span>
         <span>›</span>
         <span style={styles.breadcrumbLink} onClick={() => navigate("/categories")}>Categories</span>
@@ -667,14 +685,14 @@ export default function ProductDetailPage() {
         <span style={styles.breadcrumbActive}>{product.category || "Product"}</span>
       </div>
 
-      <div style={styles.header}>
-        <h1 style={styles.headerTitle}>{product.title}</h1>
-        <p style={styles.headerText}>A premium wholesale product detail page focused on fast supplier decision-making, MOQ clarity, transparent pricing, and logistics readiness.</p>
+      <div className="pdp-header">
+        <h1>{product.title}</h1>
+        <p>A premium wholesale product detail page focused on fast supplier decision-making, MOQ clarity, transparent pricing, and logistics readiness.</p>
       </div>
 
-      <div style={layoutStyle}>
-        <div style={styles.galleryCard}>
-          <div style={styles.imageCard}>
+      <div className="pdp-layout">
+        <div className="pdp-gallery">
+          <div className="pdp-image-card">
             {(() => {
 
               const raw = images[currentImageIndex] || product?.imageUrl || product?.image || '';
@@ -705,7 +723,7 @@ export default function ProductDetailPage() {
             </button>
           </div>
 
-          <div style={styles.thumbRow}>
+          <div className="pdp-thumb-row">
             {images.map((image, index) => (
               <button
                 key={image}
@@ -729,7 +747,7 @@ export default function ProductDetailPage() {
           </div>
         </div>
 
-        <div style={styles.productPanel}>
+        <div className="pdp-panel">
           <div style={styles.supplierStrip}>
             <span style={styles.supplierLabel}>
               <FaCheck /> Verified Supplier
@@ -830,7 +848,7 @@ export default function ProductDetailPage() {
             </div>
           </div>
 
-          <div style={actionGroupStyle}>
+          <div className="pdp-actions">
             <button
               type="button"
               style={{
@@ -857,7 +875,7 @@ export default function ProductDetailPage() {
             </button>
           </div>
 
-          <div style={actionGroupStyle}>
+          <div className="pdp-actions">
             <button type="button" style={styles.primaryButton} onClick={handleSendInquiry}>
               <FaTruck /> Send Inquiry
             </button>
@@ -866,7 +884,7 @@ export default function ProductDetailPage() {
             </button>
           </div>
 
-          <div style={styles.infoTabs}>
+          <div className="pdp-tabs">
             {tabItems.map((tab) => (
               <button
                 key={tab.id}
@@ -956,7 +974,7 @@ export default function ProductDetailPage() {
           </div>
         </div>
 
-        <aside style={styles.sidebar}>
+        <aside className="pdp-sidebar">
           <div style={styles.sidebarCard}>
             <h2 style={styles.sidebarTitle}>Quick Facts</h2>
             <p style={styles.sidebarText}>Buyer-focused order details for fast planning and supplier due diligence.</p>
@@ -1010,36 +1028,24 @@ export default function ProductDetailPage() {
         </aside>
       </div>
 
-      {isMobile && (
-        <div style={styles.stickyBar}>
-          <button
-            type="button"
-            style={{
-              ...styles.stickyButton,
-              ...styles.stickyPrimary,
-              opacity: isOrderValid ? 1 : 0.55,
-              cursor: isOrderValid ? "pointer" : "not-allowed",
-            }}
-            onClick={handleAddToCart}
-            disabled={!isOrderValid}
-          >
-            Add to Cart
-          </button>
-          <button
-            type="button"
-            style={{
-              ...styles.stickyButton,
-              ...styles.stickySecondary,
-              opacity: isOrderValid ? 1 : 0.55,
-              cursor: isOrderValid ? "pointer" : "not-allowed",
-            }}
-            onClick={handleBuyNow}
-            disabled={!isOrderValid}
-          >
-            Buy Now
-          </button>
-        </div>
-      )}
+      <div className="pdp-sticky">
+        <button
+          type="button"
+          style={{ ...styles.stickyButton, ...styles.stickyPrimary, opacity: isOrderValid ? 1 : 0.55, cursor: isOrderValid ? "pointer" : "not-allowed" }}
+          onClick={handleAddToCart}
+          disabled={!isOrderValid}
+        >
+          Add to Cart
+        </button>
+        <button
+          type="button"
+          style={{ ...styles.stickyButton, ...styles.stickySecondary, opacity: isOrderValid ? 1 : 0.55, cursor: isOrderValid ? "pointer" : "not-allowed" }}
+          onClick={handleBuyNow}
+          disabled={!isOrderValid}
+        >
+          Buy Now
+        </button>
+      </div>
       {/* Inquiry Modal */}
       {showInquiryModal && (
         <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, backgroundColor: "rgba(0,0,0,0.5)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000, padding: "1rem" }}>
