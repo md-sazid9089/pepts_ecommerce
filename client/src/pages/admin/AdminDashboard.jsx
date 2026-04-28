@@ -894,6 +894,8 @@ export default function AdminDashboard() {
             setFormMessage("✅ Product created and images uploaded successfully!")
           }
         }
+      }
+
       if (editingProduct) {
         setFormMessage("✅ Product updated successfully!")
       } else {
