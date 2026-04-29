@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from "react"
+import { useState, useEffect } from "react"
 import { Link } from "react-router-dom"
 import {
   FaEnvelope,
@@ -11,7 +11,6 @@ import {
   FaPaperPlane,
   FaMapMarkerAlt,
 } from "react-icons/fa"
-import { FiSmartphone, FiMonitor, FiWatch, FiZap } from "react-icons/fi"
 
 // ====================================
 // STYLE OBJECTS
@@ -283,10 +282,6 @@ const styles = {
     color: themeColors.textPrimary,
     paddingLeft: "0.25rem",
   },
-  linkIcon: {
-    fontSize: "1rem",
-    flexShrink: 0,
-  },
 
   // BOTTOM SECTION
   bottom: {
@@ -461,9 +456,9 @@ export default function Footer() {
   ]
 
   const categoriesLinks = [
-    { label: "Dolls", href: "#", icon: FiSmartphone },
-    { label: "Stuffed Toys", href: "#", icon: FiMonitor },
-    { label: "Anime Action Figures", href: "#", icon: FiWatch },
+    { label: "Dolls", href: "#" },
+    { label: "Stuffed Toys", href: "#" },
+    { label: "Anime Action Figures", href: "#" },
   ]
 
   const supportLinks = [
@@ -644,33 +639,28 @@ export default function Footer() {
           </ul>
         </div>
 
-        {/* Column 4: Categories */}
         <div style={styles.column}>
           <h3 style={styles.columnTitle}>CATEGORIES</h3>
           <ul style={styles.links}>
-            {categoriesLinks.map((link, index) => {
-              const Icon = link.icon
-              return (
-                <li key={index}>
-                  <a
-                    href={link.href}
-                    style={{
-                      ...styles.link,
-                      ...(hoveredLinks[`categories-${index}`] ? styles.linkHover : {}),
-                    }}
-                    onMouseEnter={() =>
-                      setHoveredLinks({ ...hoveredLinks, [`categories-${index}`]: true })
-                    }
-                    onMouseLeave={() =>
-                      setHoveredLinks({ ...hoveredLinks, [`categories-${index}`]: false })
-                    }
-                  >
-                    <Icon style={styles.linkIcon} />
-                    {link.label}
-                  </a>
-                </li>
-              )
-            })}
+            {categoriesLinks.map((link, index) => (
+              <li key={index}>
+                <a
+                  href={link.href}
+                  style={{
+                    ...styles.link,
+                    ...(hoveredLinks[`categories-${index}`] ? styles.linkHover : {}),
+                  }}
+                  onMouseEnter={() =>
+                    setHoveredLinks({ ...hoveredLinks, [`categories-${index}`]: true })
+                  }
+                  onMouseLeave={() =>
+                    setHoveredLinks({ ...hoveredLinks, [`categories-${index}`]: false })
+                  }
+                >
+                  {link.label}
+                </a>
+              </li>
+            ))}
           </ul>
         </div>
 
