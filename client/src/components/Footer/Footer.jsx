@@ -484,7 +484,7 @@ export default function Footer() {
     { icon: FaTiktok, href: "#", label: "TikTok" },
   ]
 
-  const paymentMethods = ["Visa", "Mastercard", "bKash", "Nagad", "Rocket", "Cash on Delivery"]
+  const paymentMethods = ["Visa", "Mastercard"]
 
   return (
     <footer style={styles.footer}>
@@ -561,7 +561,7 @@ export default function Footer() {
                 onMouseEnter={() => setHoveredLinks({ ...hoveredLinks, email: true })}
                 onMouseLeave={() => setHoveredLinks({ ...hoveredLinks, email: false })}
               >
-                pepta@gmail.com
+                peptadoll@gmail.com
               </a>
             </div>
             <div style={styles.contactItem}>
@@ -759,7 +759,7 @@ export default function Footer() {
 
       {/* Copyright Section */}
       <section style={{ ...styles.copyright, ...(isMobile ? styles.copyrightMobile : {}) }}>
-        <p style={styles.copyrightText}>&copy; 2024 Pepta Premium Wholesale. All rights reserved.</p>
+        <p style={styles.copyrightText}>&copy;2026 Pepta Premium Wholesale Plush Doll Company | All rights Reserved | Developed by ILLUSION FACTORY</p>
       </section>
     </footer>
   )
