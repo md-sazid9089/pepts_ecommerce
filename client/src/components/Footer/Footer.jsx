@@ -461,10 +461,9 @@ export default function Footer() {
   ]
 
   const categoriesLinks = [
-    { label: "Smartphones", href: "#", icon: FiSmartphone },
-    { label: "Monitors", href: "#", icon: FiMonitor },
-    { label: "Watches", href: "#", icon: FiWatch },
-    { label: "RC Cars", href: "#", icon: FiZap },
+    { label: "Dolls", href: "#", icon: FiSmartphone },
+    { label: "Stuffed Toys", href: "#", icon: FiMonitor },
+    { label: "Anime Action Figures", href: "#", icon: FiWatch },
   ]
 
   const supportLinks = [
