@@ -1,4 +1,5 @@
 import { Component } from 'react'
+import { HiExclamationTriangle } from 'react-icons/hi2'
 
 export default class ErrorBoundary extends Component {
   constructor(props) {
@@ -29,7 +30,7 @@ export default class ErrorBoundary extends Component {
           padding: '2rem',
           textAlign: 'center',
         }}>
-          <div style={{ fontSize: '3rem' }}>⚠️</div>
+          <HiExclamationTriangle style={{ fontSize: '3rem', color: '#f59e0b' }} />
           <h2 style={{ fontSize: '1.5rem', fontWeight: 700, color: '#533638' }}>
             Something went wrong
           </h2>

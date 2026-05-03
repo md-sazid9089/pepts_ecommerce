@@ -1,0 +1,60 @@
+client/src/components/ErrorBoundary.jsx:32: [U+26A0]           <div style={{ fontSize: '3rem' }}>⚠️</div>
+client/src/components/FeaturedProducts/FeaturedProducts.jsx:123: [U+26A1]               <span className="fp-eyebrow">⚡ Most Demanding</span>
+client/src/pages/CartPage.jsx:865: [U+26A0]                           ⚠ MOQ not met. Add {item.moq - item.quantity} more units.
+client/src/pages/CategoriesPage.jsx:11: [U+2728]   "Our Design":     { bg: "#FFF0F3", accent: "#F7B9C4", text: "#533638", emoji: "✨" },
+client/src/pages/CategoriesPage.jsx:12: [U+1F527]   "Custom Build":   { bg: "#F0F4FF", accent: "#93C5FD", text: "#1E3A8A", emoji: "🔧" },
+client/src/pages/CategoriesPage.jsx:13: [U+1F525]   "Popular":        { bg: "#FFF7ED", accent: "#FCD34D", text: "#92400E", emoji: "🔥" },
+client/src/pages/CategoriesPage.jsx:14: [U+26A1]   "Most Demanding": { bg: "#F0FDF4", accent: "#6EE7B7", text: "#065F46", emoji: "⚡" },
+client/src/pages/CategoriesPage.jsx:17: [U+1F4E6] const DEFAULT_ACCENT = { bg: "#F5EDEC", accent: "#F7B9C4", text: "#533638", emoji: "📦" }
+client/src/pages/CheckoutPage.jsx:84: [U+1F6D2]         <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>🛒</div>
+client/src/pages/CheckoutPage.jsx:96: [U+2705]           <div style={s.badge}>✅</div>
+client/src/pages/CheckoutPage.jsx:112: [U+26A0]           ⚠️ <strong>MOQ Warning:</strong> {moqViolations.map(v => `${v.title} requires min. ${v.moq} units`).join(', ')
+client/src/pages/CheckoutPage.jsx:119: [U+1F3E2]           <div style={s.sectionTitle}>🏢 Company Information</div>
+client/src/pages/CheckoutPage.jsx:144: [U+1F4E6]           <div style={s.sectionTitle}>📦 Shipping Address</div>
+client/src/pages/CheckoutPage.jsx:163: [U+1F4CB]             {isSubmitting ? 'Submitting...' : '📋 Submit Wholesale Order'}
+client/src/pages/CheckoutPage.jsx:169: [U+1F4CB]           <div style={s.sectionTitle}>📋 Order Summary</div>
+client/src/pages/LoginPage.jsx:400: [U+2713]                 <div style={styles.featureIcon}>✓</div>
+client/src/pages/LoginPage.jsx:406: [U+2713]                 <div style={styles.featureIcon}>✓</div>
+client/src/pages/LoginPage.jsx:412: [U+2713]                 <div style={styles.featureIcon}>✓</div>
+client/src/pages/ProductDetailPage.jsx:1067: [U+2705]                 ✅ Inquiry sent successfully!
+client/src/pages/ProfilePage.jsx:46: [U+1F512]           <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>🔒</div>
+client/src/pages/ProfilePage.jsx:70: [U+2705]       setMessage('Profile updated successfully! ✅')
+client/src/pages/ProfilePage.jsx:98: [U+1F451]               👑 Admin
+client/src/pages/ProfilePage.jsx:150: [U+270F]               <button style={s.editBtn} onClick={() => setEditing(true)}>✏️ Edit Profile</button>
+client/src/pages/WishlistPage.jsx:38: [U+2764]         <h1 style={s.title}>❤️ My Wishlist {items.length > 0 && <span style={{ fontSize: '1rem', fontWeight: 500, color:
+client/src/pages/WishlistPage.jsx:46: [U+1F494]           <div style={s.emptyIcon}>💔</div>
+client/src/pages/WishlistPage.jsx:59: [U+1F5BC]                   <div style={s.cardImg}>🖼️</div>
+client/src/pages/WishlistPage.jsx:72: [U+1F6D2]                     🛒 Add to Cart
+client/src/pages/WishlistPage.jsx:74: [U+2715]                   <button style={s.removeBtn} onClick={() => removeFromWishlist(product.id)} title="Remove">✕</button>
+client/src/pages/admin/AdminDashboard.jsx:873: [U+26A0]           setFormMessage("⚠️ Request timed out (slow database connection). The product was likely saved — please refresh
+client/src/pages/admin/AdminDashboard.jsx:887: [U+2705]           setFormMessage("Product created ✅, but image upload skipped (no auth token found — please log out and log in a
+client/src/pages/admin/AdminDashboard.jsx:891: [U+274C]             setFormError(`❌ Image upload failed: ${imgRes.message || "Unknown error"}`)
+client/src/pages/admin/AdminDashboard.jsx:894: [U+2705]             setFormMessage("✅ Product created and images uploaded successfully!")
+client/src/pages/admin/AdminDashboard.jsx:900: [U+2705]         setFormMessage("✅ Product updated successfully!")
+client/src/pages/admin/AdminDashboard.jsx:902: [U+2705]         setFormMessage("✅ Product created successfully.")
+client/src/pages/admin/AdminDashboard.jsx:1032: [U+2699]         <div style={styles.logo}>⚙️ Admin</div>
+client/src/pages/admin/AdminDashboard.jsx:1163: [U+1F4C8]                       <p style={styles.statChange}>📈 {stat.change}</p>
+client/src/pages/admin/AdminDashboard.jsx:1413: [U+1F4B0]                   💰 Bulk Pricing Tiers
+client/src/pages/admin/AdminDashboard.jsx:1466: [U+2715]                     >✕</button>
+client/src/pages/admin/AdminDashboard.jsx:1495: [U+1F4CB]                   📋 Specifications
+client/src/pages/admin/AdminDashboard.jsx:1578: [U+1F4F7]                     📷 {imageFiles.length > 0 ? `${imageFiles.length} Images Selected` : "Choose Images"}
+client/src/pages/admin/AdminDashboard.jsx:1686: [U+1F5BC]                                   <div style={{ width: 48, height: 48, borderRadius: "0.375rem", backgroundColor: "#F3F4
+client/src/pages/admin/AdminDashboard.jsx:1733: [U+270F]                                   {editingProduct?.id === product.id ? "Editing..." : "✏️ Edit"}
+client/src/pages/admin/AdminDashboard.jsx:1748: [U+1F4F7]                                     {uploadImageFile[product.id] ? `${uploadImageFile[product.id].length} Files` : "📷 Ch
+client/src/pages/admin/AdminDashboard.jsx:1794: [U+1F5D1]                                   {deletingId === product.id ? "..." : "🗑"}
+client/src/pages/admin/AdminDashboard.jsx:1901: [U+1F4E6]       <h2 style={tbl.title}>📦 Orders</h2>
+client/src/pages/admin/AdminDashboard.jsx:1933: [U+1F4EC]       <h2 style={tbl.title}>📬 Wholesale Inquiries</h2>
+client/src/pages/admin/AdminDashboard.jsx:1944: [U+2713]               <td style={tbl.td}>{inq.status!=='replied'&&<button style={{...tbl.btn,background:'#d1fae5',color:'#065f46
+client/src/pages/admin/AdminDashboard.jsx:1968: [U+1F5C2]       <h2 style={tbl.title}>🗂️ Categories</h2>
+client/src/pages/admin/AdminDashboard.jsx:1976: [U+1F512]         <span style={{ fontSize: '1.1rem', flexShrink: 0 }}>🔒</span>
+client/src/pages/admin/AdminDashboard.jsx:2018: [U+1F512]                       🔒 Protected
+client/src/pages/admin/AdminDashboard.jsx:2050: [U+2605 U+2606]   const stars = (n) => '★'.repeat(n||0) + '☆'.repeat(5-(n||0))
+client/src/pages/admin/AdminDashboard.jsx:2084: [U+1F465]       <h2 style={tbl.title}>👥 Users</h2>
+client/src/pages/admin/AdminDashboard.jsx:2105: [U+1F4B0]       <h2 style={tbl.title}>💰 Bulk Pricing</h2>
+client/src/pages/admin/AdminDashboard.jsx:2108: [U+1F4A1]         💡 Tip: When creating a product, use the <strong>Bulk Pricing Tiers</strong> section to set min quantity, max qua
+client/src/pages/admin/AdminDashboard.jsx:2117: [U+2699]       <h2 style={tbl.title}>⚙️ Settings</h2>
+client/src/pages/admin/AdminLogin.jsx:108: [U+2699]         <div style={s.logo}>⚙️ Pepta Admin</div>
+client/src/pages/admin/AdminLoginPage.jsx:106: [U+2699]           }}>⚙️</div>
+client/src/pages/admin/AdminLoginPage.jsx:123: [U+26A0]             <span>⚠️</span> {error}
+client/src/pages/admin/AdminLoginPage.jsx:180: [U+1F648 U+1F441]                 {showPass ? '🙈' : '👁️'}
+client/src/pages/admin/AdminLoginPage.jsx:214: [U+1F512]           🔒 Admin access only — unauthorised attempts are logged
