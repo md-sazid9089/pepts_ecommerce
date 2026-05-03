@@ -4,244 +4,252 @@ import { useQuery } from "@tanstack/react-query"
 import categoriesApi from "@/services/api/categories.api"
 import CategoryGridSkeleton from "@/components/skeletons/CategoryGridSkeleton"
 
-// ====================================
-// THEME COLORS
-// ====================================
-
-const colors = {
-  darkBrown: "#4A3535",
-  logoBrown: "#5A3D3D",
-  logoOrange: "#5A3D3D",
-  white: "#FFFFFF",
-  lightBg: "#F9F6F5",
-  iconBg: "#F4F4F4",
-  mutedBrown: "#867671",
-  accentText: "#333333",
-  shadowColor: "rgba(74, 53, 53, 0.08)",
+// ── Per-category accent colours ───────────────────────────────────────────────
+const CATEGORY_ACCENTS = {
+  "Our Design":     { overlay: "rgba(83,54,56,0.55)",   badge: "#F7B9C4", badgeText: "#533638" },
+  "Custom Build":   { overlay: "rgba(30,58,138,0.55)",  badge: "#93C5FD", badgeText: "#1E3A8A" },
+  "Popular":        { overlay: "rgba(120,53,15,0.55)",  badge: "#FCD34D", badgeText: "#78350F" },
+  "Most Demanding": { overlay: "rgba(6,78,59,0.55)",    badge: "#6EE7B7", badgeText: "#065F46" },
 }
+const DEFAULT_ACCENT = { overlay: "rgba(30,30,30,0.5)", badge: "#F7B9C4", badgeText: "#533638" }
 
-const sharedStyles = {
-  fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif",
-  transition: "all 0.3s ease",
-}
+const CATEGORY_POSTER = "/images/heroes/marufposterrr.png"
 
-// ====================================
-// STYLE OBJECTS
-// ====================================
+const CSS = `
+  .cs-section {
+    max-width: 1300px;
+    margin: 40px auto;
+    padding: 0 20px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  }
+  .cs-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 2rem;
+  }
+  .cs-title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #4A3535;
+    margin: 0;
+    letter-spacing: 0.3px;
+  }
+  .cs-view-all {
+    background: none;
+    border: none;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #867671;
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    transition: color 0.2s ease;
+    font-family: inherit;
+    padding: 0;
+  }
+  .cs-view-all:hover { color: #4A3535; }
 
-const styles = {
-  container: {
-    maxWidth: "1300px",
-    margin: "40px auto",
-    padding: "0 20px",
-    fontFamily: sharedStyles.fontFamily,
-  },
+  /* ── Grid ── */
+  .cs-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+  }
 
-  headerSection: {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "baseline",
-    marginBottom: "2.5rem",
-  },
+  /* ── Card ── */
+  .cs-card {
+    border-radius: 16px;
+    overflow: hidden;
+    cursor: pointer;
+    position: relative;
+    box-shadow: 0 4px 16px rgba(74,53,53,0.10);
+    transition: transform 0.28s ease, box-shadow 0.28s ease;
+    aspect-ratio: 3 / 4;
+    background: #f5edec;
+  }
+  .cs-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 12px 32px rgba(74,53,53,0.18);
+  }
 
-  title: {
-    fontSize: "2rem",
-    fontWeight: 700,
-    color: colors.darkBrown,
-    margin: 0,
-    letterSpacing: "0.3px",
-  },
+  /* ── Image ── */
+  .cs-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    display: block;
+    transition: transform 0.45s ease;
+  }
+  .cs-card:hover .cs-img { transform: scale(1.06); }
 
-  viewAllLink: {
-    fontSize: "0.9rem",
-    fontWeight: 600,
-    color: colors.mutedBrown,
-    textDecoration: "none",
-    cursor: "pointer",
-    transition: sharedStyles.transition,
-    textTransform: "uppercase",
-    letterSpacing: "0.5px",
-  },
+  /* ── Gradient overlay ── */
+  .cs-overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: 1.25rem 1rem 1rem;
+    gap: 8px;
+    background: linear-gradient(
+      to top,
+      rgba(0,0,0,0.72) 0%,
+      rgba(0,0,0,0.35) 45%,
+      transparent 75%
+    );
+  }
 
-  viewAllLinkHover: {
-    color: colors.darkBrown,
-  },
+  /* ── Badge (category tag at top-left) ── */
+  .cs-badge {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    padding: 3px 10px;
+    border-radius: 20px;
+    backdrop-filter: blur(4px);
+  }
 
-  grid: {
-    display: "flex",
-    flexWrap: "wrap",
-    gap: "30px",
-    justifyContent: "flex-start",
-  },
+  /* ── Bottom text ── */
+  .cs-name {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #fff;
+    margin: 0;
+    text-shadow: 0 1px 6px rgba(0,0,0,0.5);
+    line-height: 1.25;
+  }
+  .cs-count {
+    font-size: 0.8rem;
+    color: rgba(255,255,255,0.8);
+    margin: 0;
+  }
+  .cs-arrow {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.2);
+    backdrop-filter: blur(4px);
+    border: 1px solid rgba(255,255,255,0.35);
+    color: #fff;
+    font-size: 0.85rem;
+    align-self: flex-end;
+    transition: background 0.2s ease;
+    flex-shrink: 0;
+  }
+  .cs-card:hover .cs-arrow {
+    background: rgba(255,255,255,0.35);
+  }
+  .cs-footer {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 8px;
+  }
 
-  cardWrapper: {
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    cursor: "pointer",
-    flex: "0 0 calc(20% - 24px)",
-    minWidth: "150px",
-    transition: sharedStyles.transition,
-  },
-
-  cardWrapperHover: {
-    transform: "translateY(-8px)",
-  },
-
-  imageWrapper: {
-    width: "140px",
-    height: "140px",
-    borderRadius: "50%",
-    backgroundColor: colors.lightBg,
-    overflow: "hidden",
-    border: `2px solid ${colors.shadowColor}`,
-    boxShadow: `0 4px 12px ${colors.shadowColor}`,
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    transition: sharedStyles.transition,
-  },
-
-  imageWrapperHover: {
-    boxShadow: `0 8px 20px rgba(74, 53, 53, 0.15)`,
-  },
-
-  image: {
-    width: "100%",
-    height: "100%",
-    objectFit: "cover",
-    objectPosition: "center",
-  },
-
-  categoryLabel: {
-    marginTop: "12px",
-    fontSize: "0.95rem",
-    fontWeight: 600,
-    color: colors.darkBrown,
-    textAlign: "center",
-    transition: sharedStyles.transition,
-  },
-
-  categoryLabelHover: {
-    color: colors.logoOrange,
-  },
-
-  cardWrapperTablet: {
-    flex: "0 0 calc(33.333% - 20px)",
-  },
-
-  cardWrapperMobile: {
-    flex: "0 0 calc(50% - 15px)",
-  },
-}
-
+  /* ── Responsive ── */
+  @media (max-width: 1024px) {
+    .cs-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (max-width: 520px) {
+    .cs-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+    .cs-title { font-size: 1.5rem; }
+    .cs-card  { aspect-ratio: 1; }
+    .cs-name  { font-size: 0.95rem; }
+  }
+`
 
 export default function CategorySection() {
   const navigate = useNavigate()
-  const [hoveredCard, setHoveredCard] = useState(null)
-  const [hoveredViewAll, setHoveredViewAll] = useState(false)
-  const [windowWidth, setWindowWidth] = useState(typeof window !== "undefined" ? window.innerWidth : 1024)
-
-  useEffect(() => {
-    const handleResize = () => setWindowWidth(window.innerWidth)
-    window.addEventListener("resize", handleResize)
-    return () => window.removeEventListener("resize", handleResize)
-  }, [])
 
   const { data: categoriesResponse, isLoading } = useQuery({
     queryKey: ["categories", "home-section"],
-    queryFn: () => categoriesApi.getAll(),
+    queryFn:  () => categoriesApi.getAll(),
+    staleTime: 5 * 60 * 1000,
   })
 
-  const categories = categoriesResponse?.data?.slice(0, 6) || []
-
-  const getCardStyle = () => {
-    if (windowWidth < 640) {
-      return styles.cardWrapperMobile
-    } else if (windowWidth < 1024) {
-      return styles.cardWrapperTablet
-    }
-    return styles.cardWrapper
-  }
+  const categories = categoriesResponse?.data?.slice(0, 4) || []
 
   const handleCategoryClick = (categoryName) => {
     navigate(`/products?category=${encodeURIComponent(categoryName)}`)
   }
 
-  const handleViewAll = () => {
-    navigate("/categories")
-  }
-
   return (
-    <section style={styles.container}>
-      <div style={styles.headerSection}>
-        <h2 style={styles.title}>Shop by Category</h2>
-        <a
-          href="#"
-          style={{
-            ...styles.viewAllLink,
-            ...(hoveredViewAll ? styles.viewAllLinkHover : {}),
-          }}
-          onMouseEnter={() => setHoveredViewAll(true)}
-          onMouseLeave={() => setHoveredViewAll(false)}
-          onClick={(e) => {
-            e.preventDefault()
-            handleViewAll()
-          }}
-        >
-          View All →
-        </a>
-      </div>
-
-      {isLoading ? (
-        <CategoryGridSkeleton />
-      ) : (
-      <div style={styles.grid}>
-        {categories.map((category) => (
-          <div
-            key={category.id}
-            style={{
-              ...getCardStyle(),
-              ...(hoveredCard === category.id ? styles.cardWrapperHover : {}),
-            }}
-            onClick={() => handleCategoryClick(category.name)}
-            onMouseEnter={() => setHoveredCard(category.id)}
-            onMouseLeave={() => setHoveredCard(null)}
-            role="button"
-            tabIndex={0}
-            aria-label={`Shop ${category.name}`}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" || e.key === " ") {
-                handleCategoryClick(category.name)
-              }
-            }}
+    <>
+      <style>{CSS}</style>
+      <section className="cs-section">
+        <div className="cs-header">
+          <h2 className="cs-title">Shop by Category</h2>
+          <button
+            className="cs-view-all"
+            onClick={() => navigate("/categories")}
           >
-            <div
-              style={{
-                ...styles.imageWrapper,
-                ...(hoveredCard === category.id ? styles.imageWrapperHover : {}),
-              }}
-            >
-              <img
-                src={category.icon || "/images/heroes/marufposterrr.png"}
-                alt={category.name}
-                style={styles.image}
-                onError={(e) => { e.target.src = "/images/heroes/marufposterrr.png" }}
-              />
-            </div>
+            View All →
+          </button>
+        </div>
 
-            <span
-              style={{
-                ...styles.categoryLabel,
-                ...(hoveredCard === category.id ? styles.categoryLabelHover : {}),
-              }}
-            >
-              {category.name}
-            </span>
+        {isLoading ? (
+          <CategoryGridSkeleton />
+        ) : (
+          <div className="cs-grid">
+            {categories.map((cat) => {
+              const accent = CATEGORY_ACCENTS[cat.name] ?? DEFAULT_ACCENT
+
+              return (
+                <div
+                  key={cat.id}
+                  className="cs-card"
+                  onClick={() => handleCategoryClick(cat.name)}
+                  role="button"
+                  tabIndex={0}
+                  aria-label={`Shop ${cat.name}`}
+                  onKeyDown={(e) =>
+                    (e.key === "Enter" || e.key === " ") && handleCategoryClick(cat.name)
+                  }
+                >
+                  {/* Image */}
+                  <img
+                    src={cat.icon || CATEGORY_POSTER}
+                    alt={cat.name}
+                    className="cs-img"
+                    loading="lazy"
+                    onError={(e) => { e.target.src = CATEGORY_POSTER }}
+                  />
+
+                  {/* Top badge */}
+                  <span
+                    className="cs-badge"
+                    style={{ backgroundColor: accent.badge, color: accent.badgeText }}
+                  >
+                    {cat.name}
+                  </span>
+
+                  {/* Bottom overlay */}
+                  <div className="cs-overlay">
+                    <div className="cs-footer">
+                      <div>
+                        <p className="cs-name">{cat.name}</p>
+                        <p className="cs-count">
+                          {cat.productCount ?? 0} {cat.productCount === 1 ? "product" : "products"}
+                        </p>
+                      </div>
+                      <div className="cs-arrow">→</div>
+                    </div>
+                  </div>
+                </div>
+              )
+            })}
           </div>
-        ))}
-      </div>
-      )}
-    </section>
+        )}
+      </section>
+    </>
   )
 }

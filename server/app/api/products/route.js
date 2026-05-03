@@ -55,11 +55,16 @@ export async function GET(request) {
 
     const { page, pageSize, search, category, sortBy, sortOrder } = parsed.data
 
+    // Detect admin — admins see ALL products (including drafts/inactive)
+    const user = verifyJwt(request)
+    const adminMode = user?.role === "admin"
+
     const { items, total } = await productsService.getAll(page, pageSize, {
       search,
       category,
       sortBy,
       sortOrder,
+      adminMode,
     })
 
     const response = apiResponse.paginated(items, total, page, pageSize, "Products fetched successfully")
@@ -74,6 +79,7 @@ export async function GET(request) {
     return apiResponse.serverError("Failed to fetch products", error)
   }
 }
+
 
 // ─── POST /api/products (admin only) ────────────────────────────────────────
 

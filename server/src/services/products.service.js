@@ -16,7 +16,7 @@
 
 import prisma from "@/lib/prisma"
 
-const DEFAULT_CATEGORY_NAME = "General"
+
 
 /**
  * Map a raw Prisma product record to the API response shape.
@@ -94,7 +94,9 @@ export async function getAll(page = 1, pageSize = 20, filters = {}) {
     const orderBy = { [sortField]: sortDir }
 
     // Build the "where" clause for Prisma findMany
-    const where = { isActive: true }
+    // adminMode: true → skip the isActive filter (admin sees ALL products including drafts)
+    // adminMode: false (default) → public view, only active products
+    const where = filters.adminMode ? {} : { isActive: true }
 
     // Handle category filter (support both ID and Name)
     if (filters.category) {

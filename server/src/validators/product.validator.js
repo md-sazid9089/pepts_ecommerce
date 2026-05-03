@@ -35,7 +35,7 @@ export const createProductSchema = z.object({
     .min(1, "Category name cannot be empty")
     .max(100, "Category name too long")
     .optional()
-    .default("General"),
+    .default("Our Design"),
 
   brand: z.string().trim().max(100).optional(),
   moq: z.number().int().nonnegative().optional().default(1),

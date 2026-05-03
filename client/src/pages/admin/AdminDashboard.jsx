@@ -980,6 +980,24 @@ export default function AdminDashboard() {
     }
   }, [productPage, fetchProducts, adminQueryClient])
 
+  const handleToggleActive = useCallback(async (product) => {
+    const newState = !product.isActive
+    const label = newState ? 'activate' : 'deactivate'
+    if (!window.confirm(`${newState ? 'Publish' : 'Unpublish'} "${product.title}"?`)) return
+    try {
+      const res = await productsApi.update(product.id, { isActive: newState })
+      if (res.success) {
+        // Optimistic update in local state
+        setProducts(prev => prev.map(p => p.id === product.id ? { ...p, isActive: newState } : p))
+        adminQueryClient.invalidateQueries({ queryKey: queryKeys.products.all })
+      } else {
+        alert(`Failed to ${label}: ${res.message || 'Unknown error'}`)
+      }
+    } catch (err) {
+      alert(`Toggle error: ${err.message}`)
+    }
+  }, [adminQueryClient])
+
   useEffect(() => {
     if (activePage === "products") {
       fetchProducts()
@@ -1646,6 +1664,7 @@ export default function AdminDashboard() {
                         <th style={styles.productTableHeader}>Category</th>
                         <th style={styles.productTableHeader}>Price</th>
                         <th style={styles.productTableHeader}>Stock</th>
+                        <th style={styles.productTableHeader}>Status</th>
                         <th style={styles.productTableHeader}>Edit</th>
                         <th style={styles.productTableHeader}>Upload</th>
                         <th style={styles.productTableHeader}>Delete</th>
@@ -1671,8 +1690,34 @@ export default function AdminDashboard() {
                                 {product.title || product.name}
                               </td>
                               <td style={styles.productTableCell}>{product.category || "General"}</td>
-                              <td style={styles.productTableCell}>${(product.price || 0).toFixed(2)}</td>
+                              <td style={styles.productTableCell}>৳{(product.price || 0).toFixed(2)}</td>
                               <td style={styles.productTableCell}>{product.stock ?? 0}</td>
+                              {/* Status badge + toggle */}
+                              <td style={styles.productTableCell}>
+                                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '4px' }}>
+                                  <span style={{
+                                    display: 'inline-flex', alignItems: 'center', gap: '4px',
+                                    padding: '2px 8px', borderRadius: '20px', fontSize: '11px', fontWeight: 700,
+                                    backgroundColor: product.isActive ? '#d1fae5' : '#fee2e2',
+                                    color:           product.isActive ? '#065f46' : '#991b1b',
+                                    border:          product.isActive ? '1px solid #6ee7b7' : '1px solid #fca5a5',
+                                  }}>
+                                    {product.isActive ? '● Active' : '○ Draft'}
+                                  </span>
+                                  <button
+                                    onClick={() => handleToggleActive(product)}
+                                    style={{
+                                      padding: '2px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: 600,
+                                      backgroundColor: product.isActive ? '#fef3c7' : '#ecfdf5',
+                                      color:           product.isActive ? '#92400e' : '#065f46',
+                                      border:          product.isActive ? '1px solid #fcd34d' : '1px solid #6ee7b7',
+                                      cursor: 'pointer',
+                                    }}
+                                  >
+                                    {product.isActive ? 'Unpublish' : 'Publish'}
+                                  </button>
+                                </div>
+                              </td>
                               <td style={styles.productTableCell}>
                                 <button
                                   onClick={() => handleEditClick(product)}
@@ -1753,7 +1798,7 @@ export default function AdminDashboard() {
                           ))
                       ) : (
                         <tr>
-                          <td style={styles.productTableCell} colSpan={7}>
+                          <td style={styles.productTableCell} colSpan={9}>
                             No products found in the backend catalog.
                           </td>
                         </tr>
