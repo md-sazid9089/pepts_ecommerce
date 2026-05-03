@@ -1,41 +1,85 @@
 import { NextResponse } from 'next/server'
 
 /**
+ * ============================================================================
+ * CORS MIDDLEWARE
+ * ============================================================================
+ * Handles CORS preflight (OPTIONS) and attaches Access-Control headers to
+ * every /api/* response.
+ *
+ * ROOT CAUSE OF CHROME/FIREFOX FAILURES:
+ * The browser Origin header includes the subdomain (https://www.pepta.shopping).
+ * If FRONTEND_URL only listed https://pepta.shopping (no www), the exact-match
+ * failed → resolvedOrigin was null → no CORS headers → browser blocked request.
+ *
+ * FIX: Always parse FRONTEND_URL at runtime PLUS add a domain-pattern fallback
+ * so any *.pepta.shopping subdomain is also allowed.
+ * ============================================================================
+ */
+
+/** Production domains that are always trusted, regardless of env var. */
+const PRODUCTION_DOMAINS = [
+  'https://www.pepta.shopping',
+  'https://pepta.shopping',
+]
+
+/**
  * Returns the list of allowed CORS origins, parsed fresh at runtime.
- * IMPORTANT: Must be called inside the middleware function (not at module level)
- * so that Vercel Edge Runtime has fully loaded the environment variables.
+ * Called INSIDE the middleware function so Edge Runtime has loaded env vars.
  */
 function getAllowedOrigins() {
-  const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:5173"
-  return FRONTEND_URL.split(",").map((u) => u.trim())
+  const raw = process.env.FRONTEND_URL || 'http://localhost:5173'
+  const fromEnv = raw.split(',').map((u) => u.trim()).filter(Boolean)
+  // Merge env list with hardcoded production domains (deduped)
+  return [...new Set([...PRODUCTION_DOMAINS, ...fromEnv])]
 }
 
 /**
- * Returns the single matching origin to use in Access-Control-Allow-Origin,
- * or null if the request origin is not allowed.
+ * Returns the exact origin string to use in Access-Control-Allow-Origin,
+ * or null if the request origin is not trusted.
+ *
+ * Priority:
+ *   1. Exact match in allow-list
+ *   2. Any *.pepta.shopping subdomain
+ *   3. localhost / 127.0.0.1 (dev)
+ *   4. *.vercel.app (preview deploys)
  */
 function resolveAllowedOrigin(origin) {
-  if (!origin) return null   // no origin = same-site / server-to-server, skip CORS
-  const allowedOrigins = getAllowedOrigins()
-  if (allowedOrigins.includes(origin)) return origin
+  if (!origin) return null  // same-site / server-to-server — skip CORS
+
+  const allowed = getAllowedOrigins()
+
+  // 1. Exact match
+  if (allowed.includes(origin)) return origin
+
+  // 2. Any pepta.shopping subdomain (handles www, app, api, preview, etc.)
+  try {
+    const { hostname } = new URL(origin)
+    if (hostname === 'pepta.shopping' || hostname.endsWith('.pepta.shopping')) {
+      return origin
+    }
+  } catch {
+    // malformed origin — deny
+  }
+
+  // 3. Localhost / 127.0.0.1 for local dev
   if (origin.includes('localhost') || origin.includes('127.0.0.1')) return origin
+
+  // 4. Vercel preview deployments
   if (origin.endsWith('.vercel.app')) return origin
+
   return null
 }
 
-function isAllowedOrigin(origin) {
-  return resolveAllowedOrigin(origin) !== null
-}
-
 /**
- * Decode a JWT payload WITHOUT verification (safe for edge routing decisions).
- * Full signature verification happens inside route handlers using jsonwebtoken.
+ * Decode a JWT payload WITHOUT verification (safe for Edge routing decisions).
+ * Full signature verification happens inside route handlers via jsonwebtoken.
  */
 function decodeJwtPayload(token) {
   try {
-    const parts = token.split(".")
+    const parts = token.split('.')
     if (parts.length !== 3) return null
-    const base64 = parts[1].replace(/-/g, "+").replace(/_/g, "/")
+    const base64 = parts[1].replace(/-/g, '+').replace(/_/g, '/')
     const decoded = JSON.parse(atob(base64))
     if (decoded.exp && decoded.exp < Math.floor(Date.now() / 1000)) return null
     return decoded
@@ -44,70 +88,62 @@ function decodeJwtPayload(token) {
   }
 }
 
+/** Attach all CORS headers to a response (mutates in-place). */
+function applyCorsHeaders(response, resolvedOrigin) {
+  if (!resolvedOrigin) return
+  response.headers.set('Access-Control-Allow-Origin',      resolvedOrigin)
+  response.headers.set('Access-Control-Allow-Methods',     'GET, POST, PUT, PATCH, DELETE, OPTIONS')
+  response.headers.set('Access-Control-Allow-Headers',     'Content-Type, Authorization, X-Requested-With, Accept, Cache-Control')
+  response.headers.set('Access-Control-Allow-Credentials', 'true')
+  response.headers.set('Access-Control-Max-Age',           '86400')
+  response.headers.set('Vary',                             'Origin')
+}
+
 export function middleware(request) {
   const { pathname } = request.nextUrl
   const origin = request.headers.get('origin')
   const resolvedOrigin = resolveAllowedOrigin(origin)
 
-  // ─── 1. Handle Preflight (OPTIONS) ───
+  // ── 1. Preflight (OPTIONS) ─────────────────────────────────────────────────
+  // Chrome and Firefox send an OPTIONS request before the real request.
+  // We MUST return 200 (or 204) immediately with CORS headers — no route handler.
   if (request.method === 'OPTIONS') {
-    const response = new NextResponse(null, { status: 204 })
-    if (resolvedOrigin) {
-      response.headers.set('Access-Control-Allow-Origin', resolvedOrigin)
-      response.headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS')
-      response.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept, Cache-Control, Pragma, Expires')
-      response.headers.set('Access-Control-Allow-Credentials', 'true')
-      response.headers.set('Access-Control-Max-Age', '86400')
-      response.headers.set('Vary', 'Origin')
-    }
+    const response = new NextResponse(null, { status: 200 })
+    applyCorsHeaders(response, resolvedOrigin)
     return response
   }
 
-  // ─── 2. Handle JWT Protection for /api/protected/* ───
-  if (pathname.startsWith("/api/protected")) {
-    const authHeader = request.headers.get("authorization")
-    const token = authHeader && authHeader.startsWith("Bearer ") ? authHeader.substring(7) : null
+  // ── 2. JWT Protection for /api/protected/* ────────────────────────────────
+  if (pathname.startsWith('/api/protected')) {
+    const authHeader = request.headers.get('authorization')
+    const token = authHeader?.startsWith('Bearer ') ? authHeader.substring(7) : null
 
     if (!token || !decodeJwtPayload(token)) {
       const response = NextResponse.json(
-        { success: false, code: 401, message: "Unauthorized — Invalid or missing token" },
+        { success: false, code: 401, message: 'Unauthorized — Invalid or missing token' },
         { status: 401 }
       )
-      if (resolvedOrigin) {
-        response.headers.set('Access-Control-Allow-Origin', resolvedOrigin)
-        response.headers.set('Access-Control-Allow-Credentials', 'true')
-        response.headers.set('Vary', 'Origin')
-      }
+      applyCorsHeaders(response, resolvedOrigin)
       return response
     }
-    
-    // Add user info to headers for downstream
+
     const decoded = decodeJwtPayload(token)
     const requestHeaders = new Headers(request.headers)
-    requestHeaders.set("x-user-id", decoded.userId || "")
-    requestHeaders.set("x-user-role", decoded.role || "customer")
-    
+    requestHeaders.set('x-user-id',   decoded.userId || '')
+    requestHeaders.set('x-user-role', decoded.role   || 'customer')
+
     const response = NextResponse.next({ request: { headers: requestHeaders } })
-    if (resolvedOrigin) {
-      response.headers.set('Access-Control-Allow-Origin', resolvedOrigin)
-      response.headers.set('Access-Control-Allow-Credentials', 'true')
-      response.headers.set('Vary', 'Origin')
-    }
+    applyCorsHeaders(response, resolvedOrigin)
     return response
   }
 
-  // ─── 3. Handle Regular Requests ───
+  // ── 3. All other API requests ─────────────────────────────────────────────
   const response = NextResponse.next()
-  if (resolvedOrigin) {
-    response.headers.set('Access-Control-Allow-Origin', resolvedOrigin)
-    response.headers.set('Access-Control-Allow-Credentials', 'true')
-    response.headers.set('Vary', 'Origin')
-  }
-
+  applyCorsHeaders(response, resolvedOrigin)
   return response
 }
 
-// Run middleware for all API routes
+// Apply to all /api/* paths only
 export const config = {
   matcher: '/api/:path*',
 }

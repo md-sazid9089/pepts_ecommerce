@@ -28,17 +28,16 @@ const nextConfig = {
   compress: true,
   productionBrowserSourceMaps: false,
 
-  // ✅ Security + Cache headers for all API routes
-  // NOTE: CORS headers are handled dynamically in middleware.js (per-origin)
-  // Do NOT add Access-Control-Allow-Origin here — it would duplicate the header.
+  // ✅ Security + CORS headers for all API routes
+  // NOTE: Dynamic per-origin CORS is handled in middleware.js.
+  // The headers below are a static fallback (CDN / edge cache safety net).
   async headers() {
     return [
       {
         source: "/api/:path*",
         headers: [
-          // ✅ Cache-Control
-          { key: "Cache-Control",          value: "no-store, no-cache, must-revalidate" },
           // Security headers
+          { key: "Cache-Control",          value: "no-store, no-cache, must-revalidate" },
           { key: "X-Content-Type-Options", value: "nosniff" },
           { key: "X-Frame-Options",        value: "DENY" },
           { key: "X-XSS-Protection",       value: "1; mode=block" },
