@@ -460,8 +460,12 @@ const overviewPoints = [
 ]
 
 export default function ProductDetailPage() {
-  const { id } = useParams()
+  const { id: rawId } = useParams()
   const navigate = useNavigate()
+
+  // useParams always returns strings — parse to Int to match DB schema
+  const productId = parseInt(rawId, 10)
+
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
   const [quantity, setQuantity] = useState(1)
   const [activeTab, setActiveTab] = useState("overview")
@@ -471,24 +475,29 @@ export default function ProductDetailPage() {
   const [inquiryStatus, setInquiryStatus] = useState({ loading: false, success: false, error: "" })
   const [imageLoaded, setImageLoaded] = useState(false)
 
-
+  // Redirect immediately if the URL segment is not a valid integer
+  useEffect(() => {
+    if (isNaN(productId)) {
+      navigate("/404", { replace: true })
+    }
+  }, [productId, navigate])
 
   const { data: product, isLoading: loading, isError, error } = useQuery({
-    queryKey: queryKeys.products.detail(id),
+    queryKey: queryKeys.products.detail(productId),
     queryFn: async () => {
-      const response = await productsApi.getById(id)
+      const response = await productsApi.getById(productId)
       if (!response.success) throw new Error(response.message || "Failed to fetch product")
       return response.data
     },
-    enabled: !!id,
-    gcTime: 1000 * 60 * 5, // Keep in cache for 5 minutes
-    staleTime: 1000 * 60 * 2, // Consider fresh for 2 minutes
+    enabled: !isNaN(productId),
+    gcTime: 1000 * 60 * 5,
+    staleTime: 1000 * 60 * 2,
     retry: 2,
-    // Always show skeleton on initial mount and when data is missing
   })
 
-  // scroll to top on id change
-  useEffect(() => { window.scrollTo(0, 0) }, [id])
+
+  // scroll to top on productId change
+  useEffect(() => { window.scrollTo(0, 0) }, [productId])
   // sync quantity to moq when product loads
   useEffect(() => { if (product?.moq) setQuantity(product.moq) }, [product?.moq])
 
@@ -641,7 +650,7 @@ export default function ProductDetailPage() {
   useEffect(() => { 
     setCurrentImageIndex(0) 
     setImageLoaded(false)
-  }, [id])
+  }, [productId])
 
   if (loading || !product) {
     return (

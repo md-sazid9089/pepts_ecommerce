@@ -32,10 +32,9 @@ function verifyJwt(request) {
 
 export async function GET(request, { params }) {
   try {
-    const { id } = await params
-    if (!id || typeof id !== "string") {
-      return apiResponse.error("Invalid product ID", 400)
-    }
+    const { id: rawId } = await params
+    const id = parseInt(rawId, 10)
+    if (isNaN(id)) return apiResponse.error("Invalid product ID — must be an integer", 400)
 
     const product = await productsService.getById(id)
     if (!product) {
@@ -57,8 +56,9 @@ export async function PUT(request, { params }) {
     if (!user) return apiResponse.unauthorized("Authentication required")
     if (user.role !== "admin") return apiResponse.forbidden("Admin access required")
 
-    const { id } = await params
-    if (!id) return apiResponse.error("Invalid product ID", 400)
+    const { id: rawId } = await params
+    const id = parseInt(rawId, 10)
+    if (isNaN(id)) return apiResponse.error("Invalid product ID — must be an integer", 400)
 
     let body
     try {
@@ -95,8 +95,9 @@ export async function DELETE(request, { params }) {
     if (!user) return apiResponse.unauthorized("Authentication required")
     if (user.role !== "admin") return apiResponse.forbidden("Admin access required")
 
-    const { id } = await params
-    if (!id) return apiResponse.error("Invalid product ID", 400)
+    const { id: rawId } = await params
+    const id = parseInt(rawId, 10)
+    if (isNaN(id)) return apiResponse.error("Invalid product ID — must be an integer", 400)
 
     await productsService.deleteProduct(id)
     return apiResponse.success(null, "Product deleted successfully")

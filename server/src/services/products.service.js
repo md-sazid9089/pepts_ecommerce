@@ -233,7 +233,7 @@ export async function getById(productId) {
  */
 export async function createProduct(data) {
   try {
-    const categoryName = (data.categoryName || DEFAULT_CATEGORY_NAME).trim()
+    const categoryName = (data.categoryName || "Our Design").trim()
 
     const category = await prisma.category.upsert({
       where: { name: categoryName },

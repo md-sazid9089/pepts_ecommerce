@@ -45,8 +45,9 @@ export async function POST(request, { params }) {
     if (user.role !== "admin") return apiResponse.forbidden("Admin access required")
 
     // 2. Get product ID
-    const { id } = await params
-    if (!id) return apiResponse.error("Invalid product ID", 400)
+    const { id: rawId } = await params
+    const id = parseInt(rawId, 10)
+    if (isNaN(id)) return apiResponse.error("Invalid product ID — must be an integer", 400)
 
     // 3. Check product exists
     const product = await prisma.product.findUnique({ where: { id } })
@@ -118,7 +119,7 @@ export async function POST(request, { params }) {
         data: uploadedUrls.map((url, index) => ({
           url,
           order: index,
-          productId: id,
+      productId: id,
         })),
       })
     }
@@ -141,7 +142,9 @@ export async function DELETE(request, { params }) {
     if (!user) return apiResponse.unauthorized("Authentication required")
     if (user.role !== "admin") return apiResponse.forbidden("Admin access required")
 
-    const { id } = await params
+    const { id: rawId } = await params
+    const id = parseInt(rawId, 10)
+    if (isNaN(id)) return apiResponse.error("Invalid product ID — must be an integer", 400)
     const product = await prisma.product.findUnique({ where: { id } })
     if (!product) return apiResponse.notFound(`Product "${id}" not found`)
 
