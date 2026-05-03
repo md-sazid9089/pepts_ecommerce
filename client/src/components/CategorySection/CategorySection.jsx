@@ -164,8 +164,8 @@ export default function CategorySection() {
     return styles.cardWrapper
   }
 
-  const handleCategoryClick = (categoryId) => {
-    navigate(`/products?category=${categoryId}`)
+  const handleCategoryClick = (categoryName) => {
+    navigate(`/products?category=${encodeURIComponent(categoryName)}`)
   }
 
   const handleViewAll = () => {
@@ -204,15 +204,15 @@ export default function CategorySection() {
               ...getCardStyle(),
               ...(hoveredCard === category.id ? styles.cardWrapperHover : {}),
             }}
-            onClick={() => handleCategoryClick(category.id)}
+            onClick={() => handleCategoryClick(category.name)}
             onMouseEnter={() => setHoveredCard(category.id)}
             onMouseLeave={() => setHoveredCard(null)}
             role="button"
             tabIndex={0}
             aria-label={`Shop ${category.name}`}
-            onKeyPress={(e) => {
+            onKeyDown={(e) => {
               if (e.key === "Enter" || e.key === " ") {
-                handleCategoryClick(category.id)
+                handleCategoryClick(category.name)
               }
             }}
           >
@@ -223,10 +223,10 @@ export default function CategorySection() {
               }}
             >
               <img
-                src={category.icon || "/images/placeholder.png"}
+                src={category.icon || "/images/heroes/marufposterrr.png"}
                 alt={category.name}
                 style={styles.image}
-                onError={(e) => { e.target.src = "/images/placeholder.png" }}
+                onError={(e) => { e.target.src = "/images/heroes/marufposterrr.png" }}
               />
             </div>
 

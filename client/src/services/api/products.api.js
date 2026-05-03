@@ -193,15 +193,14 @@ export const productsApi = {
   },
 
   /**
-   * Get featured/trending products
-   * @returns {Promise<object>} - Featured products
+   * Get "Most Demanding" featured products (up to 8)
+   * Endpoint: GET /api/products/featured
+   * React Query key: ['products', 'featured']
+   * @returns {Promise<object[]>} array of product objects
    */
   getFeatured: async () => {
     try {
-      const response = await apiClient.get("/api/products", {
-        featured: true,
-        pageSize: 10,
-      })
+      const response = await apiClient.get("/api/products/featured")
       return response
     } catch (error) {
       return {

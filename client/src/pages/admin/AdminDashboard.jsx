@@ -618,6 +618,7 @@ export default function AdminDashboard() {
   const [productPage, setProductPage] = useState(1)
   const [deletingId, setDeletingId] = useState(null)
   const [editingProduct, setEditingProduct] = useState(null)
+  const [categories, setCategories] = useState([])
   const adminQueryClient = useQueryClient()
 
   const [stats, setStats] = useState([
@@ -686,7 +687,7 @@ export default function AdminDashboard() {
     description: "",
     price: "",
     stock: "",
-    categoryName: "General",
+    categoryName: "",
     moq: "",
     casePackSize: "",
     // Specification fields
@@ -784,7 +785,7 @@ export default function AdminDashboard() {
       description: product.description || "",
       price: product.price || "",
       stock: product.stock || "",
-      categoryName: product.category || "General",
+      categoryName: product.category || "",
       moq: product.moq || "",
       casePackSize: product.casePackSize || "",
       specHeight: product.specs?.height || "",
@@ -793,7 +794,6 @@ export default function AdminDashboard() {
       specPackage: product.specs?.package || "",
       specTier: product.specs?.tier || "",
     })
-    
     if (product.bulkPrices && product.bulkPrices.length > 0) {
       setPricingRows(product.bulkPrices.map(tier => ({
         min: tier.minQuantity ?? tier.min ?? "",
@@ -815,7 +815,7 @@ export default function AdminDashboard() {
   const handleCancelEdit = useCallback(() => {
     setEditingProduct(null)
     setProductForm({
-      title: "", brand: "", description: "", price: "", stock: "", categoryName: "General",
+      title: "", brand: "", description: "", price: "", stock: "", categoryName: "",
       moq: "", casePackSize: "", specHeight: "", specMaterial: "", specClothing: "", specPackage: "", specTier: "",
     })
     setPricingRows([defaultPricingRow()])
@@ -904,7 +904,7 @@ export default function AdminDashboard() {
 
       setEditingProduct(null)
       setProductForm({
-        title: "", brand: "", description: "", price: "", stock: "", categoryName: "General",
+        title: "", brand: "", description: "", price: "", stock: "", categoryName: "",
         moq: "", casePackSize: "", specHeight: "", specMaterial: "", specClothing: "", specPackage: "", specTier: "",
       })
       setPricingRows([defaultPricingRow()])
@@ -983,6 +983,12 @@ export default function AdminDashboard() {
   useEffect(() => {
     if (activePage === "products") {
       fetchProducts()
+      // Fetch categories for the dropdown
+      categoriesApi.getAll().then((res) => {
+        if (res.success && Array.isArray(res.data)) {
+          setCategories(res.data)
+        }
+      }).catch(() => {})
     }
   }, [activePage, fetchProducts])
 
@@ -1357,15 +1363,29 @@ export default function AdminDashboard() {
                 </div>
 
                 <div style={styles.formGroup}>
-                  <label style={styles.formLabel} htmlFor="categoryName">Category</label>
-                  <input
+                  <label style={styles.formLabel} htmlFor="categoryName">Category *</label>
+                  <select
                     id="categoryName"
-                    type="text"
                     value={productForm.categoryName}
                     onChange={handleFormChange("categoryName")}
                     style={styles.formInput}
-                    placeholder="General"
-                  />
+                    required
+                  >
+                    <option value="" disabled>Select a category</option>
+                    {categories.length > 0
+                      ? categories.map((cat) => (
+                          <option key={cat.id} value={cat.name}>
+                            {cat.name}
+                          </option>
+                        ))
+                      : (
+                          // Fallback static options if API hasn't loaded yet
+                          ["Our Design", "Custom Build", "Popular", "Most Demanding"].map((name) => (
+                            <option key={name} value={name}>{name}</option>
+                          ))
+                        )
+                    }
+                  </select>
                 </div>
               </div>
 
@@ -1885,38 +1905,78 @@ const InquiriesSection = memo(function InquiriesSection() {
   )
 })
 
+const PROTECTED_CATEGORY_NAMES = ["Our Design", "Custom Build", "Popular", "Most Demanding"]
+
 const CategoriesSection = memo(function CategoriesSection() {
   const [cats, setCats] = useState([])
   const [loading, setLoading] = useState(true)
-  const [newCat, setNewCat] = useState('')
-  const [saving, setSaving] = useState(false)
+
   useEffect(() => {
-    categoriesApi.getAll().then(r => { if (r.success) setCats(r.data?.items || r.data || []); setLoading(false) })
+    categoriesApi.getAll().then((r) => {
+      if (r.success) setCats(r.data || [])
+      setLoading(false)
+    }).catch(() => setLoading(false))
   }, [])
-  const addCat = async () => {
-    if (!newCat.trim()) return
-    setSaving(true)
-    const r = await categoriesApi.create({ name: newCat.trim() })
-    if (r.success) { setCats(p => [...p, r.data]); setNewCat('') }
-    setSaving(false)
-  }
+
   return (
     <div style={tbl.card}>
       <h2 style={tbl.title}>🗂️ Categories</h2>
-      <div style={{ display:'flex', gap:'0.75rem', marginBottom:'1.5rem' }}>
-        <input value={newCat} onChange={e=>setNewCat(e.target.value)} placeholder="New category name" style={{ flex:1, padding:'0.7rem 1rem', borderRadius:'0.5rem', border:'1px solid #d1d5db', fontSize:'0.9rem', outline:'none' }} />
-        <button onClick={addCat} disabled={saving} style={{ ...tbl.btn, background:'#533638', color:'#fff', padding:'0.7rem 1.25rem', borderRadius:'0.5rem' }}>+ Add</button>
+
+      {/* Info banner */}
+      <div style={{
+        display: 'flex', alignItems: 'flex-start', gap: '0.75rem',
+        background: '#fef3c7', border: '1px solid #fcd34d',
+        borderRadius: '0.5rem', padding: '0.9rem 1rem', marginBottom: '1.5rem',
+      }}>
+        <span style={{ fontSize: '1.1rem', flexShrink: 0 }}>🔒</span>
+        <div>
+          <p style={{ margin: 0, fontWeight: 600, color: '#92400e', fontSize: '0.9rem' }}>
+            Platform-fixed categories
+          </p>
+          <p style={{ margin: '0.25rem 0 0', color: '#78350f', fontSize: '0.825rem' }}>
+            These 4 categories are permanently defined and cannot be added, renamed, or deleted.
+            Assign products to one of these categories when creating or editing a product.
+          </p>
+        </div>
       </div>
-      {loading ? <p style={tbl.loading}>Loading...</p> : cats.length === 0 ? <p style={tbl.empty}>No categories yet.</p> : (
+
+      {loading ? (
+        <p style={tbl.loading}>Loading…</p>
+      ) : (
         <table style={tbl.table}>
-          <thead><tr>{['Name','Slug','Products'].map(h=><th key={h} style={tbl.th}>{h}</th>)}</tr></thead>
-          <tbody>{cats.map((c,i) => (
-            <tr key={c.id||i}>
-              <td style={tbl.td}><strong>{c.name}</strong></td>
-              <td style={tbl.td}>{c.slug||c.name?.toLowerCase().replace(/\s+/g,'-')}</td>
-              <td style={tbl.td}>{c._count?.products ?? c.productCount ?? '—'}</td>
+          <thead>
+            <tr>
+              {['Category Name', 'Active Products', 'Status'].map(h => (
+                <th key={h} style={tbl.th}>{h}</th>
+              ))}
             </tr>
-          ))}</tbody>
+          </thead>
+          <tbody>
+            {/* Always render in the canonical order, fall back to static list */}
+            {PROTECTED_CATEGORY_NAMES.map((name) => {
+              const cat = cats.find((c) => c.name === name)
+              return (
+                <tr key={name}>
+                  <td style={tbl.td}>
+                    <strong style={{ color: '#111827' }}>{name}</strong>
+                  </td>
+                  <td style={tbl.td}>
+                    {cat ? (cat.productCount ?? '—') : '—'}
+                  </td>
+                  <td style={tbl.td}>
+                    <span style={{
+                      display: 'inline-flex', alignItems: 'center', gap: '4px',
+                      backgroundColor: '#f0fdf4', color: '#166534',
+                      border: '1px solid #bbf7d0', borderRadius: '20px',
+                      padding: '2px 10px', fontSize: '0.775rem', fontWeight: 600,
+                    }}>
+                      🔒 Protected
+                    </span>
+                  </td>
+                </tr>
+              )
+            })}
+          </tbody>
         </table>
       )}
     </div>

@@ -1,7 +1,7 @@
-import { useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useQuery, keepPreviousData } from '@tanstack/react-query';
 import productsApi from '@/services/api/products.api';
+import categoriesApi from '@/services/api/categories.api';
 import ProductCard from '@/components/ProductCard/ProductCard';
 import ProductCardSkeleton from '@/components/skeletons/ProductCardSkeleton';
 import { queryKeys } from '@/lib/queryKeys';
@@ -50,6 +50,39 @@ const styles = {
     flexDirection: 'column',
     gap: '20px',
   },
+  // ── Category filter bar ──
+  categoryBar: {
+    backgroundColor: 'white',
+    borderRadius: '8px',
+    border: '1px solid #F5EDEC',
+    padding: '12px 16px',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
+    flexWrap: 'wrap',
+  },
+  categoryLabel: {
+    fontSize: '12px',
+    fontWeight: '700',
+    color: '#533638',
+    textTransform: 'uppercase',
+    letterSpacing: '0.5px',
+    marginRight: '4px',
+    flexShrink: 0,
+  },
+  categoryBtn: (active) => ({
+    padding: '7px 16px',
+    borderRadius: '20px',
+    border: active ? 'none' : '1px solid #E2E8F0',
+    fontSize: '13px',
+    fontWeight: active ? '700' : '500',
+    cursor: 'pointer',
+    backgroundColor: active ? '#533638' : 'white',
+    color: active ? 'white' : '#533638',
+    transition: 'all 0.2s ease',
+    whiteSpace: 'nowrap',
+  }),
+  // ── Controls bar ──
   topControls: {
     display: 'flex',
     justifyContent: 'space-between',
@@ -151,53 +184,67 @@ const styles = {
   },
 };
 
-// ─── Pagination Logic ────────────────────────────────────────────────────────
-/**
- * Builds the array of page numbers / ellipsis markers to display.
- * Always shows first + last; up to 5 consecutive numbers around current.
- */
+// ─── Pagination helper ────────────────────────────────────────────────────────
 function buildPageRange(current, total) {
-  if (total <= 7) {
-    return Array.from({ length: total }, (_, i) => i + 1);
-  }
-
-  const delta = 2; // pages on each side of current
-  const range = [];
-
-  // Always include page 1
-  range.push(1);
-
+  if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
+  const delta = 2;
+  const range = [1];
   const left  = Math.max(2, current - delta);
   const right = Math.min(total - 1, current + delta);
-
-  if (left > 2)       range.push('...');
+  if (left > 2) range.push('...');
   for (let i = left; i <= right; i++) range.push(i);
   if (right < total - 1) range.push('...');
-
-  // Always include last page
   range.push(total);
-
   return range;
 }
 
 // ─── Component ───────────────────────────────────────────────────────────────
 export default function ProductsPage() {
   const [searchParams, setSearchParams] = useSearchParams();
-  const searchQuery = searchParams.get('search') || '';
+  const searchQuery  = searchParams.get('search')   || '';
+  const activeCategory = searchParams.get('category') || '';          // category name
   const page = Math.max(1, parseInt(searchParams.get('page') || '1', 10));
-  const [sortBy, setSortBy] = useState('popular');
+  const sortBy = searchParams.get('sort') || 'popular';
 
-  // Derive sort params for the API
+  // ── Helper: update a single URL param, reset page to 1 unless explicitly kept ──
+  function setParam(key, value, keepPage = false) {
+    const params = new URLSearchParams(searchParams);
+    if (value) {
+      params.set(key, value);
+    } else {
+      params.delete(key);
+    }
+    if (!keepPage) params.set('page', '1');
+    setSearchParams(params, { replace: false });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function goToPage(p) {
+    const params = new URLSearchParams(searchParams);
+    params.set('page', String(Math.max(1, Math.min(p, totalPages))));
+    setSearchParams(params, { replace: false });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  // Sort param mapping → API fields
   const sortMap = {
-    'price-low':  { sortBy: 'price', sortOrder: 'asc' },
-    'price-high': { sortBy: 'price', sortOrder: 'desc' },
+    'price-low':  { sortBy: 'price',     sortOrder: 'asc'  },
+    'price-high': { sortBy: 'price',     sortOrder: 'desc' },
     'newest':     { sortBy: 'createdAt', sortOrder: 'desc' },
     'popular':    {},
     'rating':     {},
   };
   const sortFilters = sortMap[sortBy] || {};
 
-  // ── React Query ──────────────────────────────────────────────────────────
+  // ── Fetch categories ─────────────────────────────────────────────────────
+  const { data: categoriesData } = useQuery({
+    queryKey: queryKeys.categories.list(),
+    queryFn:  () => categoriesApi.getAll(),
+    staleTime: 5 * 60 * 1000, // 5 min — categories rarely change
+  });
+  const categories = categoriesData?.data ?? [];
+
+  // ── Fetch products ───────────────────────────────────────────────────────
   const {
     data: queryData,
     isLoading,
@@ -205,42 +252,45 @@ export default function ProductsPage() {
     isError,
     error: queryError,
   } = useQuery({
-    queryKey: queryKeys.products.list({ page, limit: LIMIT, search: searchQuery, ...sortFilters }),
+    queryKey: queryKeys.products.list({
+      page,
+      limit: LIMIT,
+      search: searchQuery,
+      category: activeCategory,
+      ...sortFilters,
+    }),
     queryFn: () =>
-      productsApi.getAll(page, LIMIT, { search: searchQuery, ...sortFilters }),
-    placeholderData: keepPreviousData, // v5: keeps old page visible while next page loads
+      productsApi.getAll(page, LIMIT, {
+        search:   searchQuery,
+        category: activeCategory || undefined,
+        ...sortFilters,
+      }),
+    placeholderData: keepPreviousData,
   });
 
-  const products   = queryData?.data?.items       ?? [];
-  const pagination = queryData?.data?.pagination   ?? {};
-  const total      = pagination.total             ?? 0;
-  const totalPages = pagination.totalPages        ?? 1;
+  const products   = queryData?.data?.items      ?? [];
+  const pagination = queryData?.data?.pagination ?? {};
+  const total      = pagination.total            ?? 0;
+  const totalPages = pagination.totalPages       ?? 1;
 
-  // Computed "Showing X-Y of Z"
   const rangeStart = total === 0 ? 0 : (page - 1) * LIMIT + 1;
   const rangeEnd   = Math.min(page * LIMIT, total);
-
   const error = isError ? (queryError?.message || 'Failed to load products') : null;
-
-  // ── Navigation ───────────────────────────────────────────────────────────
-  function goToPage(p) {
-    const next = Math.max(1, Math.min(p, totalPages));
-    const params = new URLSearchParams(searchParams);
-    params.set('page', String(next));
-    setSearchParams(params, { replace: false });
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  }
 
   const pageRange = buildPageRange(page, totalPages);
 
-  // ── Render ───────────────────────────────────────────────────────────────
+  // ─── Render ───────────────────────────────────────────────────────────────
   return (
     <div style={styles.container}>
       {/* Page Header */}
       <div style={styles.pageHeader}>
         <div style={styles.headerContent}>
           <h1 style={styles.title}>
-            {searchQuery ? `Results for "${searchQuery}"` : 'All Products'}
+            {searchQuery
+              ? `Results for "${searchQuery}"`
+              : activeCategory
+              ? activeCategory
+              : 'All Products'}
           </h1>
           <p style={styles.subtitle}>
             {isLoading
@@ -255,11 +305,54 @@ export default function ProductsPage() {
       {/* Content */}
       <div style={styles.contentWrapper}>
         <main style={styles.mainContent}>
-          {/* Top Controls */}
+
+          {/* ── Category Filter Bar ── */}
+          <div style={styles.categoryBar} role="group" aria-label="Filter by category">
+            <span style={styles.categoryLabel}>Category:</span>
+
+            {/* All */}
+            <button
+              id="category-filter-all"
+              style={styles.categoryBtn(!activeCategory)}
+              onClick={() => setParam('category', '')}
+              aria-pressed={!activeCategory}
+            >
+              All
+            </button>
+
+            {/* Dynamic category buttons from API */}
+            {categories.map((cat) => (
+              <button
+                key={cat.id}
+                id={`category-filter-${cat.id}`}
+                style={styles.categoryBtn(activeCategory === cat.name)}
+                onClick={() => setParam('category', cat.name)}
+                aria-pressed={activeCategory === cat.name}
+                title={`${cat.productCount ?? 0} products`}
+              >
+                {cat.name}
+                {cat.productCount > 0 && (
+                  <span style={{
+                    marginLeft: '6px',
+                    fontSize: '11px',
+                    opacity: 0.75,
+                    fontWeight: '500',
+                  }}>
+                    ({cat.productCount})
+                  </span>
+                )}
+              </button>
+            ))}
+          </div>
+
+          {/* ── Top Controls: summary + sort ── */}
           <div style={styles.topControls}>
             <div style={styles.filterSummary}>
               {!isLoading && total > 0 && (
-                <>Showing <strong>{rangeStart}–{rangeEnd}</strong> of <strong>{total}</strong> products</>
+                <>
+                  Showing <strong>{rangeStart}–{rangeEnd}</strong> of <strong>{total}</strong> products
+                  {activeCategory && <> in <strong>{activeCategory}</strong></>}
+                </>
               )}
               {isLoading && 'Loading…'}
             </div>
@@ -267,10 +360,7 @@ export default function ProductsPage() {
               <span>Sort by:</span>
               <select
                 value={sortBy}
-                onChange={(e) => {
-                  setSortBy(e.target.value);
-                  goToPage(1); // reset to page 1 on sort change
-                }}
+                onChange={(e) => setParam('sort', e.target.value)}
                 style={styles.sortSelect}
               >
                 <option value="popular">Most Popular</option>
@@ -298,7 +388,7 @@ export default function ProductsPage() {
             </div>
           )}
 
-          {/* Products Grid (dim while fetching next page) */}
+          {/* Products Grid (dimmed while fetching next page) */}
           {!isLoading && products.length > 0 && (
             <div style={isFetching ? { ...styles.grid, ...styles.loadingOverlay } : styles.grid}>
               {products.map(product => (
@@ -310,7 +400,28 @@ export default function ProductsPage() {
           {/* Empty State */}
           {!isLoading && products.length === 0 && !error && (
             <div style={styles.emptyState}>
-              <p style={styles.emptyText}>No products found in our catalog.</p>
+              <p style={styles.emptyText}>
+                {activeCategory
+                  ? `No products found in "${activeCategory}".`
+                  : 'No products found in our catalog.'}
+              </p>
+              {activeCategory && (
+                <button
+                  onClick={() => setParam('category', '')}
+                  style={{
+                    padding: '10px 24px',
+                    backgroundColor: '#533638',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '6px',
+                    cursor: 'pointer',
+                    fontWeight: '600',
+                    fontSize: '13px',
+                  }}
+                >
+                  View all products
+                </button>
+              )}
             </div>
           )}
 
@@ -322,7 +433,6 @@ export default function ProductsPage() {
               </p>
 
               <nav aria-label="Product page navigation" style={styles.pagination}>
-                {/* Prev */}
                 <button
                   id="pagination-prev"
                   aria-label="Previous page"
@@ -333,7 +443,6 @@ export default function ProductsPage() {
                   ‹ Prev
                 </button>
 
-                {/* Page numbers + ellipsis */}
                 {pageRange.map((item, idx) =>
                   item === '...' ? (
                     <span key={`ellipsis-${idx}`} style={styles.ellipsis}>…</span>
@@ -351,7 +460,6 @@ export default function ProductsPage() {
                   )
                 )}
 
-                {/* Next */}
                 <button
                   id="pagination-next"
                   aria-label="Next page"
@@ -364,6 +472,7 @@ export default function ProductsPage() {
               </nav>
             </div>
           )}
+
         </main>
       </div>
     </div>

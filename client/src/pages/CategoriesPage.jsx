@@ -1,598 +1,399 @@
-import { useState, useEffect, useMemo } from "react"
+import { useState, useMemo, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 import { useQuery } from "@tanstack/react-query"
-import { FaSearch, FaBox, FaStar, FaChevronRight } from "react-icons/fa"
+import { FaSearch, FaBox, FaArrowRight, FaTag } from "react-icons/fa"
 import categoriesApi from "@/services/api/categories.api"
 import CategoryGridSkeleton from "@/components/skeletons/CategoryGridSkeleton"
+import { queryKeys } from "@/lib/queryKeys"
 
-// ... existing styles ... (skipping for brevity in thought, but I'll include them in the call)
+// ─── Category accent colours ─────────────────────────────────────────────────
+const CATEGORY_ACCENTS = {
+  "Our Design":     { bg: "#FFF0F3", accent: "#F7B9C4", text: "#533638", emoji: "✨" },
+  "Custom Build":   { bg: "#F0F4FF", accent: "#93C5FD", text: "#1E3A8A", emoji: "🔧" },
+  "Popular":        { bg: "#FFF7ED", accent: "#FCD34D", text: "#92400E", emoji: "🔥" },
+  "Most Demanding": { bg: "#F0FDF4", accent: "#6EE7B7", text: "#065F46", emoji: "⚡" },
+}
+
+const DEFAULT_ACCENT = { bg: "#F5EDEC", accent: "#F7B9C4", text: "#533638", emoji: "📦" }
 
 const styles = {
-  pageContainer: {
+  page: {
     minHeight: "100vh",
-    background: "#ffffff",
-    fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif",
+    backgroundColor: "#F5EDEC",
+    fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
   },
 
-  // Hero Banner
-  heroBanner: {
-    background: "linear-gradient(135deg, #1e293b 0%, #0f172a 100%)",
+  // Hero
+  hero: {
+    background: "linear-gradient(135deg, #533638 0%, #3d2829 100%)",
     color: "#ffffff",
-    padding: "4rem 2rem",
+    padding: "4rem 2rem 3rem",
     textAlign: "center",
-    marginBottom: "3rem",
     position: "relative",
     overflow: "hidden",
   },
-  heroBannerContent: {
-    maxWidth: "900px",
+  heroDeco: {
+    position: "absolute",
+    inset: 0,
+    background:
+      "radial-gradient(ellipse at 30% 50%, rgba(247,185,196,0.15) 0%, transparent 60%)," +
+      "radial-gradient(ellipse at 70% 50%, rgba(247,185,196,0.10) 0%, transparent 60%)",
+    pointerEvents: "none",
+  },
+  heroInner: {
+    maxWidth: "700px",
     margin: "0 auto",
     position: "relative",
-    zIndex: 2,
+    zIndex: 1,
   },
-  heroBannerTitle: {
+  heroEyebrow: {
+    display: "inline-block",
+    backgroundColor: "rgba(247,185,196,0.2)",
+    color: "#F7B9C4",
+    border: "1px solid rgba(247,185,196,0.4)",
+    borderRadius: "20px",
+    padding: "4px 16px",
+    fontSize: "12px",
+    fontWeight: 600,
+    letterSpacing: "1px",
+    textTransform: "uppercase",
+    marginBottom: "1rem",
+  },
+  heroTitle: {
     fontSize: "2.5rem",
     fontWeight: 700,
-    margin: "0 0 1rem 0",
-    letterSpacing: "0.5px",
+    margin: "0 0 0.75rem 0",
+    letterSpacing: "-0.5px",
   },
-  heroBannerSubtitle: {
-    fontSize: "1.125rem",
-    color: "#e2e8f0",
+  heroSubtitle: {
+    fontSize: "1.05rem",
+    color: "rgba(255,255,255,0.75)",
     margin: 0,
-    fontWeight: 400,
   },
 
-  // Breadcrumb
-  breadcrumb: {
-    display: "flex",
-    alignItems: "center",
-    gap: "0.5rem",
-    fontSize: "0.875rem",
-    color: "#94a3b8",
-    marginBottom: "1.5rem",
-    justifyContent: "center",
-  },
-  breadcrumbItem: {
-    color: "#94a3b8",
-    textDecoration: "none",
-    cursor: "pointer",
-    transition: "color 0.2s ease",
-  },
-  breadcrumbItemHover: {
-    color: "#ffffff",
-  },
-  breadcrumbActive: {
-    color: "#ffffff",
-    fontWeight: 600,
-  },
-
-  // Main Container
-  mainContainer: {
-    display: "grid",
-    gridTemplateColumns: "1fr",
-    gap: "2rem",
-    maxWidth: "1400px",
+  // Content
+  content: {
+    maxWidth: "1200px",
     margin: "0 auto",
-    padding: "0 1.5rem 3rem 1.5rem",
-  },
-  mainContainerMobile: {
-    gridTemplateColumns: "1fr",
-    gap: "1rem",
+    padding: "2rem 1.5rem 4rem",
   },
 
-  // Sidebar
-  sidebar: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "1.5rem",
-  },
-  sidebarMobile: {
-    display: "none",
-  },
-  sidebarMobileOpen: {
-    display: "flex",
-    position: "fixed",
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
-    zIndex: 40,
-    alignItems: "flex-start",
-    justifyContent: "flex-start",
-  },
-
-  sidebarContent: {
-    background: "#ffffff",
-    padding: "1.5rem",
-    borderRadius: "0.5rem",
-    width: "100%",
-  },
-  sidebarMobileContent: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    width: "100%",
-    maxWidth: "300px",
-    height: "100vh",
-    overflowY: "auto",
-    background: "#ffffff",
-    padding: "1.5rem 1rem",
-    zIndex: 41,
-  },
-
-  sidebarHeader: {
+  // Controls bar
+  controls: {
     display: "flex",
     alignItems: "center",
-    justifyContent: "space-between",
-    marginBottom: "1rem",
-  },
-  sidebarTitle: {
-    fontSize: "1rem",
-    fontWeight: 700,
-    color: "#111827",
-    margin: 0,
-  },
-  closeBtn: {
-    background: "none",
-    border: "none",
-    fontSize: "1.5rem",
-    cursor: "pointer",
-    color: "#6b7280",
-    display: "none",
-    padding: 0,
-  },
-  closeBtnShow: {
-    display: "flex",
-  },
-
-  filterGroup: {
-    paddingBottom: "1.5rem",
-    borderBottom: "1px solid #e5e7eb",
-  },
-  filterGroupLast: {
-    borderBottom: "none",
-  },
-  filterLabel: {
-    fontSize: "0.875rem",
-    fontWeight: 600,
-    color: "#111827",
-    marginBottom: "1rem",
-    textTransform: "uppercase",
-    letterSpacing: "0.5px",
-    display: "block",
-  },
-  filterOptions: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "0.75rem",
-  },
-  filterCheckbox: {
-    display: "flex",
-    alignItems: "center",
-    gap: "0.5rem",
-    cursor: "pointer",
-  },
-  filterCheckboxInput: {
-    width: "1rem",
-    height: "1rem",
-    cursor: "pointer",
-    accentColor: "#1e293b",
-  },
-  filterCheckboxLabel: {
-    fontSize: "0.875rem",
-    color: "#374151",
-    cursor: "pointer",
-    userSelect: "none",
-    flex: 1,
-  },
-
-  // Content Area
-  contentArea: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "2rem",
-  },
-
-  // Top Controls
-  topControls: {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "flex-start",
-    gap: "1rem",
+    gap: "12px",
+    marginBottom: "2rem",
     flexWrap: "wrap",
   },
-  topControlsMobile: {
-    flexWrap: "wrap",
-  },
-
-  searchBox: {
+  searchWrap: {
     position: "relative",
-    flex: 0,
-    minWidth: "300px",
+    flex: "1",
+    minWidth: "220px",
+    maxWidth: "380px",
   },
   searchIcon: {
     position: "absolute",
-    left: "0.75rem",
+    left: "12px",
     top: "50%",
     transform: "translateY(-50%)",
-    color: "#9ca3af",
+    color: "#A0AEC0",
+    fontSize: "14px",
     pointerEvents: "none",
   },
   searchInput: {
     width: "100%",
-    padding: "0.625rem 0.75rem 0.625rem 2.25rem",
-    border: "1px solid #e5e7eb",
-    borderRadius: "0.5rem",
-    fontSize: "0.875rem",
+    padding: "10px 12px 10px 36px",
+    border: "1px solid #E2E8F0",
+    borderRadius: "8px",
+    fontSize: "14px",
+    backgroundColor: "white",
     outline: "none",
-    transition: "all 0.3s ease",
     fontFamily: "inherit",
+    boxSizing: "border-box",
+    transition: "border-color 0.2s ease, box-shadow 0.2s ease",
   },
-  searchInputFocus: {
-    borderColor: "#1e293b",
-    boxShadow: "0 0 0 3px rgba(30, 41, 59, 0.1)",
-  },
-
-  filterToggle: {
-    display: "none",
-    alignItems: "center",
-    gap: "0.5rem",
-    padding: "0.625rem 1rem",
-    border: "1px solid #e5e7eb",
-    borderRadius: "0.5rem",
-    background: "#ffffff",
-    cursor: "pointer",
-    fontWeight: 500,
-    color: "#111827",
-    fontSize: "0.875rem",
-    transition: "all 0.2s ease",
-    fontFamily: "inherit",
-  },
-  filterToggleMobile: {
-    display: "flex",
-  },
-  filterToggleHover: {
-    borderColor: "#1e293b",
-    backgroundColor: "#f3f4f6",
+  countBadge: {
+    marginLeft: "auto",
+    fontSize: "13px",
+    color: "#667C7F",
+    fontWeight: "500",
+    whiteSpace: "nowrap",
   },
 
-  sortSelect: {
-    padding: "0.625rem 0.75rem",
-    border: "1px solid #e5e7eb",
-    borderRadius: "0.5rem",
-    fontSize: "0.875rem",
-    cursor: "pointer",
-    background: "#ffffff",
-    color: "#111827",
-    outline: "none",
-    transition: "all 0.2s ease",
-    fontFamily: "inherit",
-  },
-  sortSelectHover: {
-    borderColor: "#1e293b",
-  },
-
-  // Results Count
-  resultsInfo: {
-    fontSize: "0.875rem",
-    color: "#6b7280",
-  },
-
-  // Categories Grid
-  categoriesGrid: {
+  // Grid
+  grid: {
     display: "grid",
-    gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))",
+    gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))",
     gap: "1.5rem",
   },
-  categoriesGridMobile: {
-    gridTemplateColumns: "repeat(2, 1fr)",
-    gap: "1rem",
-  },
 
-  // Category Card
-  categoryCard: {
+  // Category card
+  card: (hovered, accent) => ({
+    backgroundColor: "white",
+    borderRadius: "16px",
+    overflow: "hidden",
+    border: `1px solid ${hovered ? accent.accent : "#E2E8F0"}`,
+    boxShadow: hovered
+      ? `0 12px 32px rgba(0,0,0,0.12)`
+      : "0 2px 8px rgba(0,0,0,0.06)",
+    transform: hovered ? "translateY(-4px)" : "translateY(0)",
+    transition: "all 0.25s ease",
+    cursor: "pointer",
     display: "flex",
     flexDirection: "column",
-    gap: "1rem",
-    cursor: "pointer",
-    transition: "all 0.3s ease",
-    backgroundColor: "#ffffff",
-  },
-  categoryCardHover: {
-    transform: "translateY(-4px)",
-  },
-
-  categoryImageContainer: {
+  }),
+  cardTop: {
     position: "relative",
     overflow: "hidden",
-    borderRadius: "0.75rem",
-    backgroundColor: "#f3f4f6",
-    aspectRatio: "1",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    border: "1px solid #e5e7eb",
-    transition: "all 0.3s ease",
+    borderRadius: "14px 14px 0 0",
   },
-  categoryImageContainerHover: {
-    borderColor: "#1e293b",
-    boxShadow: "0 4px 12px rgba(30, 41, 59, 0.1)",
-  },
-
-  categoryImage: {
+  imageBox: (accent) => ({
+    width: "100%",
+    aspectRatio: "4 / 3",
+    overflow: "hidden",
+    position: "relative",
+    borderRadius: "14px 14px 0 0",
+    backgroundColor: accent.bg,
+  }),
+  imageBoxImg: {
     width: "100%",
     height: "100%",
     objectFit: "cover",
-    transition: "transform 0.3s ease",
+    objectPosition: "center",
+    display: "block",
+    transition: "transform 0.35s ease",
   },
-  categoryImageHover: {
-    transform: "scale(1.05)",
-  },
-
-  categoryBadge: {
+  imageOverlay: (accent) => ({
     position: "absolute",
-    top: "0.75rem",
-    right: "0.75rem",
-    backgroundColor: "rgba(30, 41, 59, 0.9)",
-    color: "#ffffff",
-    padding: "0.375rem 0.75rem",
-    borderRadius: "2rem",
-    fontSize: "0.75rem",
-    fontWeight: 600,
-    textTransform: "uppercase",
-    letterSpacing: "0.5px",
-    display: "none",
-  },
-
-  categoryInfo: {
+    inset: 0,
+    background: `linear-gradient(to top, ${accent.text}cc 0%, transparent 55%)`,
     display: "flex",
     flexDirection: "column",
-    gap: "0.5rem",
-  },
-
-  categoryName: {
-    fontSize: "1rem",
-    fontWeight: 600,
-    color: "#111827",
-    margin: 0,
-    textAlign: "center",
-  },
-
-  categoryMeta: {
-    display: "none",
-    alignItems: "center",
-    gap: "0.5rem",
-    fontSize: "0.8rem",
-    color: "#6b7280",
-  },
-
-  categoryMetaIcon: {
-    fontSize: "0.75rem",
-  },
-
-  categoryDescription: {
-    display: "none",
-    fontSize: "0.8rem",
-    color: "#9ca3af",
-    margin: 0,
-  },
-
-  categoryButton: {
-    padding: "0.625rem 1rem",
-    backgroundColor: "#f3f4f6",
-    border: "1px solid #e5e7eb",
-    borderRadius: "0.5rem",
-    color: "#111827",
-    fontWeight: 500,
-    cursor: "pointer",
-    transition: "all 0.2s ease",
-    fontSize: "0.875rem",
-    fontFamily: "inherit",
-  },
-  categoryButtonHover: {
-    backgroundColor: "#1e293b",
+    justifyContent: "flex-end",
+    padding: "1rem 1rem 0.75rem",
+    gap: "6px",
+  }),
+  overlayName: {
+    fontSize: "1.05rem",
+    fontWeight: 700,
     color: "#ffffff",
-    borderColor: "#1e293b",
+    margin: 0,
+    textShadow: "0 1px 4px rgba(0,0,0,0.5)",
   },
-
-  // Empty State
-  emptyState: {
+  cardName: {
+    fontSize: "0.9rem",
+    fontWeight: 600,
+    color: "#533638",
+    margin: 0,
     textAlign: "center",
-    padding: "3rem 1rem",
-    color: "#6b7280",
   },
-  emptyStateIcon: {
+  productCountPill: (accent) => ({
+    display: "inline-flex",
+    alignItems: "center",
+    gap: "4px",
+    backgroundColor: accent.accent + "33",
+    color: accent.text,
+    border: `1px solid ${accent.accent}`,
+    borderRadius: "20px",
+    padding: "3px 12px",
+    fontSize: "12px",
+    fontWeight: 600,
+  }),
+  cardBottom: {
+    padding: "1rem 1.5rem",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    borderTop: "1px solid #F5EDEC",
+    marginTop: "auto",
+  },
+  browseText: {
+    fontSize: "13px",
+    fontWeight: 600,
+    color: "#533638",
+  },
+  arrowCircle: (hovered, accent) => ({
+    width: "32px",
+    height: "32px",
+    borderRadius: "50%",
+    backgroundColor: hovered ? accent.accent : "#F5EDEC",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    transition: "background-color 0.2s ease",
+    flexShrink: 0,
+  }),
+
+  // Empty state
+  empty: {
+    textAlign: "center",
+    padding: "4rem 2rem",
+    backgroundColor: "white",
+    borderRadius: "16px",
+    border: "1px solid #E2E8F0",
+  },
+  emptyIcon: {
     fontSize: "3rem",
-    color: "#d1d5db",
+    color: "#CBD5E0",
     marginBottom: "1rem",
   },
-  emptyStateTitle: {
+  emptyTitle: {
     fontSize: "1.25rem",
-    fontWeight: 600,
-    color: "#111827",
-    marginBottom: "0.5rem",
+    fontWeight: 700,
+    color: "#2D3748",
+    margin: "0 0 0.5rem 0",
   },
-  emptyStateText: {
-    fontSize: "0.95rem",
-    color: "#6b7280",
+  emptyText: {
+    fontSize: "14px",
+    color: "#A0AEC0",
+    margin: 0,
   },
 }
 
-// Mock data removed in favor of API fetching
-
+// ─── Component ────────────────────────────────────────────────────────────────
 export default function CategoriesPage() {
-  const [searchTerm, setSearchTerm] = useState("")
-  const [sortBy, setSortBy] = useState("popular")
+  const [searchTerm, setSearchTerm]   = useState("")
   const [hoveredCard, setHoveredCard] = useState(null)
-  const [focusedSearch, setFocusedSearch] = useState(false)
-  const [isMobile, setIsMobile] = useState(() =>
-    typeof window !== "undefined" ? window.innerWidth < 768 : false
-  )
+  const [focused, setFocused]         = useState(false)
   const navigate = useNavigate()
 
-  useEffect(() => {
-    const handleResize = () => setIsMobile(window.innerWidth < 768)
-    window.addEventListener("resize", handleResize, { passive: true })
-    return () => window.removeEventListener("resize", handleResize)
-  }, [])
-
+  // Fetch categories from API
   const { data: categoriesResponse, isLoading } = useQuery({
-    queryKey: ["categories", "list"],
-    queryFn: () => categoriesApi.getAll(),
+    queryKey: queryKeys.categories.list(),
+    queryFn:  () => categoriesApi.getAll(),
+    staleTime: 5 * 60 * 1000,
   })
 
-  const categories = useMemo(() => {
-    return categoriesResponse?.data || []
-  }, [categoriesResponse])
+  const categories = useMemo(
+    () => categoriesResponse?.data ?? [],
+    [categoriesResponse]
+  )
 
-  // Filter categories based on search term
-  const filteredCategories = useMemo(() => {
-    return categories.filter((cat) =>
-      cat.name.toLowerCase().includes(searchTerm.toLowerCase())
-    )
-  }, [categories, searchTerm])
+  // Client-side search filter
+  const filtered = useMemo(
+    () =>
+      categories.filter((cat) =>
+        cat.name.toLowerCase().includes(searchTerm.toLowerCase())
+      ),
+    [categories, searchTerm]
+  )
 
-  // Sort categories
-  const sortedCategories = useMemo(() => {
-    return [...filteredCategories].sort((a, b) => {
-      switch (sortBy) {
-        case "name":
-          return a.name.localeCompare(b.name)
-        default:
-          return 0
-      }
-    })
-  }, [filteredCategories, sortBy])
-
-  const handleCategoryClick = (id) => {
-    navigate(`/products?category=${id}`)
+  // Navigate to /products?category=<name> (filter by name, not id)
+  function handleCategoryClick(categoryName) {
+    navigate(`/products?category=${encodeURIComponent(categoryName)}`)
   }
 
   return (
-    <div style={styles.pageContainer}>
-      {/* Hero Banner */}
-      <div style={styles.heroBanner}>
-        <div style={styles.heroBannerContent}>
-          <div style={styles.breadcrumb}>
-            <span
-              style={styles.breadcrumbItem}
-              onClick={() => navigate("/")}
-              onMouseEnter={(e) => (e.target.style.color = "#ffffff")}
-              onMouseLeave={(e) => (e.target.style.color = "#94a3b8")}
-            >
-              Home
-            </span>
-            <FaChevronRight style={{ fontSize: "0.625rem" }} />
-            <span style={styles.breadcrumbActive}>Categories</span>
-          </div>
-          <h1 style={styles.heroBannerTitle}>Explore All Categories</h1>
-          <p style={styles.heroBannerSubtitle}>Browse our complete collection of premium products and find what you&apos;re looking for</p>
+    <div style={styles.page}>
+      {/* ── Hero ── */}
+      <div style={styles.hero}>
+        <div style={styles.heroDeco} />
+        <div style={styles.heroInner}>
+          <span style={styles.heroEyebrow}>Browse by Category</span>
+          <h1 style={styles.heroTitle}>Explore All Categories</h1>
+          <p style={styles.heroSubtitle}>
+            Browse our complete collection of premium wholesale products
+          </p>
         </div>
       </div>
 
-      {/* Main Container */}
-      <div style={{ ...styles.mainContainer, ...(isMobile ? styles.mainContainerMobile : {}) }}>
-        {/* Content Area */}
-        <div style={styles.contentArea}>
-          {/* Top Controls */}
-          <div style={{ ...styles.topControls, ...(isMobile ? styles.topControlsMobile : {}) }}>
-            <div style={styles.searchBox}>
-              <FaSearch style={styles.searchIcon} />
-              <input
-                type="text"
-                placeholder="Search categories..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                onFocus={() => setFocusedSearch(true)}
-                onBlur={() => setFocusedSearch(false)}
-                style={{
-                  ...styles.searchInput,
-                  ...(focusedSearch ? styles.searchInputFocus : {}),
-                }}
-              />
-            </div>
+      {/* ── Main Content ── */}
+      <div style={styles.content}>
+        {/* Controls */}
+        <div style={styles.controls}>
+          <div style={styles.searchWrap}>
+            <FaSearch style={styles.searchIcon} />
+            <input
+              id="category-search"
+              type="text"
+              placeholder="Search categories…"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              onFocus={() => setFocused(true)}
+              onBlur={() => setFocused(false)}
+              style={{
+                ...styles.searchInput,
+                ...(focused ? {
+                  borderColor: "#533638",
+                  boxShadow: "0 0 0 3px rgba(83,54,56,0.12)",
+                } : {}),
+              }}
+            />
           </div>
-
-          {/* Categories Grid */}
-          {isLoading ? (
-            <div style={{ padding: "2rem 0" }}>
-              <CategoryGridSkeleton />
-            </div>
-          ) : sortedCategories.length > 0 ? (
-            <div style={{ ...styles.categoriesGrid, ...(isMobile ? styles.categoriesGridMobile : {}) }}>
-              {sortedCategories.map((category) => (
-                <div
-                  key={category.id}
-                  style={{
-                    ...styles.categoryCard,
-                    ...(hoveredCard === category.id ? styles.categoryCardHover : {}),
-                  }}
-                  onMouseEnter={() => setHoveredCard(category.id)}
-                  onMouseLeave={() => setHoveredCard(null)}
-                >
-                  {/* Image Container */}
-                  <div
-                    style={{
-                      ...styles.categoryImageContainer,
-                      ...(hoveredCard === category.id ? styles.categoryImageContainerHover : {}),
-                    }}
-                  >
-                    <img
-                      src={category.icon || "/images/heroes/marufposterrr.png"}
-                      alt={category.name}
-                      style={{
-                        ...styles.categoryImage,
-                        ...(hoveredCard === category.id ? styles.categoryImageHover : {}),
-                      }}
-                      onError={(e) => {
-                        e.target.src = "/images/heroes/marufposterrr.png"
-                      }}
-                    />
-                    {category.isActive && <span style={styles.categoryBadge}>Active</span>}
-                  </div>
-
-                  {/* Info */}
-                  <div style={styles.categoryInfo}>
-                    <h3 style={styles.categoryName}>{category.name}</h3>
-                    <div style={styles.categoryMeta}>
-                      <FaStar style={{ ...styles.categoryMetaIcon, color: "#fbbf24" }} />
-                      <span>{category.rating || "4.5"}</span>
-                      <span>·</span>
-                      <span>{(category.count || 0).toLocaleString()} items</span>
-                    </div>
-                    <p style={styles.categoryDescription}>{category.discount || "Wholesale"} pricing</p>
-                  </div>
-
-                  {/* Button */}
-                  <button
-                    style={styles.categoryButton}
-                    onClick={() => handleCategoryClick(category.id)}
-                    onMouseEnter={(e) => Object.assign(e.target.style, styles.categoryButtonHover)}
-                    onMouseLeave={(e) => {
-                      Object.assign(e.target.style, {
-                        backgroundColor: "#f3f4f6",
-                        color: "#111827",
-                        borderColor: "#e5e7eb",
-                      })
-                    }}
-                  >
-                    Browse Category
-                  </button>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div style={styles.emptyState}>
-              <div style={styles.emptyStateIcon}>
-                <FaBox />
-              </div>
-              <h3 style={styles.emptyStateTitle}>No categories found</h3>
-              <p style={styles.emptyStateText}>Try adjusting your search or filters</p>
-            </div>
+          {!isLoading && (
+            <span style={styles.countBadge}>
+              {filtered.length} {filtered.length === 1 ? "category" : "categories"}
+            </span>
           )}
         </div>
+
+        {/* Grid */}
+        {isLoading ? (
+          <CategoryGridSkeleton />
+        ) : filtered.length > 0 ? (
+          <div style={styles.grid}>
+            {filtered.map((cat) => {
+              const accent  = CATEGORY_ACCENTS[cat.name] ?? DEFAULT_ACCENT
+              const hovered = hoveredCard === cat.id
+
+              return (
+                <div
+                  key={cat.id}
+                  id={`category-card-${cat.id}`}
+                  role="button"
+                  tabIndex={0}
+                  aria-label={`Browse ${cat.name}`}
+                  style={styles.card(hovered, accent)}
+                  onMouseEnter={() => setHoveredCard(cat.id)}
+                  onMouseLeave={() => setHoveredCard(null)}
+                  onClick={() => handleCategoryClick(cat.name)}
+                  onKeyDown={(e) => e.key === "Enter" && handleCategoryClick(cat.name)}
+                >
+                  {/* Card top — image with overlay */}
+                  <div style={styles.cardTop}>
+                    <div style={styles.imageBox(accent)}>
+                      <img
+                        src={cat.icon || "/images/heroes/marufposterrr.png"}
+                        alt={cat.name}
+                        style={{
+                          ...styles.imageBoxImg,
+                          ...(hovered ? { transform: "scale(1.06)" } : {}),
+                        }}
+                        onError={(e) => { e.target.src = "/images/heroes/marufposterrr.png" }}
+                      />
+                      <div style={styles.imageOverlay(accent)}>
+                        <h3 style={styles.overlayName}>{cat.name}</h3>
+                        <span style={styles.productCountPill(accent)}>
+                          <FaTag style={{ fontSize: "10px" }} />
+                          {cat.productCount ?? 0} {cat.productCount === 1 ? "product" : "products"}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Card bottom — CTA */}
+                  <div style={styles.cardBottom}>
+                    <span style={styles.browseText}>Browse Category</span>
+                    <div style={styles.arrowCircle(hovered, accent)}>
+                      <FaArrowRight style={{ fontSize: "12px", color: "#533638" }} />
+                    </div>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        ) : (
+          <div style={styles.empty}>
+            <div style={styles.emptyIcon}><FaBox /></div>
+            <h3 style={styles.emptyTitle}>No categories found</h3>
+            <p style={styles.emptyText}>
+              {searchTerm
+                ? `No match for "${searchTerm}" — try a different term`
+                : "No categories available yet"}
+            </p>
+          </div>
+        )}
       </div>
     </div>
   )

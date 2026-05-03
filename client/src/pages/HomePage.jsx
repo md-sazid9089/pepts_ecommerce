@@ -1,6 +1,7 @@
 import HeroSection from "../components/HeroSection/HeroSection"
 import NewArrivals from "../components/NewArrivals/NewArrivals"
 import CategorySection from "../components/CategorySection/CategorySection"
+import FeaturedProducts from "../components/FeaturedProducts/FeaturedProducts"
 
 export default function HomePage() {
   return (
@@ -8,6 +9,7 @@ export default function HomePage() {
       <HeroSection />
       <NewArrivals />
       <CategorySection />
+      <FeaturedProducts />
     </div>
   )
 }
