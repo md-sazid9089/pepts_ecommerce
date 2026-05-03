@@ -1,11 +1,15 @@
-import { useState, useMemo } from 'react';
+import { useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, keepPreviousData } from '@tanstack/react-query';
 import productsApi from '@/services/api/products.api';
 import ProductCard from '@/components/ProductCard/ProductCard';
 import ProductCardSkeleton from '@/components/skeletons/ProductCardSkeleton';
 import { queryKeys } from '@/lib/queryKeys';
 
+// ─── Constants ──────────────────────────────────────────────────────────────
+const LIMIT = 10;
+
+// ─── Styles ─────────────────────────────────────────────────────────────────
 const styles = {
   container: {
     backgroundColor: '#F5EDEC',
@@ -33,31 +37,6 @@ const styles = {
     color: '#A0AEC0',
     margin: 0,
   },
-  searchBar: {
-    marginTop: '20px',
-    display: 'flex',
-    gap: '10px',
-    maxWidth: '500px',
-    margin: '20px auto 0',
-  },
-  searchInput: {
-    flex: 1,
-    padding: '10px 14px',
-    border: '1px solid #E2E8F0',
-    borderRadius: '6px',
-    fontSize: '14px',
-    fontFamily: 'inherit',
-  },
-  searchBtn: {
-    padding: '10px 20px',
-    backgroundColor: '#533638',
-    color: 'white',
-    border: 'none',
-    borderRadius: '6px',
-    cursor: 'pointer',
-    fontWeight: '600',
-    transition: 'all 0.3s ease',
-  },
   contentWrapper: {
     maxWidth: '1400px',
     margin: '0 auto',
@@ -65,90 +44,6 @@ const styles = {
     display: 'grid',
     gridTemplateColumns: '1fr',
     gap: '20px',
-  },
-  sidebar: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '20px',
-  },
-  filterCard: {
-    backgroundColor: '#F5EDEC',
-    borderRadius: '8px',
-    padding: '16px',
-    boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
-    border: '1px solid #F5EDEC',
-  },
-  filterHeader: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: '16px',
-  },
-  filterTitle: {
-    fontSize: '14px',
-    fontWeight: '700',
-    color: '#533638',
-    margin: 0,
-    display: 'flex',
-    alignItems: 'center',
-    gap: '8px',
-  },
-  closeBtn: {
-    display: 'none',
-    background: 'none',
-    border: 'none',
-    fontSize: '20px',
-    cursor: 'pointer',
-    color: '#533638',
-  },
-  filterSection: {
-    marginBottom: '16px',
-  },
-  filterSectionTitle: {
-    fontSize: '12px',
-    fontWeight: '700',
-    color: '#533638',
-    margin: '0 0 10px 0',
-    textTransform: 'uppercase',
-    letterSpacing: '0.5px',
-  },
-  filterOption: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '8px',
-    padding: '8px 0',
-    fontSize: '13px',
-    color: '#667C7F',
-    cursor: 'pointer',
-  },
-  filterCheckbox: {
-    width: '16px',
-    height: '16px',
-    cursor: 'pointer',
-    accentColor: '#F7B9C4',
-  },
-  priceInputs: {
-    display: 'grid',
-    gridTemplateColumns: '1fr 1fr',
-    gap: '8px',
-  },
-  priceInput: {
-    padding: '8px',
-    border: '1px solid #E2E8F0',
-    borderRadius: '4px',
-    fontSize: '12px',
-  },
-  clearBtn: {
-    width: '100%',
-    padding: '10px',
-    backgroundColor: '#F5EDEC',
-    color: '#533638',
-    border: '1px solid #E2E8F0',
-    borderRadius: '6px',
-    cursor: 'pointer',
-    fontWeight: '600',
-    fontSize: '12px',
-    transition: 'all 0.3s ease',
   },
   mainContent: {
     display: 'flex',
@@ -166,8 +61,9 @@ const styles = {
     border: '1px solid #F5EDEC',
   },
   filterSummary: {
-    fontSize: '12px',
+    fontSize: '13px',
     color: '#667C7F',
+    fontWeight: '500',
   },
   sortControl: {
     display: 'flex',
@@ -182,20 +78,6 @@ const styles = {
     fontSize: '12px',
     backgroundColor: 'white',
     cursor: 'pointer',
-  },
-  mobileFilterBtn: {
-    display: 'flex',
-    width: '100%',
-    padding: '12px',
-    backgroundColor: '#533638',
-    color: 'white',
-    border: 'none',
-    borderRadius: '6px',
-    cursor: 'pointer',
-    fontWeight: '600',
-    fontSize: '13px',
-    gap: '8px',
-    alignItems: 'center',
   },
   grid: {
     display: 'grid',
@@ -215,95 +97,157 @@ const styles = {
     color: '#A0AEC0',
     margin: '0 0 20px 0',
   },
-  loadMoreBtn: {
-    display: 'block',
-    margin: '30px auto 0',
-    padding: '12px 40px',
-    backgroundColor: '#533638',
-    color: 'white',
-    border: 'none',
+  // ── Pagination ──
+  paginationWrapper: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    gap: '12px',
+    marginTop: '8px',
+  },
+  rangeText: {
+    fontSize: '13px',
+    color: '#667C7F',
+    fontWeight: '500',
+  },
+  pagination: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '6px',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+  },
+  pageBtn: (active, disabled) => ({
+    minWidth: '38px',
+    height: '38px',
+    padding: '0 10px',
+    border: active ? 'none' : '1px solid #E2E8F0',
     borderRadius: '6px',
-    cursor: 'pointer',
-    fontWeight: '600',
+    fontSize: '13px',
+    fontWeight: active ? '700' : '500',
+    cursor: disabled ? 'not-allowed' : 'pointer',
+    backgroundColor: active ? '#533638' : disabled ? '#F9F9F9' : 'white',
+    color: active ? 'white' : disabled ? '#CBD5E0' : '#533638',
+    transition: 'all 0.2s ease',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    userSelect: 'none',
+  }),
+  ellipsis: {
+    minWidth: '38px',
+    height: '38px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
     fontSize: '14px',
-    transition: 'all 0.3s ease',
+    color: '#A0AEC0',
+    userSelect: 'none',
   },
-  sidebarOverlay: {
-    display: 'none',
-    position: 'fixed',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    zIndex: 998,
-  },
-  sidebarMobile: {
-    display: 'none',
-    position: 'fixed',
-    left: 0,
-    top: 0,
-    width: '280px',
-    height: '100vh',
-    backgroundColor: 'white',
-    zIndex: 999,
-    overflowY: 'auto',
-    boxShadow: '2px 0 8px rgba(0, 0, 0, 0.15)',
+  loadingOverlay: {
+    opacity: 0.5,
+    pointerEvents: 'none',
+    transition: 'opacity 0.2s ease',
   },
 };
 
-export default function ProductsPage() {
-  const [searchParams] = useSearchParams();
-  const searchQuery = searchParams.get('search') || '';
-  const [sortBy, setSortBy] = useState('popular');
-  const [displayCount, setDisplayCount] = useState(20);
+// ─── Pagination Logic ────────────────────────────────────────────────────────
+/**
+ * Builds the array of page numbers / ellipsis markers to display.
+ * Always shows first + last; up to 5 consecutive numbers around current.
+ */
+function buildPageRange(current, total) {
+  if (total <= 7) {
+    return Array.from({ length: total }, (_, i) => i + 1);
+  }
 
-  const { data: productsList = [], isLoading: loading, isError, error: queryError } = useQuery({
-    queryKey: queryKeys.products.list({ page: 1, pageSize: 100, search: searchQuery }),
-    queryFn: () => productsApi.getAll(1, 100, { search: searchQuery }),
-    select: (response) => response?.data?.items || [],
+  const delta = 2; // pages on each side of current
+  const range = [];
+
+  // Always include page 1
+  range.push(1);
+
+  const left  = Math.max(2, current - delta);
+  const right = Math.min(total - 1, current + delta);
+
+  if (left > 2)       range.push('...');
+  for (let i = left; i <= right; i++) range.push(i);
+  if (right < total - 1) range.push('...');
+
+  // Always include last page
+  range.push(total);
+
+  return range;
+}
+
+// ─── Component ───────────────────────────────────────────────────────────────
+export default function ProductsPage() {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const searchQuery = searchParams.get('search') || '';
+  const page = Math.max(1, parseInt(searchParams.get('page') || '1', 10));
+  const [sortBy, setSortBy] = useState('popular');
+
+  // Derive sort params for the API
+  const sortMap = {
+    'price-low':  { sortBy: 'price', sortOrder: 'asc' },
+    'price-high': { sortBy: 'price', sortOrder: 'desc' },
+    'newest':     { sortBy: 'createdAt', sortOrder: 'desc' },
+    'popular':    {},
+    'rating':     {},
+  };
+  const sortFilters = sortMap[sortBy] || {};
+
+  // ── React Query ──────────────────────────────────────────────────────────
+  const {
+    data: queryData,
+    isLoading,
+    isFetching,
+    isError,
+    error: queryError,
+  } = useQuery({
+    queryKey: queryKeys.products.list({ page, limit: LIMIT, search: searchQuery, ...sortFilters }),
+    queryFn: () =>
+      productsApi.getAll(page, LIMIT, { search: searchQuery, ...sortFilters }),
+    placeholderData: keepPreviousData, // v5: keeps old page visible while next page loads
   });
+
+  const products   = queryData?.data?.items       ?? [];
+  const pagination = queryData?.data?.pagination   ?? {};
+  const total      = pagination.total             ?? 0;
+  const totalPages = pagination.totalPages        ?? 1;
+
+  // Computed "Showing X-Y of Z"
+  const rangeStart = total === 0 ? 0 : (page - 1) * LIMIT + 1;
+  const rangeEnd   = Math.min(page * LIMIT, total);
 
   const error = isError ? (queryError?.message || 'Failed to load products') : null;
 
-  // Filter and sort products (Simplified to only Sorting)
-  const displayedProducts = useMemo(() => {
-    let results = [...productsList];
+  // ── Navigation ───────────────────────────────────────────────────────────
+  function goToPage(p) {
+    const next = Math.max(1, Math.min(p, totalPages));
+    const params = new URLSearchParams(searchParams);
+    params.set('page', String(next));
+    setSearchParams(params, { replace: false });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
 
-    // Sort products
-    switch (sortBy) {
-      case 'price-low':
-        results.sort((a, b) => a.price - b.price);
-        break;
-      case 'price-high':
-        results.sort((a, b) => b.price - a.price);
-        break;
-      case 'newest':
-        results.sort((a, b) => new Date(b.dateAdded || 0) - new Date(a.dateAdded || 0));
-        break;
-      case 'rating':
-        results.sort((a, b) => (b.rating || 0) - (a.rating || 0));
-        break;
-      case 'popular':
-      default:
-        results.sort((a, b) => (b.views || 0) - (a.views || 0));
-        break;
-    }
-    return results;
-  }, [sortBy, productsList]);
+  const pageRange = buildPageRange(page, totalPages);
 
-  const visibleProducts = displayedProducts.slice(0, displayCount);
-
+  // ── Render ───────────────────────────────────────────────────────────────
   return (
     <div style={styles.container}>
       {/* Page Header */}
-      <div style={styles.pageHeader} data-page-header>
+      <div style={styles.pageHeader}>
         <div style={styles.headerContent}>
           <h1 style={styles.title}>
             {searchQuery ? `Results for "${searchQuery}"` : 'All Products'}
           </h1>
           <p style={styles.subtitle}>
-            Showing {visibleProducts.length} of {displayedProducts.length} items
+            {isLoading
+              ? 'Loading products…'
+              : total > 0
+              ? `Showing ${rangeStart}–${rangeEnd} of ${total} products`
+              : 'No products found'}
           </p>
         </div>
       </div>
@@ -311,16 +255,22 @@ export default function ProductsPage() {
       {/* Content */}
       <div style={styles.contentWrapper}>
         <main style={styles.mainContent}>
-          {/* Top Controls (Sorting only) */}
+          {/* Top Controls */}
           <div style={styles.topControls}>
             <div style={styles.filterSummary}>
-              {displayedProducts.length} products available in catalog
+              {!isLoading && total > 0 && (
+                <>Showing <strong>{rangeStart}–{rangeEnd}</strong> of <strong>{total}</strong> products</>
+              )}
+              {isLoading && 'Loading…'}
             </div>
             <div style={styles.sortControl}>
               <span>Sort by:</span>
-              <select 
-                value={sortBy} 
-                onChange={(e) => setSortBy(e.target.value)}
+              <select
+                value={sortBy}
+                onChange={(e) => {
+                  setSortBy(e.target.value);
+                  goToPage(1); // reset to page 1 on sort change
+                }}
                 style={styles.sortSelect}
               >
                 <option value="popular">Most Popular</option>
@@ -332,41 +282,86 @@ export default function ProductsPage() {
             </div>
           </div>
 
-          {loading && (
-            <div style={styles.grid}>
-              {Array.from({ length: 8 }).map((_, i) => (
-                <ProductCardSkeleton key={i} />
-              ))}
-            </div>
-          )}
+          {/* Error */}
           {error && (
             <div style={{ padding: '16px', color: '#b91c1c', fontWeight: 600 }}>
               {error}
             </div>
           )}
 
-          {/* Products Grid */}
-          {visibleProducts.length > 0 ? (
-            <>
-              <div style={styles.grid}>
-                {visibleProducts.map(product => (
-                  <ProductCard key={product.id} product={product} />
-                ))}
-              </div>
+          {/* Skeleton Loading */}
+          {isLoading && (
+            <div style={styles.grid}>
+              {Array.from({ length: LIMIT }).map((_, i) => (
+                <ProductCardSkeleton key={i} />
+              ))}
+            </div>
+          )}
 
-              {/* Load More */}
-              {displayCount < displayedProducts.length && (
-                <button 
-                  onClick={() => setDisplayCount(prev => prev + 20)}
-                  style={styles.loadMoreBtn}
-                >
-                  Load More Products
-                </button>
-              )}
-            </>
-          ) : (
+          {/* Products Grid (dim while fetching next page) */}
+          {!isLoading && products.length > 0 && (
+            <div style={isFetching ? { ...styles.grid, ...styles.loadingOverlay } : styles.grid}>
+              {products.map(product => (
+                <ProductCard key={product.id} product={product} />
+              ))}
+            </div>
+          )}
+
+          {/* Empty State */}
+          {!isLoading && products.length === 0 && !error && (
             <div style={styles.emptyState}>
               <p style={styles.emptyText}>No products found in our catalog.</p>
+            </div>
+          )}
+
+          {/* ── Pagination UI ── */}
+          {!isLoading && totalPages > 1 && (
+            <div style={styles.paginationWrapper}>
+              <p style={styles.rangeText}>
+                Showing {rangeStart}–{rangeEnd} of {total} products &nbsp;·&nbsp; Page {page} of {totalPages}
+              </p>
+
+              <nav aria-label="Product page navigation" style={styles.pagination}>
+                {/* Prev */}
+                <button
+                  id="pagination-prev"
+                  aria-label="Previous page"
+                  disabled={page <= 1}
+                  onClick={() => goToPage(page - 1)}
+                  style={styles.pageBtn(false, page <= 1)}
+                >
+                  ‹ Prev
+                </button>
+
+                {/* Page numbers + ellipsis */}
+                {pageRange.map((item, idx) =>
+                  item === '...' ? (
+                    <span key={`ellipsis-${idx}`} style={styles.ellipsis}>…</span>
+                  ) : (
+                    <button
+                      key={item}
+                      id={`pagination-page-${item}`}
+                      aria-label={`Go to page ${item}`}
+                      aria-current={item === page ? 'page' : undefined}
+                      onClick={() => goToPage(item)}
+                      style={styles.pageBtn(item === page, false)}
+                    >
+                      {item}
+                    </button>
+                  )
+                )}
+
+                {/* Next */}
+                <button
+                  id="pagination-next"
+                  aria-label="Next page"
+                  disabled={page >= totalPages}
+                  onClick={() => goToPage(page + 1)}
+                  style={styles.pageBtn(false, page >= totalPages)}
+                >
+                  Next ›
+                </button>
+              </nav>
             </div>
           )}
         </main>

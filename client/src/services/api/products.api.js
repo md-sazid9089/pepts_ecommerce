@@ -32,7 +32,7 @@ export const productsApi = {
    * console.log(response.data.items);
    * console.log(response.data.pagination);
    */
-  getAll: async (page = 1, pageSize = 20, filters = {}) => {
+  getAll: async (page = 1, pageSize = 10, filters = {}) => {
     try {
       const params = {
         page,
