@@ -1,7 +1,7 @@
 {
   "version": 2,
   "name": "pepta-api",
-  "buildCommand": "prisma generate && next build",
+  "buildCommand": "rm -rf node_modules/.prisma && prisma generate && next build",
   "installCommand": "npm install",
   "framework": "nextjs",
   "regions": ["sin1"],

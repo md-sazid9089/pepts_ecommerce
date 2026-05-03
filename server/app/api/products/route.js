@@ -76,8 +76,7 @@ export async function GET(request) {
     return response
   } catch (error) {
     console.error("GET /api/products error:", error)
-    // TEMP: expose real error for diagnosis — remove after fix
-    return apiResponse.serverError(`DIAG: ${error.message}`, error)
+    return apiResponse.serverError("Failed to fetch products", error)
   }
 }
 
