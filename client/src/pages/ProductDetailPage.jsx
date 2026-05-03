@@ -652,7 +652,7 @@ export default function ProductDetailPage() {
     setImageLoaded(false)
   }, [productId])
 
-  if (loading || !product) {
+  if (loading || !product || !product.title) {
     return (
       <div style={styles.pageContainer}>
         <div style={styles.header}>

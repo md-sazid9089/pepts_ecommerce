@@ -327,8 +327,12 @@ function ProductCard({ product, onQuickView }) {
     if (product.id) {
       queryClient.prefetchQuery({
         queryKey: queryKeys.products.detail(product.id),
-        queryFn: () => productsApi.getById(product.id),
-        staleTime: 1000 * 60 * 5,
+        queryFn: async () => {
+          const response = await productsApi.getById(product.id)
+          if (!response.success) throw new Error(response.message)
+          return response.data
+        },
+        staleTime: 1000 * 60 * 2,
       });
     }
   }, [product.id, queryClient]);

@@ -64,16 +64,10 @@ export const productsApi = {
    * }
    */
   getById: async (productId) => {
-    try {
-      const response = await apiClient.get(`/api/products/${productId}`)
-      console.log('API RESPONSE SHAPE:', response)
-      return response
-    } catch (error) {
-      return {
-        success: false,
-        message: error.message,
-      }
-    }
+    const response = await apiClient.get(`/api/products/${productId}`)
+    console.log('API RESPONSE SHAPE:', response)
+    if (!response.success) throw new Error(response.message || 'Failed to fetch product')
+    return response
   },
 
   /**
