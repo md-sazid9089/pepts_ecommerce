@@ -1,11 +1,11 @@
 {
   "name": "pepts-ecommerce-api",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Headless REST API for PEPTS E-Commerce using Next.js 14+ and Prisma",
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "node scripts/clean-prisma.mjs && prisma generate && next build",
+    "build": "prisma generate && next build",
     "start": "next start",
     "lint": "next lint",
     "prisma:generate": "prisma generate",
