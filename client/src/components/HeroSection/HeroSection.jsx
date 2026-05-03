@@ -286,19 +286,19 @@ export default function HeroSection() {
     {
       id: 1,
       icon: <FiCheckCircle />,
-      title: "100% Authentic",
+      title: "100% Plush Dolls",
       subtitle: "Genuine products from verified suppliers",
     },
     {
       id: 2,
       icon: <FiHeadphones />,
-      title: "24/7 Support",
+      title: "Custom your Own",
       subtitle: "Dedicated customer service always available",
     },
     {
       id: 3,
       icon: <FiRotateCcw />,
-      title: "Easy Returns",
+      title: "Worldwide delivery",
       subtitle: "Hassle-free returns within 14 days",
     },
   ]
