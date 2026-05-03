@@ -1,5 +1,6 @@
 import { lazy, Suspense } from 'react'
-import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom'
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom'
+import ProtectedRoute from './components/ProtectedRoute'
 import { AuthProvider } from './context/AuthContext'
 import { CartProvider } from './context/CartContext'
 import { WishlistProvider } from './context/WishlistContext'
@@ -98,8 +99,13 @@ function AppInner() {
                     <Route path="/profile"         element={<ProfilePage />} />
 
                     {/* Admin Routes */}
+                     <Route path="/admin"           element={<Navigate to="/admin/login" replace />} />
                      <Route path="/admin/login"     element={<AdminLoginPage />} />
-                     <Route path="/admin/dashboard" element={<AdminDashboard />} />
+                     <Route path="/admin/dashboard" element={
+                       <ProtectedRoute>
+                         <AdminDashboard />
+                       </ProtectedRoute>
+                     } />
 
                     {/* 404 — must be last */}
                     <Route path="*"               element={<NotFoundPage />} />

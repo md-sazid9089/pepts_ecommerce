@@ -13,6 +13,29 @@ export function AuthProvider({ children }) {
   // Load user from localStorage on mount with migration from old "Precious Play" keys
   useEffect(() => {
     try {
+      // ── JWT expiry check ─────────────────────────────────────────────────
+      // The JWT token is stored separately by apiClient under "authToken".
+      // If the token has expired, clear both it and the user profile so that
+      // the user is treated as logged out rather than silently failing on API calls.
+      const authToken = localStorage.getItem('authToken')
+      if (authToken) {
+        try {
+          const payload = JSON.parse(atob(authToken.split('.')[1]))
+          if (payload?.exp && payload.exp * 1000 < Date.now()) {
+            // Token expired — clear everything
+            localStorage.removeItem('authToken')
+            localStorage.removeItem('pepta_wholesale_user')
+            apiClient.clearToken()
+            queueMicrotask(() => setIsLoading(false))
+            return
+          }
+        } catch {
+          // Malformed token — discard it
+          localStorage.removeItem('authToken')
+          apiClient.clearToken()
+        }
+      }
+
       // Check for new Pepta key first
       let saved = localStorage.getItem('pepta_wholesale_user');
       
