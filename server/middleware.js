@@ -103,6 +103,7 @@ function applyCorsHeaders(response, resolvedOrigin) {
 }
 
 export async function middleware(request) {
+  console.log(`[Middleware] ${request.method} ${request.nextUrl.pathname}`)
   const { pathname } = request.nextUrl
   const origin = request.headers.get('origin')
   const resolvedOrigin = resolveAllowedOrigin(origin)
@@ -118,8 +119,12 @@ export async function middleware(request) {
 
   // ── 2. JWT Protection for /api/protected/* ────────────────────────────────
   if (pathname.startsWith('/api/protected')) {
+    // Read from httpOnly cookie (preferred) — falls back to Authorization header
+    // for server-to-server calls and API tools (Postman, curl).
+    const cookieToken = request.cookies.get('authToken')?.value
     const authHeader = request.headers.get('authorization')
-    const token = authHeader?.startsWith('Bearer ') ? authHeader.substring(7) : null
+    const headerToken = authHeader?.startsWith('Bearer ') ? authHeader.substring(7) : null
+    const token = cookieToken || headerToken
 
     if (!token) {
       const response = NextResponse.json(

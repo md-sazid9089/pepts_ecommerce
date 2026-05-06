@@ -2,7 +2,6 @@
 
 import { createContext, useContext, useState, useEffect } from 'react';
 import { authApi } from '@/services/api';
-import apiClient from '@/services/apiClient';
 
 const AuthContext = createContext(null);
 
@@ -10,40 +9,20 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Load user from localStorage on mount with migration from old "Precious Play" keys
+  // Hydrate user state from localStorage on mount.
+  // The JWT lives in an httpOnly cookie — we cannot read it from JS.
+  // We trust the user object in localStorage as the session indicator;
+  // the server will return 401 when the cookie expires, at which point
+  // the app should catch the error and call logout().
   useEffect(() => {
     try {
-      // ── JWT expiry check ─────────────────────────────────────────────────
-      // The JWT token is stored separately by apiClient under "authToken".
-      // If the token has expired, clear both it and the user profile so that
-      // the user is treated as logged out rather than silently failing on API calls.
-      const authToken = localStorage.getItem('authToken')
-      if (authToken) {
-        try {
-          const payload = JSON.parse(atob(authToken.split('.')[1]))
-          if (payload?.exp && payload.exp * 1000 < Date.now()) {
-            // Token expired — clear everything
-            localStorage.removeItem('authToken')
-            localStorage.removeItem('pepta_wholesale_user')
-            apiClient.clearToken()
-            queueMicrotask(() => setIsLoading(false))
-            return
-          }
-        } catch {
-          // Malformed token — discard it
-          localStorage.removeItem('authToken')
-          apiClient.clearToken()
-        }
-      }
-
-      // Check for new Pepta key first
+      // Check for current Pepta key
       let saved = localStorage.getItem('pepta_wholesale_user');
-      
-      // If not found, check for old "Precious Play" key and migrate
+
+      // Migrate from legacy "Precious Play" key if present
       if (!saved) {
         const oldKey = localStorage.getItem('precious_wholesale_user');
         if (oldKey) {
-          // Migrate old key to new key
           localStorage.setItem('pepta_wholesale_user', oldKey);
           localStorage.removeItem('precious_wholesale_user');
           saved = oldKey;
@@ -58,22 +37,18 @@ export function AuthProvider({ children }) {
         });
         return;
       }
-    } catch (e) {
-      /* ignore */
+    } catch {
+      /* ignore parse errors */
     }
-    queueMicrotask(() => {
-      setIsLoading(false);
-    });
+    queueMicrotask(() => setIsLoading(false));
   }, []);
 
   const login = async (email, password) => {
     const res = await authApi.login(email, password)
     if (res.success && res.data) {
       const userData = res.data.user || res.data
-      const token = res.data.token
-      
+      // Token is set by the server as an httpOnly cookie — no client-side token handling
       setUser(userData)
-      if (token) apiClient.setToken(token)
       localStorage.setItem('pepta_wholesale_user', JSON.stringify(userData))
       return res
     }
@@ -81,26 +56,28 @@ export function AuthProvider({ children }) {
   }
 
   const register = async (name, email, password) => {
-    // Split name into first/last for the API
     const parts = name.split(' ')
     const first = parts[0]
     const last = parts.slice(1).join(' ') || 'User'
-    
+
     const res = await authApi.register(email, password, first, last)
     if (res.success && res.data) {
       const userData = res.data.user || res.data
-      const token = res.data.token
-
+      // Token is set by the server as an httpOnly cookie — no client-side token handling
       setUser(userData)
-      if (token) apiClient.setToken(token)
       localStorage.setItem('pepta_wholesale_user', JSON.stringify(userData))
       return res
     }
     throw new Error(res.message || 'Registration failed')
   }
 
-  const logout = () => {
-    authApi.logout()
+  const logout = async () => {
+    try {
+      // Ask the server to clear the httpOnly cookie
+      await authApi.logout()
+    } catch {
+      // Even if the API call fails, clear client state
+    }
     setUser(null)
     localStorage.removeItem('pepta_wholesale_user')
   }

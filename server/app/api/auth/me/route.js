@@ -1,36 +1,23 @@
 /**
  * ============================================================================
  * AUTH — CURRENT USER PROFILE
- * GET /api/auth/me  (Protected — requires Authorization: Bearer <token>)
+ * GET /api/auth/me  (Protected — requires authToken cookie or Bearer header)
  * ============================================================================
- * This route is under /api/protected/... conceptually but the client
- * calls /api/auth/me, so we manually verify the JWT here.
+ * Reads the JWT from the httpOnly cookie (preferred) or Authorization header
+ * (fallback for API tools). Uses the shared verifyRequest helper.
  * ============================================================================
  */
 
-import jwt from "jsonwebtoken"
 import apiResponse from "@/src/utils/apiResponse"
 import * as authService from "@/src/services/auth.service"
+import { verifyRequest } from "@/src/lib/verifyRequest"
 
 export async function GET(request) {
   try {
-    // Extract Bearer token
-    const authHeader = request.headers.get("authorization")
-    const token =
-      authHeader && authHeader.startsWith("Bearer ")
-        ? authHeader.substring(7)
-        : null
+    const decoded = verifyRequest(request)
 
-    if (!token) {
-      return apiResponse.unauthorized("Missing Authorization header")
-    }
-
-    // Verify JWT
-    let decoded
-    try {
-      decoded = jwt.verify(token, process.env.JWT_SECRET)
-    } catch (err) {
-      return apiResponse.unauthorized("Invalid or expired token")
+    if (!decoded) {
+      return apiResponse.unauthorized("Invalid or missing authentication token")
     }
 
     // Fetch fresh user data from DB

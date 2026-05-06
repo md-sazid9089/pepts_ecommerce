@@ -5,24 +5,12 @@
  * ============================================================================
  */
 
-import jwt from "jsonwebtoken"
 import { z } from "zod"
 import apiResponse from "@/src/utils/apiResponse"
 import * as reviewsService from "@/src/services/reviews.service"
+import { verifyRequest } from "@/src/lib/verifyRequest"
 
-function verifyJwt(request) {
-  const authHeader = request.headers.get("authorization")
-  const token =
-    authHeader && authHeader.startsWith("Bearer ")
-      ? authHeader.substring(7)
-      : null
-  if (!token) return null
-  try {
-    return jwt.verify(token, process.env.JWT_SECRET)
-  } catch {
-    return null
-  }
-}
+
 
 const moderateSchema = z.object({
   status: z.enum(["approved", "rejected"], {
@@ -32,7 +20,7 @@ const moderateSchema = z.object({
 
 export async function PATCH(request, { params }) {
   try {
-    const user = verifyJwt(request)
+    const user = verifyRequest(request)
     if (!user) return apiResponse.unauthorized("Authentication required")
     if (user.role !== "admin") return apiResponse.forbidden("Admin access required")
 

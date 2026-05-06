@@ -9,9 +9,9 @@
  */
 
 import { v2 as cloudinary } from "cloudinary"
-import jwt from "jsonwebtoken"
 import apiResponse from "@/src/utils/apiResponse"
 import prisma from "@/src/lib/prisma"
+import { verifyRequest } from "@/src/lib/verifyRequest"
 
 // Configure Cloudinary
 cloudinary.config({
@@ -20,27 +20,11 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 })
 
-// ─── Auth Helper ─────────────────────────────────────────────────────────────
-function verifyJwt(request) {
-  const authHeader = request.headers.get("authorization")
-  const token =
-    authHeader && authHeader.startsWith("Bearer ")
-      ? authHeader.substring(7)
-      : null
-  if (!token) return null
-  try {
-    return jwt.verify(token, process.env.JWT_SECRET)
-  } catch (err) {
-    console.error("[Auth] Token verification failed:", err.message)
-    return null
-  }
-}
-
 // ─── POST /api/products/:id/upload-image ────────────────────────────────────
 export async function POST(request, { params }) {
   try {
     // 1. Auth check
-    const user = verifyJwt(request)
+    const user = verifyRequest(request)
     if (!user) return apiResponse.unauthorized("Authentication required")
     if (user.role !== "admin") return apiResponse.forbidden("Admin access required")
 
@@ -138,7 +122,7 @@ export async function POST(request, { params }) {
 // Removes the product image from Cloudinary and clears imageUrl in MySQL
 export async function DELETE(request, { params }) {
   try {
-    const user = verifyJwt(request)
+    const user = verifyRequest(request)
     if (!user) return apiResponse.unauthorized("Authentication required")
     if (user.role !== "admin") return apiResponse.forbidden("Admin access required")
 

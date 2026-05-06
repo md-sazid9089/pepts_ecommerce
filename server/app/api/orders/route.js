@@ -7,23 +7,11 @@
  */
 
 import { z } from "zod"
-import jwt from "jsonwebtoken"
 import apiResponse from "@/src/utils/apiResponse"
 import * as ordersService from "@/src/services/orders.service"
+import { verifyRequest } from "@/src/lib/verifyRequest"
 
-function verifyJwt(request) {
-  const authHeader = request.headers.get("authorization")
-  const token =
-    authHeader && authHeader.startsWith("Bearer ")
-      ? authHeader.substring(7)
-      : null
-  if (!token) return null
-  try {
-    return jwt.verify(token, process.env.JWT_SECRET)
-  } catch {
-    return null
-  }
-}
+
 
 const createOrderSchema = z.object({
   items: z
@@ -46,7 +34,7 @@ const createOrderSchema = z.object({
 
 export async function GET(request) {
   try {
-    const user = verifyJwt(request)
+    const user = verifyRequest(request)
     if (!user) return apiResponse.unauthorized("Authentication required")
 
     const { searchParams } = new URL(request.url)
@@ -72,7 +60,7 @@ export async function GET(request) {
 
 export async function POST(request) {
   try {
-    const user = verifyJwt(request)
+    const user = verifyRequest(request)
     if (!user) return apiResponse.unauthorized("Authentication required")
 
     let body

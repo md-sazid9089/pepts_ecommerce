@@ -4,9 +4,13 @@
  * ============================================================================
  * Central HTTP client for all backend API requests.
  *
+ * Token storage has been migrated from localStorage to httpOnly cookies.
+ * The browser automatically attaches the authToken cookie to every request
+ * when credentials: 'include' is set — no manual token injection needed.
+ *
  * Features:
  * ✅ GET, POST, PUT, PATCH, DELETE methods
- * ✅ Automatic Bearer token from localStorage
+ * ✅ credentials: 'include' — cookie sent automatically on every request
  * ✅ Request timeout with AbortController (10s default)
  * ✅ Dev-only debug logging (no logs in production)
  * ✅ Consistent error shape
@@ -25,34 +29,12 @@ const DEFAULT_TIMEOUT_MS = 90_000
 class ApiClient {
   constructor(baseURL) {
     this.baseURL = baseURL
-    this.token = localStorage.getItem("authToken") || null
-  }
-
-  setToken(token) {
-    this.token = token
-    localStorage.setItem("authToken", token)
-  }
-
-  getToken() {
-    return this.token || localStorage.getItem("authToken")
-  }
-
-  clearToken() {
-    this.token = null
-    localStorage.removeItem("authToken")
-  }
-
-  isAuthenticated() {
-    return !!this.getToken()
   }
 
   getHeaders() {
-    const headers = { 
-      "Content-Type": "application/json",
+    return {
+      'Content-Type': 'application/json',
     }
-    const token = this.getToken()
-    if (token) headers.Authorization = `Bearer ${token}`
-    return headers
   }
 
   /**
@@ -64,10 +46,11 @@ class ApiClient {
     const controller = new AbortController()
     const timer = setTimeout(() => controller.abort(), timeoutMs)
     try {
-      const response = await fetch(url, { 
-        ...options, 
+      const response = await fetch(url, {
+        ...options,
         signal: controller.signal,
-        cache: 'no-store',  // ✅ Browser-native cache bypass — no CORS headers needed
+        cache: 'no-store',       // Browser-native cache bypass — no CORS preflight
+        credentials: 'include',  // Send httpOnly cookie automatically
       })
       return response
     } catch (err) {
@@ -105,8 +88,7 @@ class ApiClient {
 
   async post(endpoint, data = {}) {
     const url = this._getCleanUrl(endpoint)
-    const token = this.getToken()
-    log(`POST ${url} (Auth: ${token ? 'YES (' + token.substring(0, 10) + '...)' : 'NO'})`)
+    log(`POST ${url}`)
     try {
       const response = await this._fetch(url, {
         method: "POST",

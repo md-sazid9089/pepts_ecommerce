@@ -6,30 +6,12 @@
  * ============================================================================
  */
 
-import jwt from "jsonwebtoken"
 import apiResponse from "@/src/utils/apiResponse"
 import * as productsService from "@/src/services/products.service"
 import { createProductSchema, productQuerySchema } from "@/src/validators/product.validator"
+import { verifyRequest } from "@/src/lib/verifyRequest"
 
-// ─── Helpers ────────────────────────────────────────────────────────────────
 
-/**
- * Extract and verify the JWT from the Authorization header.
- * Returns the decoded payload or null.
- */
-function verifyJwt(request) {
-  const authHeader = request.headers.get("authorization")
-  const token =
-    authHeader && authHeader.startsWith("Bearer ")
-      ? authHeader.substring(7)
-      : null
-  if (!token) return null
-  try {
-    return jwt.verify(token, process.env.JWT_SECRET)
-  } catch {
-    return null
-  }
-}
 
 // ─── GET /api/products ───────────────────────────────────────────────────────
 
@@ -56,7 +38,7 @@ export async function GET(request) {
     const { page, pageSize, search, category, sortBy, sortOrder } = parsed.data
 
     // Detect admin — admins see ALL products (including drafts/inactive)
-    const user = verifyJwt(request)
+    const user = verifyRequest(request)
     const adminMode = user?.role === "admin"
 
     const { items, total } = await productsService.getAll(page, pageSize, {
@@ -86,7 +68,7 @@ export async function GET(request) {
 export async function POST(request) {
   try {
     // Auth check — must be admin
-    const user = verifyJwt(request)
+    const user = verifyRequest(request)
     if (!user) return apiResponse.unauthorized("Authentication required")
     if (user.role !== "admin") return apiResponse.forbidden("Admin access required")
 

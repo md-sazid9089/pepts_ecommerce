@@ -2,14 +2,16 @@
  * ============================================================================
  * AUTHENTICATION API SERVICE
  * ============================================================================
- * Handles all authentication-related API calls
- * 
+ * Handles all authentication-related API calls.
+ *
+ * Token storage has been migrated to httpOnly cookies.
+ * The server sets/clears the cookie — no manual token management here.
+ *
  * Features:
  * ✅ User registration
  * ✅ User login
  * ✅ Get current user profile
- * ✅ Logout
- * ✅ Automatic token management
+ * ✅ Logout (POSTs to server to clear the httpOnly cookie)
  * ============================================================================
  */
 
@@ -32,23 +34,16 @@ export const authApi = {
    */
   register: async (email, password, firstName, lastName) => {
     try {
-      const response = await apiClient.post("/api/auth/register", {
+      const response = await apiClient.post('/api/auth/register', {
         email,
         password,
         firstName,
         lastName,
       })
-
-      if (response.success && response.data?.token) {
-        apiClient.setToken(response.data.token)
-      }
-
+      // Server sets authToken httpOnly cookie on success — nothing to do here
       return response
     } catch (error) {
-      return {
-        success: false,
-        message: error.message,
-      }
+      return { success: false, message: error.message }
     }
   },
 
@@ -67,21 +62,11 @@ export const authApi = {
    */
   login: async (email, password) => {
     try {
-      const response = await apiClient.post("/api/auth/login", {
-        email,
-        password,
-      })
-
-      if (response.success && response.data?.token) {
-        apiClient.setToken(response.data.token)
-      }
-
+      const response = await apiClient.post('/api/auth/login', { email, password })
+      // Server sets authToken httpOnly cookie on success — nothing to do here
       return response
     } catch (error) {
-      return {
-        success: false,
-        message: error.message,
-      }
+      return { success: false, message: error.message }
     }
   },
 
@@ -109,28 +94,15 @@ export const authApi = {
   },
 
   /**
-   * Logout current user
-   * Clears authentication token from storage
-   * @returns {object} - Success response
-   * 
-   * EXAMPLE:
-   * authApi.logout();
-   * // User is now logged out, token is cleared
+   * Logout — POSTs to server to clear the httpOnly authToken cookie.
+   * The browser cannot clear an httpOnly cookie directly.
    */
-  logout: () => {
-    apiClient.clearToken()
-    return {
-      success: true,
-      message: "Logged out successfully",
+  logout: async () => {
+    try {
+      return await apiClient.post('/api/auth/logout', {})
+    } catch {
+      return { success: true, message: 'Logged out' }
     }
-  },
-
-  /**
-   * Check if user is currently authenticated
-   * @returns {boolean}
-   */
-  isAuthenticated: () => {
-    return apiClient.isAuthenticated()
   },
 }
 

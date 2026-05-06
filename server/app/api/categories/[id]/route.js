@@ -6,26 +6,14 @@
  * ============================================================================
  */
 
-import jwt from "jsonwebtoken"
 import apiResponse from "@/src/utils/apiResponse"
 import prisma from "@/src/lib/prisma"
+import { verifyRequest } from "@/src/lib/verifyRequest"
 
 // The 4 categories that can never be deleted
 const PROTECTED_CATEGORIES = ["Our Design", "Custom Build", "Popular", "Most Demanding"]
 
-function verifyJwt(request) {
-  const authHeader = request.headers.get("authorization")
-  const token =
-    authHeader && authHeader.startsWith("Bearer ")
-      ? authHeader.substring(7)
-      : null
-  if (!token) return null
-  try {
-    return jwt.verify(token, process.env.JWT_SECRET)
-  } catch {
-    return null
-  }
-}
+
 
 export async function GET(request, { params }) {
   try {
@@ -58,7 +46,7 @@ export async function GET(request, { params }) {
 export async function DELETE(request, { params }) {
   try {
     // ── Auth check ──────────────────────────────────────────────────────────
-    const user = verifyJwt(request)
+    const user = verifyRequest(request)
     if (!user)              return apiResponse.unauthorized("Authentication required")
     if (user.role !== "admin") return apiResponse.forbidden("Admin access required")
 

@@ -10,7 +10,11 @@
  * ============================================================================
  */
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:3000"
+// Empty string → all API calls are relative paths (/api/...)
+// Dev:  Vite proxy forwards them to https://pepta-api.vercel.app
+// Prod: Vercel rewrites forward them to https://pepta-api.vercel.app
+// Result: browser never makes a cross-origin request → SameSite=Strict works
+const API_BASE_URL = ''
 
 export const apiConfig = {
   baseURL: API_BASE_URL,

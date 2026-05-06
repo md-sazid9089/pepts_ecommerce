@@ -1,27 +1,18 @@
-import jwt from "jsonwebtoken"
 import apiResponse from "@/src/utils/apiResponse"
 import * as usersService from "@/src/services/users.service"
 import { z } from "zod"
+import { verifyRequest } from "@/src/lib/verifyRequest"
 
 const userQuerySchema = z.object({
   page: z.coerce.number().int().positive().default(1),
   pageSize: z.coerce.number().int().min(1).max(100).default(20),
 })
 
-function verifyJwt(request) {
-  const authHeader = request.headers.get("authorization")
-  const token = authHeader?.startsWith("Bearer ") ? authHeader.substring(7) : null
-  if (!token) return null
-  try {
-    return jwt.verify(token, process.env.JWT_SECRET)
-  } catch {
-    return null
-  }
-}
+
 
 export async function GET(request) {
   try {
-    const admin = verifyJwt(request)
+    const admin = verifyRequest(request)
     if (!admin) return apiResponse.unauthorized("Authentication required")
     if (admin.role !== "admin") return apiResponse.forbidden("Admin access required")
 
