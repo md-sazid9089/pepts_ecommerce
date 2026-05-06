@@ -13,7 +13,8 @@ import prisma from "@/lib/prisma"
 
 const SALT_ROUNDS = 12
 const JWT_SECRET = process.env.JWT_SECRET
-const JWT_EXPIRY = process.env.JWT_EXPIRY || "7d"
+const JWT_EXPIRY = process.env.JWT_EXPIRY || '24h'
+const ADMIN_EMAIL = (process.env.ADMIN_EMAIL || '').toLowerCase().trim()
 
 /**
  * Sign a JWT token for a given user payload
@@ -63,7 +64,7 @@ export async function register({ email, password, firstName, lastName }) {
       password: hashedPassword,
       firstName: firstName || null,
       lastName: lastName || null,
-      role: email.toLowerCase() === 'maruflol62@gmail.com' ? "admin" : "customer",
+      role: (ADMIN_EMAIL && email.toLowerCase() === ADMIN_EMAIL) ? "admin" : "customer",
     },
   })
 
@@ -100,7 +101,7 @@ export async function login({ email, password }) {
   }
 
   // ✅ Promote to admin BEFORE signing the token so the JWT has the correct role
-  if (user.email.toLowerCase() === 'maruflol62@gmail.com' && user.role !== 'admin') {
+  if (ADMIN_EMAIL && user.email.toLowerCase() === ADMIN_EMAIL && user.role !== 'admin') {
     await prisma.user.update({
       where: { id: user.id },
       data: { role: 'admin' },

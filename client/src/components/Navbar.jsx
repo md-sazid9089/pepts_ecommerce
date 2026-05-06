@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react"
 import { Link, useNavigate } from "react-router-dom"
-import { FiSearch, FiUser, FiShoppingCart } from "react-icons/fi"
+import { FiSearch, FiUser, FiShoppingCart, FiLogOut, FiLogIn, FiUserPlus } from "react-icons/fi"
+import { useAuth } from "@/context/AuthContext"
 
 // ====================================
 // THEME COLORS
@@ -244,11 +245,13 @@ const styles = {
 
 export default function Navbar() {
   const navigate = useNavigate()
+  const { user, logout } = useAuth()
   const [searchQuery, setSearchQuery] = useState("")
   const [isMobile, setIsMobile] = useState(false)
   const [hoveredLinks, setHoveredLinks] = useState({})
   const [hoveredSearchBtn, setHoveredSearchBtn] = useState(false)
   const [hoveredIconBtn, setHoveredIconBtn] = useState(null)
+  const [userMenuOpen, setUserMenuOpen] = useState(false)
 
   // Handle responsive design
   useEffect(() => {
@@ -268,17 +271,29 @@ export default function Navbar() {
     }
   }
 
+  const handleLogout = () => {
+    logout()
+    setUserMenuOpen(false)
+    navigate("/")
+  }
+
   // Utility bar links data
   const utilityLinks = [
     { label: "CUSTOMER CARE", href: "#" },
     { label: "TRACK MY ORDER", href: "#" },
   ]
 
-  const utilityRightLinks = [
-    { label: "LOGIN", href: "#" },
-    { label: "SIGNUP", href: "#" },
-    { label: "LANGUAGE", href: "#" },
-  ]
+  // Right-side utility links depend on auth state
+  const utilityRightLinks = user
+    ? [
+        ...(user.role === "admin" ? [{ label: "ADMIN DASHBOARD", to: "/admin/dashboard" }] : []),
+        { label: user.firstName || user.email?.split("@")[0] || "MY ACCOUNT", to: "/profile" },
+        { label: "LOGOUT", action: handleLogout },
+      ]
+    : [
+        { label: "LOGIN", to: "/login" },
+        { label: "SIGNUP", to: "/register" },
+      ]
 
   // Navigation links data
   const navLinks = [
@@ -314,29 +329,43 @@ export default function Navbar() {
           </div>
 
           <div style={{ ...styles.utilityGroup, ...(isMobile ? styles.utilityGroupMobile : {}) }}>
-            {utilityRightLinks.map((link, index) => (
-              <a
-                key={index}
-                href={link.href}
-                style={{
-                  ...styles.utilityLink,
-                  ...(hoveredLinks[`utility-right-${index}`]
-                    ? styles.utilityLinkHover
-                    : {}),
-                }}
-                onMouseEnter={() =>
-                  setHoveredLinks({ ...hoveredLinks, [`utility-right-${index}`]: true })
-                }
-                onMouseLeave={() =>
-                  setHoveredLinks({
-                    ...hoveredLinks,
-                    [`utility-right-${index}`]: false,
-                  })
-                }
-              >
-                {link.label}
-              </a>
-            ))}
+            {utilityRightLinks.map((link, index) => {
+              if (link.action) {
+                return (
+                  <button
+                    key={index}
+                    onClick={link.action}
+                    style={{
+                      ...styles.utilityLink,
+                      background: "none",
+                      border: "none",
+                      cursor: "pointer",
+                      padding: 0,
+                      ...(hoveredLinks[`utility-right-${index}`] ? styles.utilityLinkHover : {}),
+                    }}
+                    onMouseEnter={() => setHoveredLinks({ ...hoveredLinks, [`utility-right-${index}`]: true })}
+                    onMouseLeave={() => setHoveredLinks({ ...hoveredLinks, [`utility-right-${index}`]: false })}
+                  >
+                    {link.label}
+                  </button>
+                )
+              }
+              return (
+                <Link
+                  key={index}
+                  to={link.to || "/"}
+                  style={{
+                    ...styles.utilityLink,
+                    textDecoration: "none",
+                    ...(hoveredLinks[`utility-right-${index}`] ? styles.utilityLinkHover : {}),
+                  }}
+                  onMouseEnter={() => setHoveredLinks({ ...hoveredLinks, [`utility-right-${index}`]: true })}
+                  onMouseLeave={() => setHoveredLinks({ ...hoveredLinks, [`utility-right-${index}`]: false })}
+                >
+                  {link.label}
+                </Link>
+              )
+            })}
           </div>
         </div>
       </div>

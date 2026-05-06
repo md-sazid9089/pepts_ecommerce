@@ -1,55 +1,77 @@
 /**
- * ProtectedRoute — Admin-only guard
+ * ============================================================================
+ * ROUTE GUARDS — ProtectedRoute & UserProtectedRoute
+ * ============================================================================
  *
- * Reads `pepta_admin_session` synchronously from localStorage so there is
- * ZERO flash of protected content. The check runs during the initial render,
- * not inside a useEffect, meaning React immediately renders <Navigate> before
- * anything in `children` is painted.
+ * ProtectedRoute     — Admin-only guard (/admin/* routes)
+ *   Requires: authenticated user with role === 'admin'
+ *   Redirects: /login if no token, / if wrong role
  *
- * Session is invalidated after 8 hours (controlled by SESSION_MAX_AGE_MS).
- * If the session is missing, expired, or lacks role==="admin", the user is
- * redirected to /admin/login with `replace` so the protected path is not
- * kept in browser history.
+ * UserProtectedRoute — Any-authenticated-user guard (/profile, /checkout, etc.)
+ *   Requires: any valid token
+ *   Redirects: /login if no token
+ *
+ * Both guards show a loading spinner while AuthContext resolves from
+ * localStorage to prevent a flash of protected content.
+ * ============================================================================
  */
 
 import { Navigate } from 'react-router-dom'
+import { useAuth } from '@/context/AuthContext'
 
-const SESSION_MAX_AGE_MS = 8 * 60 * 60 * 1000 // 8 hours
-
-/**
- * Read and validate the admin session from localStorage.
- * Returns the session object if valid, null otherwise.
- * Clears the storage entry if it is expired.
- */
-function getAdminSession() {
-  try {
-    const raw = localStorage.getItem('pepta_admin_session')
-    if (!raw) return null
-
-    const session = JSON.parse(raw)
-
-    // Must have admin role
-    if (session?.role !== 'admin') return null
-
-    // Enforce session age limit
-    if (session.adminAt && Date.now() - session.adminAt > SESSION_MAX_AGE_MS) {
-      localStorage.removeItem('pepta_admin_session')
-      return null
-    }
-
-    return session
-  } catch {
-    return null
-  }
+// ── Shared loading spinner ───────────────────────────────────────────────────
+function AuthLoader() {
+  return (
+    <div style={{
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      minHeight: '60vh',
+      gap: '0.75rem',
+      color: '#533638',
+      fontSize: '1rem',
+      fontWeight: 500,
+    }}>
+      <span style={{
+        display: 'inline-block',
+        width: 24,
+        height: 24,
+        border: '3px solid #F7B9C4',
+        borderTopColor: '#533638',
+        borderRadius: '50%',
+        animation: 'spin 0.7s linear infinite',
+      }} />
+      Checking session…
+      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+    </div>
+  )
 }
 
+// ── Admin-only guard ─────────────────────────────────────────────────────────
 export default function ProtectedRoute({ children }) {
-  const session = getAdminSession()
+  const { user, isLoading } = useAuth()
 
-  if (!session) {
-    // No valid admin session — redirect to login immediately, no flash
-    return <Navigate to="/admin/login" replace />
-  }
+  // Wait for AuthContext to hydrate from localStorage
+  if (isLoading) return <AuthLoader />
+
+  // No token / not logged in → send to login
+  if (!user) return <Navigate to="/login" replace />
+
+  // Logged in but not admin → send to homepage
+  if (user.role !== 'admin') return <Navigate to="/" replace />
+
+  return children
+}
+
+// ── Any-authenticated-user guard ─────────────────────────────────────────────
+export function UserProtectedRoute({ children }) {
+  const { user, isLoading } = useAuth()
+
+  // Wait for AuthContext to hydrate from localStorage
+  if (isLoading) return <AuthLoader />
+
+  // No token / not logged in → send to login
+  if (!user) return <Navigate to="/login" replace />
 
   return children
 }

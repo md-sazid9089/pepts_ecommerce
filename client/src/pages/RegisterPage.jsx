@@ -332,7 +332,14 @@ export default function RegisterPage() {
   const [hoveredBtn, setHoveredBtn] = useState(null)
 
   const navigate = useNavigate()
-  const { register } = useAuth()
+  const { user, register } = useAuth()
+
+  // Guest-only guard: redirect already-authenticated users away from register page
+  useEffect(() => {
+    if (user) {
+      navigate('/', { replace: true })
+    }
+  }, [user])
 
   const [isMobile, setIsMobile] = useState(() =>
     typeof window !== "undefined" ? window.innerWidth < 768 : false

@@ -72,17 +72,20 @@ function resolveAllowedOrigin(origin) {
 }
 
 /**
- * Decode a JWT payload WITHOUT verification (safe for Edge routing decisions).
- * Full signature verification happens inside route handlers via jsonwebtoken.
+ * Verify a JWT using jose (Edge Runtime compatible).
+ * Returns the decoded payload on success, or null if the token is
+ * missing, expired, malformed, or has an invalid signature.
+ *
+ * jose.jwtVerify performs FULL HMAC-SHA256 signature validation against
+ * JWT_SECRET — a token crafted with the correct structure but the wrong
+ * secret is explicitly rejected here rather than inside each route handler.
  */
-function decodeJwtPayload(token) {
+async function verifyJwt(token) {
   try {
-    const parts = token.split('.')
-    if (parts.length !== 3) return null
-    const base64 = parts[1].replace(/-/g, '+').replace(/_/g, '/')
-    const decoded = JSON.parse(atob(base64))
-    if (decoded.exp && decoded.exp < Math.floor(Date.now() / 1000)) return null
-    return decoded
+    const { jwtVerify } = await import('jose')
+    const secret = new TextEncoder().encode(process.env.JWT_SECRET)
+    const { payload } = await jwtVerify(token, secret)
+    return payload
   } catch {
     return null
   }
@@ -99,7 +102,7 @@ function applyCorsHeaders(response, resolvedOrigin) {
   response.headers.set('Vary',                             'Origin')
 }
 
-export function middleware(request) {
+export async function middleware(request) {
   const { pathname } = request.nextUrl
   const origin = request.headers.get('origin')
   const resolvedOrigin = resolveAllowedOrigin(origin)
@@ -118,16 +121,26 @@ export function middleware(request) {
     const authHeader = request.headers.get('authorization')
     const token = authHeader?.startsWith('Bearer ') ? authHeader.substring(7) : null
 
-    if (!token || !decodeJwtPayload(token)) {
+    if (!token) {
       const response = NextResponse.json(
-        { success: false, code: 401, message: 'Unauthorized — Invalid or missing token' },
+        { success: false, code: 401, message: 'Unauthorized — Missing token' },
         { status: 401 }
       )
       applyCorsHeaders(response, resolvedOrigin)
       return response
     }
 
-    const decoded = decodeJwtPayload(token)
+    // Full HMAC signature verification — rejects forged tokens
+    const decoded = await verifyJwt(token)
+    if (!decoded) {
+      const response = NextResponse.json(
+        { success: false, code: 401, message: 'Unauthorized — Invalid or expired token' },
+        { status: 401 }
+      )
+      applyCorsHeaders(response, resolvedOrigin)
+      return response
+    }
+
     const requestHeaders = new Headers(request.headers)
     requestHeaders.set('x-user-id',   decoded.userId || '')
     requestHeaders.set('x-user-role', decoded.role   || 'customer')

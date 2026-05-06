@@ -1,6 +1,6 @@
 import { lazy, Suspense } from 'react'
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom'
-import ProtectedRoute from './components/ProtectedRoute'
+import ProtectedRoute, { UserProtectedRoute } from './components/ProtectedRoute'
 import { AuthProvider } from './context/AuthContext'
 import { CartProvider } from './context/CartContext'
 import { WishlistProvider } from './context/WishlistContext'
@@ -87,8 +87,8 @@ function AppInner() {
                     <Route path="/product/:id"     element={<ProductDetailPage />} />
                     <Route path="/search"          element={<SearchPage />} />
                     <Route path="/cart"            element={<CartPage />} />
-                    <Route path="/checkout"        element={<CheckoutPage />} />
-                    <Route path="/wishlist"        element={<WishlistPage />} />
+                    <Route path="/checkout"        element={<UserProtectedRoute><CheckoutPage /></UserProtectedRoute>} />
+                    <Route path="/wishlist"        element={<UserProtectedRoute><WishlistPage /></UserProtectedRoute>} />
                     <Route path="/contact"         element={<ContactPage />} />
 
                     {/* Auth Routes */}
@@ -96,7 +96,7 @@ function AppInner() {
                     <Route path="/register"        element={<RegisterPage />} />
 
                     {/* User Routes */}
-                    <Route path="/profile"         element={<ProfilePage />} />
+                    <Route path="/profile"         element={<UserProtectedRoute><ProfilePage /></UserProtectedRoute>} />
 
                     {/* Admin Routes */}
                      <Route path="/admin"           element={<Navigate to="/admin/login" replace />} />

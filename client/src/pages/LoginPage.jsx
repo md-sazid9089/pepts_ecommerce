@@ -339,7 +339,18 @@ export default function LoginPage() {
   const [hoveredBtn, setHoveredBtn] = useState(null)
 
   const navigate = useNavigate()
-  const { login } = useAuth()
+  const { user, login } = useAuth()
+
+  // Guest-only guard: redirect already-authenticated users away from login page
+  useEffect(() => {
+    if (user) {
+      if (user.role === 'admin') {
+        navigate('/admin/dashboard', { replace: true })
+      } else {
+        navigate('/', { replace: true })
+      }
+    }
+  }, [user])
 
   const [isMobile, setIsMobile] = useState(() =>
     typeof window !== "undefined" ? window.innerWidth < 768 : false
