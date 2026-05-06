@@ -23,25 +23,25 @@ model User {
 }
 
 model Product {
-  id           Int         @id @default(autoincrement())
+  id           Int            @id @default(autoincrement())
   title        String
   description  String
   price        Float
-  stock        Int         @default(0)
+  stock        Int            @default(0)
   categoryId   String
-  isActive     Boolean     @default(true)
-  createdAt    DateTime    @default(now())
-  updatedAt    DateTime    @updatedAt
+  isActive     Boolean        @default(true)
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
   imageUrl     String?
-  specs        String?     @db.Text
+  specs        String?        @db.Text
   brand        String?
   casePackSize Int?
-  moq          Int         @default(1)
+  moq          Int            @default(1)
   bulkPrices   BulkPrice[]
   orderItems   OrderItem[]
   category     Category       @relation(fields: [categoryId], references: [id], onDelete: Cascade)
-  reviews      Review[]
   images       ProductImage[]
+  reviews      Review[]
 
   @@index([isActive, createdAt])
   @@index([isActive, price])
@@ -164,8 +164,8 @@ model ProductImage {
   url       String
   order     Int      @default(0)
   productId Int
-  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
 
   @@index([productId])
 }

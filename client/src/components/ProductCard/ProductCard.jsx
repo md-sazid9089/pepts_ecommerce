@@ -248,17 +248,18 @@ const CSS = `
     white-space: nowrap;
   }
   .pc-btn-inquiry {
-    background: #533638;
-    color: #fff;
+    background: #F5EDEC;
+    color: #533638;
+    border: 1.5px solid #C9B8B9;
   }
-  .pc-btn-inquiry:hover { background: #3A2627; }
+  .pc-btn-inquiry:hover { background: #EAD9D9; }
 
   .pc-btn-chat {
-    background: #fff;
-    color: #2563EB;
-    border: 1.5px solid #2563EB;
+    background: #F5EDEC;
+    color: #533638;
+    border: 1.5px solid #C9B8B9;
   }
-  .pc-btn-chat:hover { background: #EFF6FF; }
+  .pc-btn-chat:hover { background: #EAD9D9; }
 
   .pc-btn-view {
     background: #F5EDEC;
@@ -370,6 +371,19 @@ function ProductCard({ product, onQuickView }) {
   const handleInquiry = useCallback((e) => { e.preventDefault(); e.stopPropagation(); navigate(`/contact?product=${product.id}`); }, [navigate, product.id]);
   const handleChat = useCallback((e) => { e.preventDefault(); e.stopPropagation(); alert(`Chat about: ${product.title || product.name}`); }, [product.title, product.name]);
   const handleView = useCallback((e) => { e.preventDefault(); e.stopPropagation(); navigate(`/product/${product.id}`); }, [navigate, product.id]);
+  
+  const handleAddToCart = useCallback((e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    addItem({
+      id: product.id,
+      name: product.title,
+      price: product.price,
+      image: displayImage,
+      quantity: 1,
+    });
+    alert('Added to cart!');
+  }, [addItem, product, displayImage]);
 
   // Price display
   const priceDisplay = product.bulkPrices?.length > 0
@@ -461,9 +475,12 @@ function ProductCard({ product, onQuickView }) {
 
           {/* Actions */}
           <div className="pc-actions">
-            <button className="pc-btn pc-btn-inquiry" onClick={handleInquiry}>
-              <FiExternalLink size={14} />
-              Inquiry
+            <button 
+              className="pc-btn pc-btn-inquiry" 
+              onClick={handleAddToCart}
+            >
+              <FiCheck size={14} />
+              Add to Cart
             </button>
             <button className="pc-btn pc-btn-chat" onClick={handleChat}>
               <FiMessageSquare size={14} />

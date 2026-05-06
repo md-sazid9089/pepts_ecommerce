@@ -19,10 +19,13 @@ import { verifyRequest } from "@/src/lib/verifyRequest"
 export async function GET(request, { params }) {
   try {
     const { id: rawId } = await params
+    console.log('[DEBUG] GET /api/products/:id rawId:', rawId)
     const id = parseInt(rawId, 10)
+    console.log('[DEBUG] GET /api/products/:id parsed id:', id)
     if (isNaN(id)) return apiResponse.error("Invalid product ID — must be an integer", 400)
 
     const product = await productsService.getById(id)
+    console.log('[DEBUG] GET /api/products/:id product found:', !!product)
     if (!product) {
       return apiResponse.notFound(`Product with ID "${id}" not found`)
     }

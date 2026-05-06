@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react"
 import { Link, useNavigate } from "react-router-dom"
-import { FiSearch, FiUser, FiShoppingCart, FiLogOut, FiLogIn, FiUserPlus } from "react-icons/fi"
+import { FiSearch, FiUser, FiShoppingCart, FiLogOut, FiLogIn, FiUserPlus, FiPhone, FiMail } from "react-icons/fi"
 import { useAuth } from "@/context/AuthContext"
 
 // ====================================
@@ -155,6 +155,7 @@ const styles = {
     alignItems: "center",
     justifyContent: "flex-end",
     minWidth: "120px",
+    position: "relative",
   },
   iconButton: {
     display: "flex",
@@ -171,6 +172,42 @@ const styles = {
   iconButtonHover: {
     color: colors.logoOrange,
     transform: "scale(1.1)",
+  },
+
+  // Dropdown Menu
+  dropdown: {
+    position: "absolute",
+    top: "100%",
+    right: 0,
+    backgroundColor: "#fff",
+    minWidth: "200px",
+    boxShadow: "0 10px 25px rgba(0,0,0,0.1)",
+    borderRadius: "8px",
+    padding: "0.5rem 0",
+    zIndex: 1000,
+    marginTop: "0.5rem",
+    border: "1px solid #eee",
+    overflow: "hidden",
+  },
+  dropdownItem: {
+    display: "flex",
+    alignItems: "center",
+    gap: "0.75rem",
+    padding: "0.75rem 1.25rem",
+    color: colors.darkBrown,
+    textDecoration: "none",
+    fontSize: "0.9rem",
+    fontWeight: 500,
+    transition: "background 0.2s ease",
+    cursor: "pointer",
+    width: "100%",
+    border: "none",
+    background: "none",
+    textAlign: "left",
+  },
+  dropdownItemHover: {
+    backgroundColor: "#f8f9fa",
+    color: colors.logoOrange,
   },
 
   // ========== BOTTOM ROW: NAVIGATION LINKS ==========
@@ -252,16 +289,18 @@ export default function Navbar() {
   const [hoveredSearchBtn, setHoveredSearchBtn] = useState(false)
   const [hoveredIconBtn, setHoveredIconBtn] = useState(null)
   const [userMenuOpen, setUserMenuOpen] = useState(false)
+  const [hoveredDropdownItem, setHoveredDropdownItem] = useState(null)
 
   // Handle responsive design
   useEffect(() => {
-    const handleResize = () => {
-      setIsMobile(window.innerWidth < 768)
+    const mql = window.matchMedia("(max-width: 767px)")
+    const handleResize = (e) => {
+      setIsMobile(e.matches)
     }
 
-    handleResize()
-    window.addEventListener("resize", handleResize)
-    return () => window.removeEventListener("resize", handleResize)
+    setIsMobile(mql.matches)
+    mql.addEventListener("change", handleResize)
+    return () => mql.removeEventListener("change", handleResize)
   }, [])
 
   const handleSearch = (e) => {
@@ -279,8 +318,16 @@ export default function Navbar() {
 
   // Utility bar links data
   const utilityLinks = [
-    { label: "CUSTOMER CARE", href: "#" },
-    { label: "TRACK MY ORDER", href: "#" },
+    { 
+      label: "(+86) 18168023963", 
+      href: "tel:+8618168023963", 
+      icon: <FiPhone style={{ marginRight: '0.5rem' }} size={14} /> 
+    },
+    { 
+      label: "peptadoll@gmail.com", 
+      href: "mailto:peptadoll@gmail.com", 
+      icon: <FiMail style={{ marginRight: '0.5rem' }} size={14} /> 
+    },
   ]
 
   // Right-side utility links depend on auth state
@@ -302,73 +349,71 @@ export default function Navbar() {
     { label: "About", to: "/about" },
   ]
 
+  const handleProfileClick = () => {
+    if (!user) {
+      navigate("/login")
+    } else {
+      setUserMenuOpen(!userMenuOpen)
+    }
+  }
+
+  // Close dropdown on click outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (userMenuOpen && !event.target.closest('#user-profile-menu')) {
+        setUserMenuOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [userMenuOpen])
+
   return (
     <nav style={styles.navbar}>
       {/* TOP ROW: Utility Bar */}
-      <div style={styles.utilityBar}>
-        <div style={{ ...styles.utilityContainer, ...(isMobile ? styles.utilityContainerMobile : {}) }}>
-          <div style={{ ...styles.utilityGroup, ...(isMobile ? styles.utilityGroupMobile : {}) }}>
-            {utilityLinks.map((link, index) => (
-              <a
-                key={index}
-                href={link.href}
-                style={{
-                  ...styles.utilityLink,
-                  ...(hoveredLinks[`utility-${index}`] ? styles.utilityLinkHover : {}),
-                }}
-                onMouseEnter={() =>
-                  setHoveredLinks({ ...hoveredLinks, [`utility-${index}`]: true })
-                }
-                onMouseLeave={() =>
-                  setHoveredLinks({ ...hoveredLinks, [`utility-${index}`]: false })
-                }
-              >
-                {link.label}
-              </a>
-            ))}
-          </div>
-
-          <div style={{ ...styles.utilityGroup, ...(isMobile ? styles.utilityGroupMobile : {}) }}>
-            {utilityRightLinks.map((link, index) => {
-              if (link.action) {
-                return (
-                  <button
-                    key={index}
-                    onClick={link.action}
-                    style={{
-                      ...styles.utilityLink,
-                      background: "none",
-                      border: "none",
-                      cursor: "pointer",
-                      padding: 0,
-                      ...(hoveredLinks[`utility-right-${index}`] ? styles.utilityLinkHover : {}),
-                    }}
-                    onMouseEnter={() => setHoveredLinks({ ...hoveredLinks, [`utility-right-${index}`]: true })}
-                    onMouseLeave={() => setHoveredLinks({ ...hoveredLinks, [`utility-right-${index}`]: false })}
-                  >
-                    {link.label}
-                  </button>
-                )
-              }
-              return (
-                <Link
+      {!isMobile && (
+        <div style={styles.utilityBar}>
+          <div style={styles.utilityContainer}>
+            <div style={styles.utilityGroup}>
+              {utilityLinks.map((link, index) => (
+                <a
                   key={index}
-                  to={link.to || "/"}
+                  href={link.href}
                   style={{
                     ...styles.utilityLink,
-                    textDecoration: "none",
-                    ...(hoveredLinks[`utility-right-${index}`] ? styles.utilityLinkHover : {}),
+                    display: 'flex',
+                    alignItems: 'center',
+                    ...(hoveredLinks[`utility-${index}`] ? styles.utilityLinkHover : {}),
                   }}
-                  onMouseEnter={() => setHoveredLinks({ ...hoveredLinks, [`utility-right-${index}`]: true })}
-                  onMouseLeave={() => setHoveredLinks({ ...hoveredLinks, [`utility-right-${index}`]: false })}
+                  onMouseEnter={() =>
+                    setHoveredLinks({ ...hoveredLinks, [`utility-${index}`]: true })
+                  }
+                  onMouseLeave={() =>
+                    setHoveredLinks({ ...hoveredLinks, [`utility-${index}`]: false })
+                  }
                 >
+                  {link.icon && link.icon}
                   {link.label}
-                </Link>
-              )
-            })}
+                </a>
+              ))}
+            </div>
+
+            <div style={styles.utilityGroup}>
+              <a
+                href="#"
+                style={{
+                  ...styles.utilityLink,
+                  ...(hoveredLinks['track-order-utility'] ? styles.utilityLinkHover : {}),
+                }}
+                onMouseEnter={() => setHoveredLinks({ ...hoveredLinks, 'track-order-utility': true })}
+                onMouseLeave={() => setHoveredLinks({ ...hoveredLinks, 'track-order-utility': false })}
+              >
+                TRACK MY ORDER
+              </a>
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* MIDDLE ROW: Header & Search */}
       <div style={{ ...styles.headerRow, ...(isMobile ? styles.headerRowMobile : {}) }}>
@@ -410,12 +455,31 @@ export default function Navbar() {
         </div>
 
         {/* Icons Section */}
-        <div style={{ ...styles.iconsSection, ...(isMobile ? styles.iconsSectionMobile : {}) }}>
+        <div 
+          style={{ ...styles.iconsSection, ...(isMobile ? styles.iconsSectionMobile : {}) }}
+          id="user-profile-menu"
+        >
+          {isMobile && (
+            <a
+              href="#"
+              style={{
+                ...styles.utilityLink,
+                fontSize: '0.7rem',
+                marginRight: '0.5rem',
+                ...(hoveredLinks['track-order-mobile'] ? styles.utilityLinkHover : {}),
+              }}
+              onMouseEnter={() => setHoveredLinks({ ...hoveredLinks, 'track-order-mobile': true })}
+              onMouseLeave={() => setHoveredLinks({ ...hoveredLinks, 'track-order-mobile': false })}
+            >
+              TRACK MY ORDER
+            </a>
+          )}
           <button
             style={{
               ...styles.iconButton,
-              ...(hoveredIconBtn === "user" ? styles.iconButtonHover : {}),
+              ...(hoveredIconBtn === "user" || userMenuOpen ? styles.iconButtonHover : {}),
             }}
+            onClick={handleProfileClick}
             onMouseEnter={() => setHoveredIconBtn("user")}
             onMouseLeave={() => setHoveredIconBtn(null)}
             aria-label="User Profile"
@@ -423,11 +487,65 @@ export default function Navbar() {
           >
             <FiUser />
           </button>
+
+          {user && userMenuOpen && (
+            <div style={styles.dropdown}>
+              <Link
+                to="/profile"
+                style={{
+                  ...styles.dropdownItem,
+                  ...(hoveredDropdownItem === 'profile' ? styles.dropdownItemHover : {})
+                }}
+                onMouseEnter={() => setHoveredDropdownItem('profile')}
+                onMouseLeave={() => setHoveredDropdownItem(null)}
+                onClick={() => setUserMenuOpen(false)}
+              >
+                <FiUser size={16} /> Profile
+              </Link>
+              <Link
+                to="/profile"
+                style={{
+                  ...styles.dropdownItem,
+                  ...(hoveredDropdownItem === 'orders' ? styles.dropdownItemHover : {})
+                }}
+                onMouseEnter={() => setHoveredDropdownItem('orders')}
+                onMouseLeave={() => setHoveredDropdownItem(null)}
+                onClick={() => setUserMenuOpen(false)}
+              >
+                <FiShoppingCart size={16} /> Order History
+              </Link>
+              <Link
+                to="/profile"
+                style={{
+                  ...styles.dropdownItem,
+                  ...(hoveredDropdownItem === 'address' ? styles.dropdownItemHover : {})
+                }}
+                onMouseEnter={() => setHoveredDropdownItem('address')}
+                onMouseLeave={() => setHoveredDropdownItem(null)}
+                onClick={() => setUserMenuOpen(false)}
+              >
+                <FiSearch size={16} /> Address
+              </Link>
+              <button
+                onClick={handleLogout}
+                style={{
+                  ...styles.dropdownItem,
+                  ...(hoveredDropdownItem === 'logout' ? styles.dropdownItemHover : {})
+                }}
+                onMouseEnter={() => setHoveredDropdownItem('logout')}
+                onMouseLeave={() => setHoveredDropdownItem(null)}
+              >
+                <FiLogOut size={16} /> Sign Out
+              </button>
+            </div>
+          )}
+
           <button
             style={{
               ...styles.iconButton,
               ...(hoveredIconBtn === "cart" ? styles.iconButtonHover : {}),
             }}
+            onClick={() => navigate('/cart')}
             onMouseEnter={() => setHoveredIconBtn("cart")}
             onMouseLeave={() => setHoveredIconBtn(null)}
             aria-label="Shopping Cart"

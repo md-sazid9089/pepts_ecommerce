@@ -136,7 +136,11 @@ const styles = {
     flexDirection: 'column',
     alignItems: 'center',
     gap: '12px',
-    marginTop: '8px',
+    margin: '20px 0',
+    padding: '15px',
+    backgroundColor: '#F8FAFC',
+    borderRadius: '16px',
+    border: '1px solid #E2E8F0',
   },
   rangeText: {
     fontSize: '13px',
@@ -146,9 +150,10 @@ const styles = {
   pagination: {
     display: 'flex',
     alignItems: 'center',
-    gap: '6px',
+    gap: '8px',
     flexWrap: 'wrap',
     justifyContent: 'center',
+    marginTop: '4px',
   },
   pageBtn: (active, disabled) => ({
     minWidth: '38px',

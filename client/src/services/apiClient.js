@@ -70,7 +70,10 @@ class ApiClient {
   }
 
   async get(endpoint, params = {}) {
-    const url = new URL(this._getCleanUrl(endpoint))
+    // Ensure we have a valid absolute URL for the constructor
+    const cleanUrl = this._getCleanUrl(endpoint)
+    const base = cleanUrl.startsWith('http') ? undefined : window.location.origin
+    const url = new URL(cleanUrl, base)
     Object.entries(params).forEach(([k, v]) => {
       if (v !== undefined && v !== null) url.searchParams.append(k, v)
     })
