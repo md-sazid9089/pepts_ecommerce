@@ -10,11 +10,9 @@
  * ============================================================================
  */
 
-// Empty string → all API calls are relative paths (/api/...)
-// Dev:  Vite proxy forwards them to https://pepta-api.vercel.app
-// Prod: Vercel rewrites forward them to https://pepta-api.vercel.app
-// Result: browser never makes a cross-origin request → SameSite=Strict works
-const API_BASE_URL = ''
+// In production, we use the absolute URL to bypass Vercel rewrite issues
+// In development, we use empty string to use the Vite proxy
+const API_BASE_URL = import.meta.env.PROD ? (import.meta.env.VITE_API_URL || '') : ''
 
 export const apiConfig = {
   baseURL: API_BASE_URL,
