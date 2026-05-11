@@ -27,6 +27,8 @@ model Product {
   title        String
   description  String
   price        Float
+  priceMin     Float?   // minimum price of range
+  priceMax     Float?   // maximum price of range
   stock        Int            @default(0)
   categoryId   String
   isActive     Boolean        @default(true)

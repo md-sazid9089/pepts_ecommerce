@@ -686,6 +686,8 @@ export default function AdminDashboard() {
     brand: "",
     description: "",
     price: "",
+    priceMin: "",
+    priceMax: "",
     stock: "",
     categoryName: "",
     moq: "",
@@ -786,6 +788,8 @@ export default function AdminDashboard() {
       brand: product.brand || "",
       description: product.description || "",
       price: product.price || "",
+      priceMin: product.priceMin ?? "",
+      priceMax: product.priceMax ?? "",
       stock: product.stock || "",
       categoryName: product.category || "",
       moq: product.moq || "",
@@ -817,7 +821,8 @@ export default function AdminDashboard() {
   const handleCancelEdit = useCallback(() => {
     setEditingProduct(null)
     setProductForm({
-      title: "", brand: "", description: "", price: "", stock: "", categoryName: "",
+      title: "", brand: "", description: "", price: "", priceMin: "", priceMax: "",
+      stock: "", categoryName: "",
       moq: "", casePackSize: "", specHeight: "", specMaterial: "", specClothing: "", specPackage: "", specTier: "",
     })
     setPricingRows([defaultPricingRow()])
@@ -855,6 +860,8 @@ export default function AdminDashboard() {
         brand:        productForm.brand,
         description:  productForm.description,
         price:        Number(productForm.price),
+        priceMin:     productForm.priceMin !== "" ? Number(productForm.priceMin) : null,
+        priceMax:     productForm.priceMax !== "" ? Number(productForm.priceMax) : null,
         stock:        Number(productForm.stock),
         categoryName: productForm.categoryName,
         moq:          Number(productForm.moq),
@@ -906,7 +913,8 @@ export default function AdminDashboard() {
 
       setEditingProduct(null)
       setProductForm({
-        title: "", brand: "", description: "", price: "", stock: "", categoryName: "",
+        title: "", brand: "", description: "", price: "", priceMin: "", priceMax: "",
+        stock: "", categoryName: "",
         moq: "", casePackSize: "", specHeight: "", specMaterial: "", specClothing: "", specPackage: "", specTier: "",
       })
       setPricingRows([defaultPricingRow()])
@@ -1341,6 +1349,34 @@ export default function AdminDashboard() {
                 </div>
 
                 <div style={styles.formGroup}>
+                  <label style={styles.formLabel} htmlFor="priceMin">Min Price (USD)</label>
+                  <input
+                    id="priceMin"
+                    type="number"
+                    value={productForm.priceMin}
+                    onChange={handleFormChange("priceMin")}
+                    style={styles.formInput}
+                    placeholder="e.g. 210"
+                    min="0"
+                    step="0.01"
+                  />
+                </div>
+
+                <div style={styles.formGroup}>
+                  <label style={styles.formLabel} htmlFor="priceMax">Max Price (USD)</label>
+                  <input
+                    id="priceMax"
+                    type="number"
+                    value={productForm.priceMax}
+                    onChange={handleFormChange("priceMax")}
+                    style={styles.formInput}
+                    placeholder="e.g. 220"
+                    min="0"
+                    step="0.01"
+                  />
+                </div>
+
+                <div style={styles.formGroup}>
                   <label style={styles.formLabel} htmlFor="stock">Stock</label>
                   <input
                     id="stock"
@@ -1408,6 +1444,9 @@ export default function AdminDashboard() {
                   </select>
                 </div>
               </div>
+              <p style={{ fontSize: "0.78rem", color: "#6b7280", marginTop: "-0.5rem", marginBottom: "0.5rem" }}>
+                Set Min Price and Max Price if the price varies by factors (e.g. color, size). Leave blank to use single Price.
+              </p>
 
               {/* ── Bulk Pricing Tiers ── */}
               <div style={styles.formGroup}>

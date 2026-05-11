@@ -2,7 +2,6 @@ import { useState, useCallback, memo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import { useCart } from '@/context/CartContext';
-import { formatPrice } from '@/data/utils/pricing';
 import { imagePresets } from '@/utils/imageUtils';
 import { queryKeys } from '@/lib/queryKeys';
 import productsApi from '@/services/api/products.api';
@@ -389,9 +388,34 @@ function ProductCard({ product, onQuickView }) {
   }, [addItem, product, displayImage]);
 
   // Price display
-  const priceDisplay = product.bulkPrices?.length > 0
-    ? `US$${formatPrice(Math.min(...product.bulkPrices.map(t => t.price))).replace('$', '')} – ${formatPrice(Math.max(...product.bulkPrices.map(t => t.price))).replace('$', '')}`
-    : `US$${formatPrice(product.price).replace('$', '')}`;
+  const formatPrice = (p) => parseFloat(p || 0).toFixed(2)
+
+  const getPriceDisplay = (product) => {
+    // Priority 1: explicit priceMin / priceMax set by admin
+    const hasMin = product.priceMin != null && product.priceMin !== '';
+    const hasMax = product.priceMax != null && product.priceMax !== '';
+    if (hasMin && hasMax) {
+      const lo = parseFloat(product.priceMin);
+      const hi = parseFloat(product.priceMax);
+      if (lo !== hi) return `US$${formatPrice(lo)} \u2013 ${formatPrice(hi)}`;
+      return `US$${formatPrice(lo)}`;
+    }
+    if (hasMax) return `US$${formatPrice(product.priceMax)}`;
+    if (hasMin) return `US$${formatPrice(product.priceMin)}`;
+
+    // Priority 2: fallback to bulkPrices range (existing logic)
+    const bulkPriceValues = product.bulkPrices?.map(t => parseFloat(t.price)) || [];
+    const minPrice = bulkPriceValues.length > 0
+      ? Math.min(parseFloat(product.price || 0), ...bulkPriceValues)
+      : parseFloat(product.price || 0);
+    const maxPrice = bulkPriceValues.length > 0
+      ? Math.max(...bulkPriceValues)
+      : parseFloat(product.price || 0);
+    if (minPrice === maxPrice) return `US$${formatPrice(minPrice)}`;
+    return `US$${formatPrice(minPrice)} \u2013 ${formatPrice(maxPrice)}`;
+  }
+
+  const priceDisplay = getPriceDisplay(product);
 
   return (
     <>

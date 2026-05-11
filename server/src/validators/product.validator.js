@@ -55,6 +55,9 @@ export const createProductSchema = z.object({
     package:  z.string().trim().max(200).optional(),
     tier:     z.string().trim().max(100).optional(),
   }).optional(),
+
+  priceMin: z.number().nonnegative().nullable().optional(),
+  priceMax: z.number().nonnegative().nullable().optional(),
 })
 
 export const updateProductSchema = z.object({
@@ -80,6 +83,9 @@ export const updateProductSchema = z.object({
     package:  z.string().trim().max(200).optional(),
     tier:     z.string().trim().max(100).optional(),
   }).optional(),
+
+  priceMin: z.number().nonnegative().nullable().optional(),
+  priceMax: z.number().nonnegative().nullable().optional(),
 })
 
 export const productQuerySchema = z.object({

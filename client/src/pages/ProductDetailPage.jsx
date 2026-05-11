@@ -773,8 +773,33 @@ export default function ProductDetailPage() {
 
           <div style={styles.priceGroup}>
             <span style={styles.priceLabel}>FOB price</span>
-            <span style={styles.priceValue}>${(currentTier?.price || product.price || 0).toFixed(2)}</span>
-            <span style={styles.priceRange}>{product.priceRange || "Pricing may vary by order volume."}</span>
+            <span style={styles.priceValue}>${parseFloat(currentTier?.price || product.price || 0).toFixed(2)}</span>
+            <span style={styles.priceRange}>
+              {(() => {
+                const fmt = (p) => parseFloat(p || 0).toFixed(2);
+                // Priority 1: explicit priceMin / priceMax set by admin
+                const hasMin = product.priceMin != null;
+                const hasMax = product.priceMax != null;
+                if (hasMin && hasMax) {
+                  const lo = parseFloat(product.priceMin);
+                  const hi = parseFloat(product.priceMax);
+                  if (lo !== hi) return `US$${fmt(lo)} \u2013 ${fmt(hi)} (FOB Price)`;
+                  return `US$${fmt(lo)} (FOB Price)`;
+                }
+                if (hasMax) return `US$${fmt(product.priceMax)} (FOB Price)`;
+                if (hasMin) return `US$${fmt(product.priceMin)} (FOB Price)`;
+                // Priority 2: fallback to bulkPrices range
+                const bpVals = product.bulkPrices?.map(t => parseFloat(t.price)) || [];
+                const minP = bpVals.length > 0
+                  ? Math.min(parseFloat(product.price || 0), ...bpVals)
+                  : parseFloat(product.price || 0);
+                const maxP = bpVals.length > 0
+                  ? Math.max(...bpVals)
+                  : parseFloat(product.price || 0);
+                if (minP === maxP) return `US$${fmt(minP)} (FOB Price)`;
+                return `US$${fmt(minP)} \u2013 ${fmt(maxP)} (FOB Price)`;
+              })()}
+            </span>
           </div>
 
           {/* Tiered Pricing Table */}
