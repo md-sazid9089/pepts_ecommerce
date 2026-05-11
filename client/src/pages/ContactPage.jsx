@@ -6,7 +6,7 @@ import {
   FaTwitter,
   FaInstagram,
 } from "react-icons/fa"
-import LoadingSpinner from "../components/ui/LoadingSpinner"
+import LoadingSpinner from "../components/UI/LoadingSpinner"
 
 // ====================================
 // CONSTANTS

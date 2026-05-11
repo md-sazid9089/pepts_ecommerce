@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 import { FiCheck, FiTrendingUp, FiBox, FiTruck, FiHeadphones, FiAward } from "react-icons/fi"
-import LoadingSpinner from "../components/ui/LoadingSpinner"
+import LoadingSpinner from "../components/UI/LoadingSpinner"
 
 const colors = {
   darkBrown: "#4A3535",

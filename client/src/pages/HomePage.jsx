@@ -3,7 +3,7 @@ import HeroSection from "../components/HeroSection/HeroSection"
 import NewArrivals from "../components/NewArrivals/NewArrivals"
 import CategorySection from "../components/CategorySection/CategorySection"
 import FeaturedProducts from "../components/FeaturedProducts/FeaturedProducts"
-import LoadingSpinner from "../components/ui/LoadingSpinner"
+import LoadingSpinner from "../components/UI/LoadingSpinner"
 
 export default function HomePage() {
   const [loading, setLoading] = useState(true)
