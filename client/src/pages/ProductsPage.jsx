@@ -5,7 +5,7 @@ import categoriesApi from '@/services/api/categories.api';
 import ProductCard from '@/components/ProductCard/ProductCard';
 import ProductCardSkeleton from '@/components/skeletons/ProductCardSkeleton';
 import { queryKeys } from '@/lib/queryKeys';
-import LoadingSpinner from '@/components/ui/LoadingSpinner';
+import LoadingSpinner from '@/components/UI/LoadingSpinner';
 
 // ─── Constants ──────────────────────────────────────────────────────────────
 const LIMIT = 10;

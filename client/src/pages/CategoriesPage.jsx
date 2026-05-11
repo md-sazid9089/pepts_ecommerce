@@ -5,7 +5,7 @@ import { FaSearch, FaBox, FaArrowRight, FaTag } from "react-icons/fa"
 import categoriesApi from "@/services/api/categories.api"
 import CategoryGridSkeleton from "@/components/skeletons/CategoryGridSkeleton"
 import { queryKeys } from "@/lib/queryKeys"
-import LoadingSpinner from "@/components/ui/LoadingSpinner"
+import LoadingSpinner from "@/components/UI/LoadingSpinner"
 
 // ─── Category accent colours ─────────────────────────────────────────────────
 const CATEGORY_ACCENTS = {
