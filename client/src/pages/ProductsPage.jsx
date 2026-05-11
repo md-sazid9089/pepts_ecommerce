@@ -5,6 +5,7 @@ import categoriesApi from '@/services/api/categories.api';
 import ProductCard from '@/components/ProductCard/ProductCard';
 import ProductCardSkeleton from '@/components/skeletons/ProductCardSkeleton';
 import { queryKeys } from '@/lib/queryKeys';
+import LoadingSpinner from '@/components/ui/LoadingSpinner';
 
 // ─── Constants ──────────────────────────────────────────────────────────────
 const LIMIT = 10;
@@ -285,6 +286,10 @@ export default function ProductsPage() {
   const pageRange = buildPageRange(page, totalPages);
 
   // ─── Render ───────────────────────────────────────────────────────────────
+  if (isLoading) {
+    return <LoadingSpinner fullScreen message="Loading products…" />;
+  }
+
   return (
     <div style={styles.container}>
       {/* Page Header */}
@@ -384,8 +389,8 @@ export default function ProductsPage() {
             </div>
           )}
 
-          {/* Skeleton Loading */}
-          {isLoading && (
+          {/* Skeleton — only shown while paginating (isFetching but data already exists) */}
+          {isFetching && !isLoading && (
             <div style={styles.grid}>
               {Array.from({ length: LIMIT }).map((_, i) => (
                 <ProductCardSkeleton key={i} />

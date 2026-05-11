@@ -5,6 +5,7 @@ import { FaSearch, FaBox, FaArrowRight, FaTag } from "react-icons/fa"
 import categoriesApi from "@/services/api/categories.api"
 import CategoryGridSkeleton from "@/components/skeletons/CategoryGridSkeleton"
 import { queryKeys } from "@/lib/queryKeys"
+import LoadingSpinner from "@/components/ui/LoadingSpinner"
 
 // ─── Category accent colours ─────────────────────────────────────────────────
 const CATEGORY_ACCENTS = {
@@ -284,6 +285,10 @@ export default function CategoriesPage() {
     navigate(`/products?category=${encodeURIComponent(categoryName)}`)
   }
 
+  if (isLoading) {
+    return <LoadingSpinner fullScreen message="Loading categories…" />
+  }
+
   return (
     <div style={styles.page}>
       {/* ── Hero ── */}
@@ -329,9 +334,7 @@ export default function CategoriesPage() {
         </div>
 
         {/* Grid */}
-        {isLoading ? (
-          <CategoryGridSkeleton />
-        ) : filtered.length > 0 ? (
+        {filtered.length > 0 ? (
           <div style={styles.grid}>
             {filtered.map((cat) => {
               const accent  = CATEGORY_ACCENTS[cat.name] ?? DEFAULT_ACCENT

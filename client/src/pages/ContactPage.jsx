@@ -6,6 +6,7 @@ import {
   FaTwitter,
   FaInstagram,
 } from "react-icons/fa"
+import LoadingSpinner from "../components/ui/LoadingSpinner"
 
 // ====================================
 // CONSTANTS
@@ -269,7 +270,9 @@ const ContactFormSection = ({ formStyles, isMobile }) => {
   }, [])
 
   return (
-    <section style={formStyles.container}>
+    <>
+      {isSubmitting && <LoadingSpinner fullScreen message="Sending your message…" />}
+      <section style={formStyles.container}>
       <div style={formStyles.maxWidth}>
         <h2 style={formStyles.title}>Send us a Message</h2>
 
@@ -396,7 +399,7 @@ const ContactFormSection = ({ formStyles, isMobile }) => {
         </form>
       </div>
     </section>
-  )
+    </>
 }
 
 // ====================================

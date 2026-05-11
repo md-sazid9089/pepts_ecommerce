@@ -1,6 +1,7 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 import { FiCheck, FiTrendingUp, FiBox, FiTruck, FiHeadphones, FiAward } from "react-icons/fi"
+import LoadingSpinner from "../components/ui/LoadingSpinner"
 
 const colors = {
   darkBrown: "#4A3535",
@@ -269,10 +270,18 @@ const ctaStyles = {
 // ====================================
 export default function AboutPage() {
   const navigate = useNavigate()
+  const [loading, setLoading] = useState(true)
   const [hoveredCard, setHoveredCard] = useState(null)
   const [hoveredStep, setHoveredStep] = useState(null)
   const [hoveredPrimaryBtn, setHoveredPrimaryBtn] = useState(false)
   const [hoveredSecondaryBtn, setHoveredSecondaryBtn] = useState(false)
+
+  useEffect(() => {
+    const t = setTimeout(() => setLoading(false), 500)
+    return () => clearTimeout(t)
+  }, [])
+
+  if (loading) return <LoadingSpinner fullScreen message="Loading About Pepta…" />
 
   const whyChooseUsData = [
     {
