@@ -54,8 +54,9 @@ export async function POST(request) {
 
     const { user, token } = await authService.login(parsed.data)
 
-    // Return user data in body — token lives in httpOnly cookie only
-    const res = apiResponse.success({ user }, "Login successful")
+    // Return user + token in body so admin panel can store it for Bearer auth.
+    // Token is also set as httpOnly cookie for regular browser session use.
+    const res = apiResponse.success({ user, token }, "Login successful")
     res.headers.set('Set-Cookie', buildAuthCookie(token))
     return res
   } catch (error) {

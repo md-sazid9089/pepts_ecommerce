@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react"
-import { FiChevronLeft, FiChevronRight, FiCheckCircle, FiHeadphones, FiRotateCcw } from "react-icons/fi"
+import { FiChevronLeft, FiChevronRight } from "react-icons/fi"
+import { HiShieldCheck, HiRocketLaunch, HiCreditCard, HiTag } from "react-icons/hi2"
 
 // ====================================
 // THEME COLORS
@@ -129,84 +130,39 @@ const styles = {
     backgroundColor: "rgba(255, 255, 255, 0.9)",
   },
 
-  // ========== TRUST SECTION ==========
+  // ========== TRUST STRIP ==========
   trustOuter: {
     maxWidth: "1300px",
     margin: "1rem auto 0",
     padding: "0 20px",
   },
-
   trustContainer: {
     display: "flex",
-    justifyContent: "space-between",
-    alignItems: "flex-start",
-    gap: "20px",
+    alignItems: "center",
+    justifyContent: "space-around",
     flexWrap: "wrap",
+    gap: "0",
+    backgroundColor: "#f3f4f6",
+    borderRadius: "1rem",
+    padding: "0.875rem 1.5rem",
   },
-
-  // Trust Card Item
-  trustCard: {
-    display: "flex",
-    flexDirection: "row",
-    alignItems: "flex-start",
-    gap: "20px",
-    backgroundColor: colors.white,
-    borderRadius: "12px",
-    padding: "30px 20px",
-    flex: "1 1 calc(33.333% - 14px)",
-    minWidth: "280px",
-    boxShadow: "0 4px 10px rgba(0, 0, 0, 0.03)",
-    transition: sharedStyles.transition,
-  },
-
-  trustCardHover: {
-    boxShadow: "0 6px 16px rgba(0, 0, 0, 0.08)",
-  },
-
-  trustIconWrapper: {
+  trustItem: {
     display: "flex",
     alignItems: "center",
-    justifyContent: "center",
-    width: "60px",
-    height: "60px",
-    minWidth: "60px",
-    borderRadius: "12px",
-    backgroundColor: colors.iconBg,
+    gap: "0.5rem",
+    padding: "0.5rem 0.75rem",
   },
-
-  trustIcon: {
-    fontSize: "1.8rem",
-    color: colors.darkBrown,
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
+  trustDivider: {
+    width: "1px",
+    height: "20px",
+    backgroundColor: "#d1d5db",
+    flexShrink: 0,
   },
-
-  trustContent: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "0.375rem",
-  },
-
-  trustTitle: {
-    fontSize: "1.1rem",
-    fontWeight: 700,
-    color: colors.darkBrown,
-    margin: 0,
-    letterSpacing: "0.3px",
-  },
-
-  trustSubtitle: {
-    fontSize: "0.9rem",
-    color: colors.mutedBrown,
-    margin: 0,
-    lineHeight: 1.6,
-  },
-
-  // ========== MOBILE RESPONSIVE ==========
-  trustCardMobile: {
-    flex: "1 1 100%",
-    minWidth: "auto",
+  trustText: {
+    fontSize: "0.875rem",
+    fontWeight: 600,
+    color: "#374151",
+    whiteSpace: "nowrap",
   },
 
   carouselWrapperMobile: {
@@ -283,24 +239,10 @@ export default function HeroSection() {
 
   // Trust features data with new titles and icons
   const trustFeatures = [
-    {
-      id: 1,
-      icon: <FiCheckCircle />,
-      title: "100% Plush Dolls",
-      subtitle: "Genuine products from verified suppliers",
-    },
-    {
-      id: 2,
-      icon: <FiHeadphones />,
-      title: "Custom your Own",
-      subtitle: "Dedicated customer service always available",
-    },
-    {
-      id: 3,
-      icon: <FiRotateCcw />,
-      title: "Worldwide delivery",
-      subtitle: "Hassle-free returns within 14 days",
-    },
+    { id: 1, icon: <HiShieldCheck size={20} />, color: "#22c55e", text: "100% Genuine Products" },
+    { id: 2, icon: <HiRocketLaunch size={20} />, color: "#3b82f6", text: "Super Fast Delivery" },
+    { id: 3, icon: <HiCreditCard size={20} />, color: "#fb923c", text: "Flexible Bulk Pricing" },
+    { id: 4, icon: <HiTag size={20} />, color: "#f43f5e", text: "Best Factory Price" },
   ]
 
   return (
@@ -371,31 +313,19 @@ export default function HeroSection() {
         </div>
       </div>
 
-      {/* TRUST SECTION */}
+      {/* TRUST STRIP */}
       <div style={styles.trustOuter}>
         <div style={styles.trustContainer}>
-          {trustFeatures.map((feature) => (
-            <div
-              key={feature.id}
-              style={{
-                ...styles.trustCard,
-                ...(isMobile ? styles.trustCardMobile : {}),
-                ...(hoveredCard === feature.id ? styles.trustCardHover : {}),
-              }}
-              onMouseEnter={() => setHoveredCard(feature.id)}
-              onMouseLeave={() => setHoveredCard(null)}
-            >
-              {/* Icon Container - Left */}
-              <div style={styles.trustIconWrapper}>
-                <div style={styles.trustIcon}>{feature.icon}</div>
+          {trustFeatures.map((feature, idx) => (
+            <>
+              {idx > 0 && !isMobile && <span key={`div-${feature.id}`} style={styles.trustDivider} />}
+              <div key={feature.id} style={styles.trustItem}>
+                <span style={{ color: feature.color, display: 'flex', alignItems: 'center', flexShrink: 0 }}>
+                  {feature.icon}
+                </span>
+                <span style={styles.trustText}>{feature.text}</span>
               </div>
-
-              {/* Text Content - Right */}
-              <div style={styles.trustContent}>
-                <h3 style={styles.trustTitle}>{feature.title}</h3>
-                <p style={styles.trustSubtitle}>{feature.subtitle}</p>
-              </div>
-            </div>
+            </>
           ))}
         </div>
       </div>

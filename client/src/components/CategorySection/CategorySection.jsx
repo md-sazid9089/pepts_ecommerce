@@ -36,19 +36,20 @@ const CSS = `
     letter-spacing: 0.3px;
   }
   .cs-view-all {
-    background: none;
-    border: none;
-    font-size: 0.9rem;
-    font-weight: 600;
-    color: #867671;
+    background: transparent;
+    border: 2px solid #4A3535;
+    border-radius: 0.375rem;
+    padding: 0.6rem 1.25rem;
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: #4A3535;
     cursor: pointer;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    transition: color 0.2s ease;
+    letter-spacing: 0.3px;
+    transition: background 0.2s ease, color 0.2s ease;
     font-family: inherit;
-    padding: 0;
+    white-space: nowrap;
   }
-  .cs-view-all:hover { color: #4A3535; }
+  .cs-view-all:hover { background: #4A3535; color: #fff; }
 
   /* ── Grid ── */
   .cs-grid {

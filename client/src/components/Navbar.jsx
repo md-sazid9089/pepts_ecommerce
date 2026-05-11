@@ -1,7 +1,9 @@
 import { useState, useEffect } from "react"
 import { Link, useNavigate } from "react-router-dom"
-import { FiSearch, FiUser, FiShoppingCart, FiLogOut, FiLogIn, FiUserPlus, FiPhone, FiMail } from "react-icons/fi"
+import { FiSearch, FiUser, FiShoppingCart, FiLogOut, FiPhone, FiMail } from "react-icons/fi"
+import { HiBars3, HiXMark, HiUser, HiShoppingCart, HiTruck } from "react-icons/hi2"
 import { useAuth } from "@/context/AuthContext"
+import { useCart } from "@/context/CartContext"
 
 // ====================================
 // THEME COLORS
@@ -283,8 +285,10 @@ const styles = {
 export default function Navbar() {
   const navigate = useNavigate()
   const { user, logout } = useAuth()
+  const { totalItems } = useCart()
   const [searchQuery, setSearchQuery] = useState("")
   const [isMobile, setIsMobile] = useState(false)
+  const [menuOpen, setMenuOpen] = useState(false)
   const [hoveredLinks, setHoveredLinks] = useState({})
   const [hoveredSearchBtn, setHoveredSearchBtn] = useState(false)
   const [hoveredIconBtn, setHoveredIconBtn] = useState(null)
@@ -370,7 +374,7 @@ export default function Navbar() {
 
   return (
     <nav style={styles.navbar}>
-      {/* TOP ROW: Utility Bar */}
+      {/* ── DESKTOP: Utility Bar ── */}
       {!isMobile && (
         <div style={styles.utilityBar}>
           <div style={styles.utilityContainer}>
@@ -385,19 +389,14 @@ export default function Navbar() {
                     alignItems: 'center',
                     ...(hoveredLinks[`utility-${index}`] ? styles.utilityLinkHover : {}),
                   }}
-                  onMouseEnter={() =>
-                    setHoveredLinks({ ...hoveredLinks, [`utility-${index}`]: true })
-                  }
-                  onMouseLeave={() =>
-                    setHoveredLinks({ ...hoveredLinks, [`utility-${index}`]: false })
-                  }
+                  onMouseEnter={() => setHoveredLinks({ ...hoveredLinks, [`utility-${index}`]: true })}
+                  onMouseLeave={() => setHoveredLinks({ ...hoveredLinks, [`utility-${index}`]: false })}
                 >
                   {link.icon && link.icon}
                   {link.label}
                 </a>
               ))}
             </div>
-
             <div style={styles.utilityGroup}>
               <a
                 href="#"
@@ -415,171 +414,182 @@ export default function Navbar() {
         </div>
       )}
 
-      {/* MIDDLE ROW: Header & Search */}
-      <div style={{ ...styles.headerRow, ...(isMobile ? styles.headerRowMobile : {}) }}>
-        {/* Logo Section */}
-        <div style={styles.logoSection}>
-          <Link to="/" style={{ display: 'block', cursor: 'pointer', textDecoration: 'none' }}>
-            <img 
-              src="/images/products/logo.jpeg" 
-              alt="Pepta Logo" 
-              style={{ height: "50px", width: "auto", objectFit: "contain" }}
-            />
-          </Link>
-        </div>
-
-        {/* Search Section */}
-        <div style={{ ...styles.searchSection, ...(isMobile ? styles.searchSectionMobile : {}) }}>
-          <form onSubmit={handleSearch} style={{ display: "flex", width: "100%" }}>
-            <div style={styles.searchContainer}>
-              <input
-                type="text"
-                placeholder="Search in Pepta"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                style={styles.searchInput}
-              />
-              <button
-                type="submit"
-                style={{
-                  ...styles.searchButton,
-                  ...(hoveredSearchBtn ? styles.searchButtonHover : {}),
-                }}
-                onMouseEnter={() => setHoveredSearchBtn(true)}
-                onMouseLeave={() => setHoveredSearchBtn(false)}
-              >
-                <FiSearch />
-              </button>
-            </div>
-          </form>
-        </div>
-
-        {/* Icons Section */}
-        <div 
-          style={{ ...styles.iconsSection, ...(isMobile ? styles.iconsSectionMobile : {}) }}
-          id="user-profile-menu"
-        >
-          {isMobile && (
-            <a
-              href="#"
-              style={{
-                ...styles.utilityLink,
-                fontSize: '0.7rem',
-                marginRight: '0.5rem',
-                ...(hoveredLinks['track-order-mobile'] ? styles.utilityLinkHover : {}),
-              }}
-              onMouseEnter={() => setHoveredLinks({ ...hoveredLinks, 'track-order-mobile': true })}
-              onMouseLeave={() => setHoveredLinks({ ...hoveredLinks, 'track-order-mobile': false })}
+      {/* ── DESKTOP: Header & Search ── */}
+      {!isMobile && (
+        <div style={styles.headerRow}>
+          <div style={styles.logoSection}>
+            <Link to="/" style={{ display: 'block', cursor: 'pointer', textDecoration: 'none' }}>
+              <img src="/images/products/logo.jpeg" alt="Pepta Logo" style={{ height: "50px", width: "auto", objectFit: "contain" }} />
+            </Link>
+          </div>
+          <div style={styles.searchSection}>
+            <form onSubmit={handleSearch} style={{ display: "flex", width: "100%" }}>
+              <div style={styles.searchContainer}>
+                <input
+                  type="text"
+                  placeholder="Search in Pepta"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  style={styles.searchInput}
+                />
+                <button
+                  type="submit"
+                  style={{ ...styles.searchButton, ...(hoveredSearchBtn ? styles.searchButtonHover : {}) }}
+                  onMouseEnter={() => setHoveredSearchBtn(true)}
+                  onMouseLeave={() => setHoveredSearchBtn(false)}
+                >
+                  <FiSearch />
+                </button>
+              </div>
+            </form>
+          </div>
+          <div style={styles.iconsSection} id="user-profile-menu">
+            <button
+              style={{ ...styles.iconButton, ...(hoveredIconBtn === "user" || userMenuOpen ? styles.iconButtonHover : {}) }}
+              onClick={handleProfileClick}
+              onMouseEnter={() => setHoveredIconBtn("user")}
+              onMouseLeave={() => setHoveredIconBtn(null)}
+              aria-label="User Profile"
             >
-              TRACK MY ORDER
-            </a>
-          )}
-          <button
-            style={{
-              ...styles.iconButton,
-              ...(hoveredIconBtn === "user" || userMenuOpen ? styles.iconButtonHover : {}),
-            }}
-            onClick={handleProfileClick}
-            onMouseEnter={() => setHoveredIconBtn("user")}
-            onMouseLeave={() => setHoveredIconBtn(null)}
-            aria-label="User Profile"
-            title="User Profile"
-          >
-            <FiUser />
-          </button>
+              <FiUser />
+            </button>
+            {user && userMenuOpen && (
+              <div style={styles.dropdown}>
+                <Link to="/profile" style={{ ...styles.dropdownItem, ...(hoveredDropdownItem === 'profile' ? styles.dropdownItemHover : {}) }} onMouseEnter={() => setHoveredDropdownItem('profile')} onMouseLeave={() => setHoveredDropdownItem(null)} onClick={() => setUserMenuOpen(false)}>
+                  <FiUser size={16} /> Profile
+                </Link>
+                <Link to="/profile" style={{ ...styles.dropdownItem, ...(hoveredDropdownItem === 'orders' ? styles.dropdownItemHover : {}) }} onMouseEnter={() => setHoveredDropdownItem('orders')} onMouseLeave={() => setHoveredDropdownItem(null)} onClick={() => setUserMenuOpen(false)}>
+                  <FiShoppingCart size={16} /> Order History
+                </Link>
+                <button onClick={handleLogout} style={{ ...styles.dropdownItem, ...(hoveredDropdownItem === 'logout' ? styles.dropdownItemHover : {}) }} onMouseEnter={() => setHoveredDropdownItem('logout')} onMouseLeave={() => setHoveredDropdownItem(null)}>
+                  <FiLogOut size={16} /> Sign Out
+                </button>
+              </div>
+            )}
+            <button
+              style={{ ...styles.iconButton, ...(hoveredIconBtn === "cart" ? styles.iconButtonHover : {}) }}
+              onClick={() => navigate('/cart')}
+              onMouseEnter={() => setHoveredIconBtn("cart")}
+              onMouseLeave={() => setHoveredIconBtn(null)}
+              aria-label="Shopping Cart"
+            >
+              <FiShoppingCart />
+            </button>
+          </div>
+        </div>
+      )}
 
-          {user && userMenuOpen && (
-            <div style={styles.dropdown}>
-              <Link
-                to="/profile"
-                style={{
-                  ...styles.dropdownItem,
-                  ...(hoveredDropdownItem === 'profile' ? styles.dropdownItemHover : {})
-                }}
-                onMouseEnter={() => setHoveredDropdownItem('profile')}
-                onMouseLeave={() => setHoveredDropdownItem(null)}
-                onClick={() => setUserMenuOpen(false)}
-              >
-                <FiUser size={16} /> Profile
-              </Link>
-              <Link
-                to="/profile"
-                style={{
-                  ...styles.dropdownItem,
-                  ...(hoveredDropdownItem === 'orders' ? styles.dropdownItemHover : {})
-                }}
-                onMouseEnter={() => setHoveredDropdownItem('orders')}
-                onMouseLeave={() => setHoveredDropdownItem(null)}
-                onClick={() => setUserMenuOpen(false)}
-              >
-                <FiShoppingCart size={16} /> Order History
-              </Link>
-              <Link
-                to="/profile"
-                style={{
-                  ...styles.dropdownItem,
-                  ...(hoveredDropdownItem === 'address' ? styles.dropdownItemHover : {})
-                }}
-                onMouseEnter={() => setHoveredDropdownItem('address')}
-                onMouseLeave={() => setHoveredDropdownItem(null)}
-                onClick={() => setUserMenuOpen(false)}
-              >
-                <FiSearch size={16} /> Address
-              </Link>
-              <button
-                onClick={handleLogout}
-                style={{
-                  ...styles.dropdownItem,
-                  ...(hoveredDropdownItem === 'logout' ? styles.dropdownItemHover : {})
-                }}
-                onMouseEnter={() => setHoveredDropdownItem('logout')}
-                onMouseLeave={() => setHoveredDropdownItem(null)}
-              >
-                <FiLogOut size={16} /> Sign Out
-              </button>
-            </div>
-          )}
+      {/* ── DESKTOP: Nav Links ── */}
+      {!isMobile && (
+        <div style={styles.navRow}>
+          <ul style={styles.navLinks}>
+            {navLinks.map((link, index) => (
+              <li key={index}>
+                <Link
+                  to={link.to}
+                  style={{ ...styles.navLink, ...(hoveredLinks[`nav-${index}`] ? styles.navLinkHover : {}) }}
+                  onMouseEnter={() => setHoveredLinks({ ...hoveredLinks, [`nav-${index}`]: true })}
+                  onMouseLeave={() => setHoveredLinks({ ...hoveredLinks, [`nav-${index}`]: false })}
+                >
+                  {link.label}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
 
+      {/* ── MOBILE: Header row — Logo left, Hamburger right ── */}
+      {isMobile && (
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.7rem 1rem', backgroundColor: colors.mainBg }}>
+          <Link to="/" style={{ display: 'block', textDecoration: 'none' }}>
+            <img src="/images/products/logo.jpeg" alt="Pepta Logo" style={{ height: '46px', width: 'auto', objectFit: 'contain' }} />
+          </Link>
           <button
-            style={{
-              ...styles.iconButton,
-              ...(hoveredIconBtn === "cart" ? styles.iconButtonHover : {}),
-            }}
-            onClick={() => navigate('/cart')}
-            onMouseEnter={() => setHoveredIconBtn("cart")}
-            onMouseLeave={() => setHoveredIconBtn(null)}
-            aria-label="Shopping Cart"
-            title="Shopping Cart"
+            onClick={() => setMenuOpen(prev => !prev)}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', color: colors.darkBrown, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0.5rem', fontSize: '1.6rem' }}
+            aria-label={menuOpen ? 'Close menu' : 'Open menu'}
           >
-            <FiShoppingCart />
+            {menuOpen ? <HiXMark /> : <HiBars3 />}
           </button>
         </div>
-      </div>
+      )}
 
-      {/* BOTTOM ROW: Navigation Links */}
-      <div style={{ ...styles.navRow, ...(isMobile ? styles.navRowMobile : {}) }}>
-        <ul style={{ ...styles.navLinks, ...(isMobile ? styles.navLinksMobile : {}) }}>
+      {/* ── MOBILE: Hamburger Dropdown ── */}
+      {isMobile && menuOpen && (
+        <div style={{ backgroundColor: colors.mainBg, borderTop: `1px solid rgba(0,0,0,0.08)`, boxShadow: '0 4px 16px rgba(0,0,0,0.12)' }}>
+
+          {/* Profile / Login */}
+          <Link
+            to={user ? '/profile' : '/login'}
+            onClick={() => setMenuOpen(false)}
+            style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.9rem 1.25rem', color: colors.darkBrown, textDecoration: 'none', fontSize: '0.9rem', fontWeight: 600, borderBottom: `1px solid rgba(0,0,0,0.06)` }}
+          >
+            <HiUser style={{ fontSize: '1.2rem', flexShrink: 0 }} />
+            {user ? (user.firstName || user.email?.split('@')[0] || 'My Profile') : 'Login'}
+          </Link>
+
+          {/* Cart with badge */}
+          <Link
+            to="/cart"
+            onClick={() => setMenuOpen(false)}
+            style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.9rem 1.25rem', color: colors.darkBrown, textDecoration: 'none', fontSize: '0.9rem', fontWeight: 600, borderBottom: `1px solid rgba(0,0,0,0.06)` }}
+          >
+            <div style={{ position: 'relative', flexShrink: 0 }}>
+              <HiShoppingCart style={{ fontSize: '1.2rem' }} />
+              {totalItems > 0 && (
+                <span style={{ position: 'absolute', top: '-6px', right: '-6px', backgroundColor: '#ef4444', color: '#fff', fontSize: '0.6rem', fontWeight: 700, borderRadius: '50%', width: '16px', height: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  {totalItems}
+                </span>
+              )}
+            </div>
+            Cart
+            {totalItems > 0 && (
+              <span style={{ fontSize: '0.8rem', color: colors.mutedBrown, fontWeight: 500 }}>({totalItems})</span>
+            )}
+          </Link>
+
+          {/* Track My Order */}
+          <a
+            href="#"
+            onClick={() => setMenuOpen(false)}
+            style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.9rem 1.25rem', color: colors.darkBrown, textDecoration: 'none', fontSize: '0.9rem', fontWeight: 600, borderBottom: `1px solid rgba(0,0,0,0.06)` }}
+          >
+            <HiTruck style={{ fontSize: '1.2rem', flexShrink: 0 }} />
+            Track My Order
+          </a>
+
+          {/* Divider */}
+          <div style={{ borderTop: `2px solid rgba(0,0,0,0.08)`, margin: '0.25rem 0' }} />
+
+          {/* Existing Nav Links */}
           {navLinks.map((link, index) => (
-            <li key={index}>
-              <Link
-                to={link.to}
-                style={{
-                  ...styles.navLink,
-                  ...(hoveredLinks[`nav-${index}`] ? styles.navLinkHover : {}),
-                }}
-                onMouseEnter={() =>
-                  setHoveredLinks({ ...hoveredLinks, [`nav-${index}`]: true })
-                }
-                onMouseLeave={() =>
-                  setHoveredLinks({ ...hoveredLinks, [`nav-${index}`]: false })
-                }
-              >
-                {link.label}
-              </Link>
-            </li>
+            <Link
+              key={index}
+              to={link.to}
+              onClick={() => setMenuOpen(false)}
+              style={{ display: 'flex', alignItems: 'center', padding: '0.9rem 1.25rem', color: colors.darkBrown, textDecoration: 'none', fontSize: '0.9rem', fontWeight: 700, borderBottom: index < navLinks.length - 1 ? `1px solid rgba(0,0,0,0.06)` : 'none', letterSpacing: '0.3px' }}
+            >
+              {link.label}
+            </Link>
           ))}
-        </ul>
-      </div>
+
+          {/* Sign Out if logged in */}
+          {user && (
+            <>
+              <div style={{ borderTop: `2px solid rgba(0,0,0,0.08)`, margin: '0.25rem 0' }} />
+              <button
+                onClick={() => { handleLogout(); setMenuOpen(false); }}
+                style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.9rem 1.25rem', color: '#dc2626', background: 'none', border: 'none', cursor: 'pointer', width: '100%', textAlign: 'left', fontSize: '0.9rem', fontWeight: 600 }}
+              >
+                <FiLogOut style={{ fontSize: '1.1rem', flexShrink: 0 }} />
+                Sign Out
+              </button>
+            </>
+          )}
+        </div>
+      )}
     </nav>
   )
 }
+

@@ -270,9 +270,31 @@ export default function NewArrivals() {
   return (
     <div style={styles.container}>
       {/* Header Section */}
-      <div style={styles.headerSection}>
-        <h2 style={styles.title}>New Arrivals</h2>
-        <p style={styles.subtitle}>Discover our latest premium products</p>
+      <div style={{ ...styles.headerSection, display: 'flex', alignItems: 'center', justifyContent: 'space-between', textAlign: 'left', marginBottom: '2rem' }}>
+        <div>
+          <h2 style={styles.title}>New Arrivals</h2>
+          <p style={styles.subtitle}>Discover our latest premium products</p>
+        </div>
+        <button
+          onClick={() => navigate('/products')}
+          style={{
+            padding: '0.6rem 1.25rem',
+            backgroundColor: 'transparent',
+            color: colors.darkBrown,
+            border: `2px solid ${colors.darkBrown}`,
+            borderRadius: '0.375rem',
+            fontSize: '0.875rem',
+            fontWeight: 700,
+            cursor: 'pointer',
+            whiteSpace: 'nowrap',
+            transition: 'all 0.2s ease',
+            letterSpacing: '0.3px',
+          }}
+          onMouseEnter={e => { e.currentTarget.style.backgroundColor = colors.darkBrown; e.currentTarget.style.color = '#fff' }}
+          onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.color = colors.darkBrown }}
+        >
+          View All →
+        </button>
       </div>
 
       {/* Products Grid */}

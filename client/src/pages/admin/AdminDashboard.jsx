@@ -744,7 +744,7 @@ export default function AdminDashboard() {
       return
     }
     
-    const token = localStorage.getItem("authToken")
+    const token = localStorage.getItem("token")
     if (!token) {
       alert("Authentication token missing. Please log in again.")
       return
@@ -755,9 +755,11 @@ export default function AdminDashboard() {
       const res = await productsApi.uploadImage(productId, files, token)
       
       if (res.success && res.data) {
+        // Fix: API returns { urls: [...] }, not { imageUrl: "..." }
+        const uploadedUrl = res.data.urls?.[0] ?? null
         setProducts((prev) =>
           prev.map((p) =>
-            p.id === productId ? { ...p, imageUrl: res.data.imageUrl } : p
+            p.id === productId ? { ...p, imageUrl: uploadedUrl } : p
           )
         )
         setUploadImageFile((prev) => ({ ...prev, [productId]: null }))
@@ -882,7 +884,7 @@ export default function AdminDashboard() {
       const newProductId = response.data?.id
 
       if (imageFiles.length > 0 && newProductId) {
-        const token = localStorage.getItem("authToken")
+        const token = localStorage.getItem("token")
         if (!token) {
           setFormMessage("Product created ✅, but image upload skipped (no auth token found — please log out and log in again).")
         } else {
@@ -1067,7 +1069,7 @@ export default function AdminDashboard() {
 
         <button style={{ ...styles.navItem, marginTop: "auto" }} onClick={() => {
           localStorage.removeItem('pepta_admin_session')
-          localStorage.removeItem('authToken')
+          localStorage.removeItem('token')
           setAdminUser(null)
           navigate('/admin/login', { replace: true })
         }}>

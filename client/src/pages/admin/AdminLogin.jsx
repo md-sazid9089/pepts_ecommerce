@@ -36,9 +36,9 @@ export default function AdminLogin({ onLogin }) {
           return
         }
 
-        if (token) apiClient.setToken(token)
         const session = { ...userData, adminAt: Date.now() }
         localStorage.setItem('pepta_admin_session', JSON.stringify(session))
+        if (token) localStorage.setItem('token', token)
         onLogin(session)
         return
       }

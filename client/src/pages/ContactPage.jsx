@@ -400,6 +400,7 @@ const ContactFormSection = ({ formStyles, isMobile }) => {
       </div>
     </section>
     </>
+  )
 }
 
 // ====================================

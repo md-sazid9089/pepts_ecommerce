@@ -318,7 +318,10 @@ function ProductCard({ product, onQuickView }) {
   const [imageError, setImageError] = useState(false);
 
   const FALLBACK_IMAGE = '/placeholder-product.jpg';
-  const rawImageUrl = product.imageUrl?.trim() ? product.imageUrl : null;
+  // Fix: read from images[] relation first (where Cloudinary uploads are stored),
+  // fall back to legacy imageUrl field on the Product model.
+  const primaryImageUrl = product.images?.[0]?.url ?? product.imageUrl ?? null;
+  const rawImageUrl = primaryImageUrl?.trim() ? primaryImageUrl : null;
   const displayImage = imageError
     ? FALLBACK_IMAGE
     : (imagePresets.thumbnail(rawImageUrl) || FALLBACK_IMAGE);

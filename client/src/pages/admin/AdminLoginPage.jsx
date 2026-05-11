@@ -3,8 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { authApi } from '@/services/api'
 import apiClient from '@/services/apiClient'
 
-const ADMIN_EMAIL = import.meta.env.VITE_ADMIN_EMAIL || 'maruflol62@gmail.com'
-const ADMIN_PASS  = import.meta.env.VITE_ADMIN_PASS  || 'Maruf$@21REDO&'
+const ADMIN_EMAIL = import.meta.env.VITE_ADMIN_EMAIL || ''
 
 export default function AdminLoginPage() {
   const navigate = useNavigate()
@@ -29,10 +28,6 @@ export default function AdminLoginPage() {
     setError('')
     setLoading(true)
 
-    const isHardcoded =
-      email.trim().toLowerCase() === ADMIN_EMAIL.toLowerCase() &&
-      password === ADMIN_PASS
-
     try {
       const res = await authApi.login(email, password)
 
@@ -40,7 +35,7 @@ export default function AdminLoginPage() {
         const userData = res.data.user || res.data
         const token    = res.data.token
         const isAdmin  = userData.role === 'admin' ||
-                         userData.email?.toLowerCase() === ADMIN_EMAIL.toLowerCase()
+                         (ADMIN_EMAIL && userData.email?.toLowerCase() === ADMIN_EMAIL.toLowerCase())
 
         if (!isAdmin) {
           setError('Access denied. Admin accounts only.')
@@ -48,35 +43,15 @@ export default function AdminLoginPage() {
           return
         }
 
-        if (token) apiClient.setToken(token)
         const session = { ...userData, adminAt: Date.now() }
         localStorage.setItem('pepta_admin_session', JSON.stringify(session))
-        navigate('/admin/dashboard', { replace: true })
-        return
-      }
-
-      // API returned failure — use hardcoded fallback
-      if (isHardcoded) {
-        const session = {
-          id: 'admin_local',
-          email: ADMIN_EMAIL,
-          name: 'Admin',
-          role: 'admin',
-          adminAt: Date.now(),
-        }
-        localStorage.setItem('pepta_admin_session', JSON.stringify(session))
+        if (token) localStorage.setItem('token', token)
         navigate('/admin/dashboard', { replace: true })
         return
       }
 
       setError(res.message || 'Invalid email or password.')
     } catch {
-      if (isHardcoded) {
-        const session = { id: 'admin_local', email: ADMIN_EMAIL, name: 'Admin', role: 'admin', adminAt: Date.now() }
-        localStorage.setItem('pepta_admin_session', JSON.stringify(session))
-        navigate('/admin/dashboard', { replace: true })
-        return
-      }
       setError('Connection error. Please try again.')
     } finally {
       setLoading(false)
