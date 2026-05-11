@@ -34,6 +34,7 @@ const styles = {
     fontFamily: sharedStyles.fontFamily,
     paddingTop: "0.25rem",
     paddingBottom: "1.5rem",
+    overflow: "hidden",
   },
 
   // ========== CAROUSEL SECTION ==========
@@ -165,22 +166,47 @@ const styles = {
     whiteSpace: "nowrap",
   },
 
+  carouselOuterMobile: {
+    padding: "0",
+  },
   carouselWrapperMobile: {
-    paddingBottom: "38%",
+    paddingBottom: "62%",
+    borderRadius: "0",
   },
 
   arrowButtonMobile: {
-    width: "40px",
-    height: "40px",
-    fontSize: "1.2rem",
+    width: "36px",
+    height: "36px",
+    fontSize: "1rem",
   },
 
   leftArrowMobile: {
-    left: "10px",
+    left: "8px",
   },
 
   rightArrowMobile: {
-    right: "10px",
+    right: "8px",
+  },
+
+  // ── Mobile trust: 2×2 grid ──
+  trustContainerMobile: {
+    display: "grid",
+    gridTemplateColumns: "1fr 1fr",
+    padding: "0",
+    gap: "0",
+    overflow: "hidden",
+    flexDirection: "unset",
+    alignItems: "unset",
+    justifyContent: "unset",
+    flexWrap: "unset",
+  },
+  trustItemMobile: {
+    width: "100%",
+    padding: "0.875rem 0.75rem",
+    gap: "0.5rem",
+  },
+  trustTextMobile: {
+    fontSize: "0.75rem",
   },
 }
 
@@ -248,7 +274,7 @@ export default function HeroSection() {
   return (
     <section style={styles.masterWrapper}>
       {/* CAROUSEL SECTION */}
-      <div style={styles.carouselOuter}>
+      <div style={{ ...styles.carouselOuter, ...(isMobile ? styles.carouselOuterMobile : {}) }}>
         <div style={{ ...styles.carouselWrapper, ...(isMobile ? styles.carouselWrapperMobile : {}) }}>
           {/* Carousel Image Container */}
           <div style={styles.carouselContainer}>
@@ -315,18 +341,35 @@ export default function HeroSection() {
 
       {/* TRUST STRIP */}
       <div style={styles.trustOuter}>
-        <div style={styles.trustContainer}>
-          {trustFeatures.map((feature, idx) => (
-            <>
-              {idx > 0 && !isMobile && <span key={`div-${feature.id}`} style={styles.trustDivider} />}
-              <div key={feature.id} style={styles.trustItem}>
-                <span style={{ color: feature.color, display: 'flex', alignItems: 'center', flexShrink: 0 }}>
-                  {feature.icon}
-                </span>
-                <span style={styles.trustText}>{feature.text}</span>
-              </div>
-            </>
-          ))}
+        <div style={{ ...styles.trustContainer, ...(isMobile ? styles.trustContainerMobile : {}) }}>
+          {trustFeatures.map((feature, idx) => {
+            const isLeftCol  = idx % 2 === 0
+            const isTopRow   = idx < 2
+            const mobileBorder = isMobile ? {
+              ...(isLeftCol  ? { borderRight:  "1px solid #e5e7eb" } : {}),
+              ...(isTopRow   ? { borderBottom: "1px solid #e5e7eb" } : {}),
+            } : {}
+            return (
+              <>
+                {idx > 0 && !isMobile && <span key={`div-${feature.id}`} style={styles.trustDivider} />}
+                <div
+                  key={feature.id}
+                  style={{
+                    ...styles.trustItem,
+                    ...(isMobile ? styles.trustItemMobile : {}),
+                    ...mobileBorder,
+                  }}
+                >
+                  <span style={{ color: feature.color, display: 'flex', alignItems: 'center', flexShrink: 0 }}>
+                    {feature.icon}
+                  </span>
+                  <span style={{ ...styles.trustText, ...(isMobile ? styles.trustTextMobile : {}) }}>
+                    {feature.text}
+                  </span>
+                </div>
+              </>
+            )
+          })}
         </div>
       </div>
     </section>
