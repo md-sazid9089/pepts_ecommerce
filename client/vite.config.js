@@ -42,12 +42,20 @@ export default defineConfig({
       },
     },
     chunkSizeWarningLimit: 500,
+    commonjsOptions: {
+      transformMixedEsModules: true,
+    },
     rollupOptions: {
       output: {
         manualChunks(id) {
           // React core — loaded on every page, cached indefinitely
           if (id.includes('node_modules/react/') || id.includes('node_modules/react-dom/')) {
             return 'react-core'
+          }
+          // Stripe — MUST be separate from vendor to ensure React initializes first
+          // This fixes: "Cannot access 't' before initialization" (t = React alias)
+          if (id.includes('node_modules/@stripe/stripe-js') || id.includes('node_modules/@stripe/react-stripe-js')) {
+            return 'stripe-vendor'
           }
           // React Router — needed on every page but separate chunk
           if (id.includes('node_modules/react-router')) {
