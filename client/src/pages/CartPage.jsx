@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo, useCallback } from "react"
 import { useNavigate } from "react-router-dom"
+import { useCart } from "@/context/CartContext"
 import {
   FaTrash,
   FaChevronRight,
@@ -718,7 +719,7 @@ const recommendedProducts = [
 ]
 
 export default function CartPage() {
-  const [cartItems, setCartItems] = useState(initialCartItems)
+  const { items: cartItems, updateQuantity, removeFromCart } = useCart()
   const [promoCode, setPromoCode] = useState("")
   const [promoDiscount, setPromoDiscount] = useState(0)
   const [promoMessage, setPromoMessage] = useState("")
@@ -736,7 +737,14 @@ export default function CartPage() {
     return () => window.removeEventListener("resize", handleResize)
   }, [])
 
-  const getItemUnitPrice = useCallback((item) => calculateTieredPrice(item), [])
+  const getItemUnitPrice = useCallback((item) => {
+    // Use tieredPricing if available, otherwise use price field
+    if (item.tieredPricing) {
+      return calculateTieredPrice(item)
+    }
+    return item.price
+  }, [])
+  
   const getItemTotal = useCallback((item) => getItemUnitPrice(item) * item.quantity, [getItemUnitPrice])
 
   const subtotal = useMemo(
@@ -749,7 +757,7 @@ export default function CartPage() {
   const promoDiscountAmount = useMemo(() => subtotal * promoDiscount, [subtotal, promoDiscount])
   const total = useMemo(() => subtotal + shipping + tax - promoDiscountAmount, [subtotal, shipping, tax, promoDiscountAmount])
   const totalSavings = useMemo(
-    () => cartItems.reduce((sum, item) => sum + (item.originalPrice - getItemUnitPrice(item)) * item.quantity, 0),
+    () => cartItems.reduce((sum, item) => sum + ((item.originalPrice || item.price) - getItemUnitPrice(item)) * item.quantity, 0),
     [cartItems, getItemUnitPrice]
   )
   const hasMoQViolations = useMemo(
@@ -760,9 +768,13 @@ export default function CartPage() {
   const handleUpdateQuantity = useCallback(
     (id, quantity) => {
       if (quantity <= 0) return
-      setCartItems((current) => current.map((item) => (item.id === id ? { ...item, quantity } : item)))
+      try {
+        updateQuantity(id, quantity)
+      } catch (err) {
+        alert(err.message)
+      }
     },
-    []
+    [updateQuantity]
   )
 
   const handleRequestQuote = useCallback(() => {
@@ -771,8 +783,8 @@ export default function CartPage() {
   }, [])
 
   const handleRemoveItem = useCallback((id) => {
-    setCartItems((current) => current.filter((item) => item.id !== id))
-  }, [])
+    removeFromCart(id)
+  }, [removeFromCart])
 
   const handlePromoApply = useCallback(() => {
     const code = promoCode.trim().toUpperCase()
@@ -837,7 +849,7 @@ export default function CartPage() {
             cartItems.map((item) => {
               const unitPrice = getItemUnitPrice(item)
               const itemTotal = getItemTotal(item)
-              const tierSavings = (item.originalPrice - unitPrice) * item.quantity
+              const tierSavings = ((item.originalPrice || item.price) - unitPrice) * item.quantity
 
               return (
                 <div
@@ -849,15 +861,15 @@ export default function CartPage() {
                   onMouseEnter={() => setHoveredItem(item.id)}
                   onMouseLeave={() => setHoveredItem(null)}
                 >
-                  <img src={item.images[0]} alt={item.name} style={styles.cartItemImage} />
+                  <img src={item.image} alt={item.title} style={styles.cartItemImage} />
 
                   <div style={styles.cartItemDetails}>
                     <div style={styles.cartItemInfo}>
-                      <p style={styles.cartItemBrand}>{item.brand}</p>
-                      <h3 style={styles.cartItemName}>{item.name}</h3>
-                      <p style={styles.cartItemCode}>SKU: {item.code}</p>
+                      <p style={styles.cartItemBrand}>{item.brand || 'PEPTA Wholesale'}</p>
+                      <h3 style={styles.cartItemName}>{item.title}</h3>
+                      <p style={styles.cartItemCode}>Product ID: {item.productId}</p>
                       <div style={styles.cartItemMeta}>
-                        <span>{item.unit} / {formatCurrency(unitPrice)}</span>
+                        <span>Piece / {formatCurrency(unitPrice)}</span>
                         <span>MOQ: {item.moq}</span>
                       </div>
                       {item.quantity < item.moq && (

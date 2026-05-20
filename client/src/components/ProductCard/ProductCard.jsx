@@ -369,6 +369,10 @@ function ProductCard({ product, onQuickView }) {
     ];
   }
 
+  // Button feedback state
+  const [cartBtnText, setCartBtnText] = useState('Add to Cart');
+  const [addingToCart, setAddingToCart] = useState(false);
+
   // Handlers
   const handleImageError = useCallback(() => setImageError(true), []);
   const handleWish = useCallback((e) => { e.preventDefault(); e.stopPropagation(); setWished(w => !w); }, []);
@@ -386,10 +390,13 @@ function ProductCard({ product, onQuickView }) {
     }
     
     try {
+      setAddingToCart(true);
       addToCart(product, product.moq || 1);
-      alert(`Added ${product.moq || 1} units to cart!`);
+      setCartBtnText('Added!');
+      setTimeout(() => setCartBtnText('Add to Cart'), 1500);
     } catch (err) {
       alert(err.message);
+      setAddingToCart(false);
     }
   }, [addToCart, product, user, navigate]);
 
@@ -511,9 +518,11 @@ function ProductCard({ product, onQuickView }) {
             <button 
               className="pc-btn pc-btn-inquiry" 
               onClick={handleAddToCart}
+              disabled={addingToCart}
+              style={{ opacity: addingToCart ? 0.6 : 1, cursor: addingToCart ? 'not-allowed' : 'pointer' }}
             >
               <FiCheck size={14} />
-              Add to Cart
+              {cartBtnText}
             </button>
             <button className="pc-btn pc-btn-chat" onClick={handleChat}>
               <FiMessageSquare size={14} />

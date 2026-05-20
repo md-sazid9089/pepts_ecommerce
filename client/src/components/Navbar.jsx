@@ -467,13 +467,18 @@ export default function Navbar() {
               </div>
             )}
             <button
-              style={{ ...styles.iconButton, ...(hoveredIconBtn === "cart" ? styles.iconButtonHover : {}) }}
+              style={{ ...styles.iconButton, ...(hoveredIconBtn === "cart" ? styles.iconButtonHover : {}), position: 'relative' }}
               onClick={() => navigate('/cart')}
               onMouseEnter={() => setHoveredIconBtn("cart")}
               onMouseLeave={() => setHoveredIconBtn(null)}
               aria-label="Shopping Cart"
             >
               <FiShoppingCart />
+              {totalItems > 0 && (
+                <span style={{ position: 'absolute', top: '-6px', right: '-6px', backgroundColor: '#ef4444', color: '#fff', fontSize: '0.65rem', fontWeight: 700, borderRadius: '50%', width: '18px', height: '18px', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid #fff' }}>
+                  {totalItems > 99 ? '99+' : totalItems}
+                </span>
+              )}
             </button>
           </div>
         </div>

@@ -621,6 +621,8 @@ export default function ProductDetailPage() {
     window.alert("Chat request initiated. This would open buyer support.")
   }, [])
 
+  const [addBtnText, setAddBtnText] = useState('Add to Cart');
+  
   const handleAddToCart = useCallback(() => {
     if (!user) {
       navigate('/login')
@@ -635,16 +637,18 @@ export default function ProductDetailPage() {
       
       addToCart(product, quantity)
       
-      // Show success toast/alert
-      alert(`Added ${quantity} unit${quantity !== 1 ? 's' : ''} to cart`)
+      // Show success feedback
+      setAddBtnText('Added!')
+      setTimeout(() => setAddBtnText('Add to Cart'), 1500)
     } catch (err) {
       setCartError(err.message)
       alert(`Error: ${err.message}`)
-    } finally {
       setAddingToCart(false)
     }
   }, [addToCart, isOrderValid, navigate, product, quantity, user])
 
+  const [buyBtnText, setBuyBtnText] = useState('Buy Now');
+  
   const handleBuyNow = useCallback(() => {
     if (!user) {
       navigate('/login')
@@ -654,7 +658,8 @@ export default function ProductDetailPage() {
     try {
       setCartError('')
       addToCart(product, quantity)
-      navigate('/checkout')
+      setBuyBtnText('Added!')
+      setTimeout(() => navigate('/checkout'), 800)
     } catch (err) {
       setCartError(err.message)
       alert(`Error: ${err.message}`)
@@ -902,25 +907,25 @@ export default function ProductDetailPage() {
               type="button"
               style={{
                 ...styles.primaryButton,
-                opacity: isOrderValid ? 1 : 0.55,
-                cursor: isOrderValid ? "pointer" : "not-allowed",
+                opacity: isOrderValid && !addingToCart ? 1 : 0.55,
+                cursor: isOrderValid && !addingToCart ? "pointer" : "not-allowed",
               }}
               onClick={handleAddToCart}
-              disabled={!isOrderValid}
+              disabled={!isOrderValid || addingToCart}
             >
-              Add to Cart
+              {addBtnText}
             </button>
             <button
               type="button"
               style={{
                 ...styles.secondaryButton,
-                opacity: isOrderValid ? 1 : 0.55,
-                cursor: isOrderValid ? "pointer" : "not-allowed",
+                opacity: isOrderValid && !addingToCart ? 1 : 0.55,
+                cursor: isOrderValid && !addingToCart ? "pointer" : "not-allowed",
               }}
               onClick={handleBuyNow}
-              disabled={!isOrderValid}
+              disabled={!isOrderValid || addingToCart}
             >
-              Buy Now
+              {buyBtnText}
             </button>
           </div>
 
@@ -1080,19 +1085,19 @@ export default function ProductDetailPage() {
       <div className="pdp-sticky">
         <button
           type="button"
-          style={{ ...styles.stickyButton, ...styles.stickyPrimary, opacity: isOrderValid ? 1 : 0.55, cursor: isOrderValid ? "pointer" : "not-allowed" }}
+          style={{ ...styles.stickyButton, ...styles.stickyPrimary, opacity: isOrderValid && !addingToCart ? 1 : 0.55, cursor: isOrderValid && !addingToCart ? "pointer" : "not-allowed" }}
           onClick={handleAddToCart}
-          disabled={!isOrderValid}
+          disabled={!isOrderValid || addingToCart}
         >
-          Add to Cart
+          {addBtnText}
         </button>
         <button
           type="button"
-          style={{ ...styles.stickyButton, ...styles.stickySecondary, opacity: isOrderValid ? 1 : 0.55, cursor: isOrderValid ? "pointer" : "not-allowed" }}
+          style={{ ...styles.stickyButton, ...styles.stickySecondary, opacity: isOrderValid && !addingToCart ? 1 : 0.55, cursor: isOrderValid && !addingToCart ? "pointer" : "not-allowed" }}
           onClick={handleBuyNow}
-          disabled={!isOrderValid}
+          disabled={!isOrderValid || addingToCart}
         >
-          Buy Now
+          {buyBtnText}
         </button>
       </div>
       {/* Inquiry Modal */}
