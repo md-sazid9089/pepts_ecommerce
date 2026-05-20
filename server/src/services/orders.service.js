@@ -22,7 +22,7 @@ function generateOrderNumber() {
  * Create a new order with stock validation (transactional)
  * @param {string} userId
  * @param {Array<{ productId: string, quantity: number }>} items
- * @param {object} metadata - { shippingAddress, contactName, companyName, contactEmail, contactPhone, notes }
+ * @param {object} metadata - { shippingAddress, contactName, companyName, contactEmail, contactPhone, notes, paymentIntentId }
  * @returns {Promise<object>} created order
  */
 export async function createOrder(userId, items, metadata = {}) {
@@ -79,9 +79,10 @@ export async function createOrder(userId, items, metadata = {}) {
         orderNumber: generateOrderNumber(),
         userId,
         totalAmount: Math.round(totalAmount * 100) / 100,
-        status: "pending",
+        status: metadata.paymentIntentId ? "confirmed" : "pending",
         
-        // Metadata fields
+        // Payment & Shipping metadata
+        paymentIntentId: metadata.paymentIntentId || null,
         companyName:   metadata.companyName   || null,
         contactName:   metadata.contactName   || null,
         contactEmail:  metadata.contactEmail  || null,

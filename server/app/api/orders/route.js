@@ -10,7 +10,8 @@ import { z } from "zod"
 import apiResponse from "@/src/utils/apiResponse"
 import * as ordersService from "@/src/services/orders.service"
 import { verifyRequest } from "@/src/lib/verifyRequest"
-
+import stripe from "@/src/lib/stripe"
+import prisma from "@/src/lib/prisma"
 
 
 const createOrderSchema = z.object({
@@ -22,6 +23,7 @@ const createOrderSchema = z.object({
       })
     )
     .min(1, "Order must have at least one item"),
+  paymentIntentId: z.string().optional(),
   companyName: z.string().optional(),
   contactName: z.string().optional(),
   contactEmail: z.string().email("Invalid email").optional(),
@@ -77,8 +79,38 @@ export async function POST(request) {
       return apiResponse.validationError("Validation failed", errors)
     }
 
-    const { items, ...metadata } = parsed.data
-    const order = await ordersService.createOrder(user.userId, items, metadata)
+    const { items, paymentIntentId, ...metadata } = parsed.data
+
+    // ─── Verify payment if paymentIntentId provided ──────────────────────────
+    if (paymentIntentId) {
+      try {
+        const intent = await stripe.paymentIntents.retrieve(paymentIntentId)
+        
+        if (intent.status !== 'succeeded') {
+          return apiResponse.error(
+            `Payment not completed. Status: ${intent.status}`,
+            400
+          )
+        }
+
+        // Check for duplicate order (idempotency)
+        const existing = await prisma.order.findUnique({
+          where: { paymentIntentId },
+          include: { items: true }
+        })
+        if (existing) {
+          return apiResponse.success(existing, "Order already exists")
+        }
+      } catch (err) {
+        console.error("Stripe verification error:", err)
+        return apiResponse.error("Failed to verify payment", 400)
+      }
+    }
+
+    const order = await ordersService.createOrder(user.userId, items, {
+      ...metadata,
+      paymentIntentId,
+    })
     return apiResponse.created(order, "Order placed successfully")
   } catch (error) {
     if (error.code === "STOCK_VALIDATION_FAILED") {

@@ -78,11 +78,12 @@ model BulkPrice {
 }
 
 model Order {
-  id              String      @id @default(cuid())
+  id              Int         @id @default(autoincrement())
   orderNumber     String      @unique
   userId          String
   status          String      @default("pending")
   totalAmount     Float
+  paymentIntentId String?     @unique
   createdAt       DateTime    @default(now())
   updatedAt       DateTime    @updatedAt
   companyName     String?
@@ -99,7 +100,7 @@ model Order {
 
 model OrderItem {
   id        String   @id @default(cuid())
-  orderId   String
+  orderId   Int
   productId Int
   quantity  Int
   unitPrice Float

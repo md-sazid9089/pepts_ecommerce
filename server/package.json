@@ -24,6 +24,7 @@
     "jsonwebtoken": "^9.0.0",
     "next": "^16.2.4",
     "prisma": "^5.0.0",
+    "stripe": "^22.1.1",
     "zod": "^3.22.4"
   },
   "devDependencies": {

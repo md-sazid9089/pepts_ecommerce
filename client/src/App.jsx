@@ -21,6 +21,7 @@ const ProductDetailPage = lazy(() => import('./pages/ProductDetailPage'))
 const SearchPage        = lazy(() => import('./pages/SearchPage'))
 const CartPage          = lazy(() => import('./pages/CartPage'))
 const CheckoutPage      = lazy(() => import('./pages/CheckoutPage'))
+const OrderConfirmationPage = lazy(() => import('./pages/OrderConfirmationPage'))
 const WishlistPage      = lazy(() => import('./pages/WishlistPage'))
 const ContactPage       = lazy(() => import('./pages/ContactPage'))
 const LoginPage         = lazy(() => import('./pages/LoginPage'))
@@ -88,6 +89,7 @@ function AppInner() {
                     <Route path="/search"          element={<SearchPage />} />
                     <Route path="/cart"            element={<CartPage />} />
                     <Route path="/checkout"        element={<UserProtectedRoute><CheckoutPage /></UserProtectedRoute>} />
+                    <Route path="/order-confirmation" element={<OrderConfirmationPage />} />
                     <Route path="/wishlist"        element={<UserProtectedRoute><WishlistPage /></UserProtectedRoute>} />
                     <Route path="/contact"         element={<ContactPage />} />
 

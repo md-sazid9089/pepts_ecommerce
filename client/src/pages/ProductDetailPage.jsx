@@ -47,6 +47,7 @@ import {
 } from "react-icons/fa"
 import { productsApi } from "@/services/api"
 import { useCart } from "@/context/CartContext"
+import { useAuth } from "@/context/AuthContext"
 
 const styles = {
   pageContainer: {
@@ -559,7 +560,10 @@ export default function ProductDetailPage() {
     }
   }, [product])
 
-  const { addItem, openCart } = useCart()
+  const { addToCart } = useCart()
+  const { user } = useAuth()
+  const [addingToCart, setAddingToCart] = useState(false)
+  const [cartError, setCartError] = useState('')
 
   const handleSendInquiry = useCallback(() => {
     // Audit Requirement: Confirm redirect to login if not authenticated
@@ -618,33 +622,44 @@ export default function ProductDetailPage() {
   }, [])
 
   const handleAddToCart = useCallback(() => {
+    if (!user) {
+      navigate('/login')
+      return
+    }
+    
     if (!isOrderValid || !product) return
 
-    addItem(
-      {
-        id: product.id,
-        name: product.title,
-        brand: product.brand || product.category,
-        code: product.code || product.id,
-        price: currentTier?.price ?? product.price,
-        originalPrice: product.originalPrice ?? product.price,
-        moq: product.moq,
-        tieredPricing: product.bulkPrices,
-        images,
-        unit: product.unit || "Piece",
-      },
-      quantity,
-    )
-
-    openCart()
-    navigate("/cart")
-  }, [addItem, currentTier?.price, images, isOrderValid, navigate, openCart, product, quantity])
+    try {
+      setAddingToCart(true)
+      setCartError('')
+      
+      addToCart(product, quantity)
+      
+      // Show success toast/alert
+      alert(`Added ${quantity} unit${quantity !== 1 ? 's' : ''} to cart`)
+    } catch (err) {
+      setCartError(err.message)
+      alert(`Error: ${err.message}`)
+    } finally {
+      setAddingToCart(false)
+    }
+  }, [addToCart, isOrderValid, navigate, product, quantity, user])
 
   const handleBuyNow = useCallback(() => {
-    if (isOrderValid) {
-      window.alert(`Proceeding to purchase ${quantity} units now.`)
+    if (!user) {
+      navigate('/login')
+      return
     }
-  }, [isOrderValid, quantity])
+
+    try {
+      setCartError('')
+      addToCart(product, quantity)
+      navigate('/checkout')
+    } catch (err) {
+      setCartError(err.message)
+      alert(`Error: ${err.message}`)
+    }
+  }, [addToCart, navigate, product, quantity, user])
 
   // Reset image index when product changes
   useEffect(() => { 

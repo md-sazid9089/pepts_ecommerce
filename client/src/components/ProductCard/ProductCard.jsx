@@ -2,6 +2,7 @@ import { useState, useCallback, memo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import { useCart } from '@/context/CartContext';
+import { useAuth } from '@/context/AuthContext';
 import { imagePresets } from '@/utils/imageUtils';
 import { queryKeys } from '@/lib/queryKeys';
 import productsApi from '@/services/api/products.api';
@@ -312,7 +313,8 @@ const CSS = `
 function ProductCard({ product, onQuickView }) {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const { addItem, items } = useCart();
+  const { addToCart, items } = useCart();
+  const { user } = useAuth();
   const [wished, setWished] = useState(false);
   const [imageError, setImageError] = useState(false);
 
@@ -377,15 +379,19 @@ function ProductCard({ product, onQuickView }) {
   const handleAddToCart = useCallback((e) => {
     e.preventDefault();
     e.stopPropagation();
-    addItem({
-      id: product.id,
-      name: product.title,
-      price: product.price,
-      image: displayImage,
-      quantity: 1,
-    });
-    alert('Added to cart!');
-  }, [addItem, product, displayImage]);
+    
+    if (!user) {
+      navigate('/login');
+      return;
+    }
+    
+    try {
+      addToCart(product, product.moq || 1);
+      alert(`Added ${product.moq || 1} units to cart!`);
+    } catch (err) {
+      alert(err.message);
+    }
+  }, [addToCart, product, user, navigate]);
 
   // Price display
   const formatPrice = (p) => parseFloat(p || 0).toFixed(2)

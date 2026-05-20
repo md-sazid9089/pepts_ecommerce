@@ -118,13 +118,51 @@ export function CartProvider({ children }) {
   const moqViolations = state.items.filter(i => i.moq && i.quantity < i.moq);
   const isValidOrder = moqViolations.length === 0;
 
+  // addToCart with MOQ validation
+  const addToCart = (product, quantity) => {
+    // Validate MOQ
+    const minOrder = product.moq || 1
+    if (quantity < minOrder) {
+      throw new Error(`Minimum order is ${minOrder} units`)
+    }
+    // Call ADD_ITEM with product structure
+    dispatch({ 
+      type: 'ADD_ITEM', 
+      payload: { 
+        id: product.id,
+        productId: product.id,
+        title: product.title || product.name,
+        price: product.price,
+        image: product.image || product.images?.[0]?.url || product.imageUrl,
+        moq: product.moq,
+        quantity,
+        ...product
+      } 
+    });
+  };
+
   const addItem = (product, quantity = 1) => dispatch({ type: 'ADD_ITEM', payload: { ...product, quantity } });
+  
+  const removeFromCart = (id) => dispatch({ type: 'REMOVE_ITEM', payload: id });
   const removeItem = (id) => dispatch({ type: 'REMOVE_ITEM', payload: id });
-  const updateQuantity = (id, quantity) => dispatch({ type: 'UPDATE_QUANTITY', payload: { id, quantity } });
+  
+  const updateQuantity = (id, quantity) => {
+    // Validate MOQ on update
+    const item = state.items.find(i => i.id === id)
+    if (item && item.moq && quantity > 0 && quantity < item.moq) {
+      throw new Error(`Minimum order is ${item.moq} units`)
+    }
+    dispatch({ type: 'UPDATE_QUANTITY', payload: { id, quantity } });
+  };
+  
   const clearCart = () => dispatch({ type: 'CLEAR_CART' });
   const toggleCart = () => dispatch({ type: 'TOGGLE_CART' });
   const openCart = () => dispatch({ type: 'OPEN_CART' });
   const closeCart = () => dispatch({ type: 'CLOSE_CART' });
+
+  // Helper functions
+  const getCartTotal = () => totalPrice;
+  const getCartCount = () => totalItems;
 
   return (
     <CartContext.Provider value={{
@@ -136,13 +174,17 @@ export function CartProvider({ children }) {
       savings,
       moqViolations,
       isValidOrder,
+      addToCart,
       addItem,
+      removeFromCart,
       removeItem,
       updateQuantity,
       clearCart,
       toggleCart,
       openCart,
       closeCart,
+      getCartTotal,
+      getCartCount,
     }}>
       {children}
     </CartContext.Provider>
