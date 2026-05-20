@@ -6,14 +6,14 @@ import CategoryGridSkeleton from "@/components/skeletons/CategoryGridSkeleton"
 
 // ── Per-category accent colours ───────────────────────────────────────────────
 const CATEGORY_ACCENTS = {
-  "Our Design":     { overlay: "rgba(83,54,56,0.55)",   badge: "#F7B9C4", badgeText: "#533638" },
-  "Custom Build":   { overlay: "rgba(30,58,138,0.55)",  badge: "#93C5FD", badgeText: "#1E3A8A" },
-  "Popular":        { overlay: "rgba(120,53,15,0.55)",  badge: "#FCD34D", badgeText: "#78350F" },
-  "Most Demanding": { overlay: "rgba(6,78,59,0.55)",    badge: "#6EE7B7", badgeText: "#065F46" },
+  "Our Design":     { overlay: "rgba(83,54,56,0.55)",   badge: "#F7B9C4", badgeText: "#533638", poster: "/images/categories/wq.png" },
+  "Custom Build":   { overlay: "rgba(30,58,138,0.55)",  badge: "#93C5FD", badgeText: "#1E3A8A", poster: "/images/categories/panda6.jpg" },
+  "Popular":        { overlay: "rgba(120,53,15,0.55)",  badge: "#FCD34D", badgeText: "#78350F", poster: "/images/categories/wp4.png" },
+  "Most Demanding": { overlay: "rgba(6,78,59,0.55)",    badge: "#6EE7B7", badgeText: "#065F46", poster: "/images/categories/mos8.png" },
 }
-const DEFAULT_ACCENT = { overlay: "rgba(30,30,30,0.5)", badge: "#F7B9C4", badgeText: "#533638" }
+const DEFAULT_ACCENT = { overlay: "rgba(30,30,30,0.5)", badge: "#F7B9C4", badgeText: "#533638", poster: "/images/categories/mos8.png" }
 
-const CATEGORY_POSTER = "/images/heroes/marufposterrr.png"
+const CATEGORY_POSTER = "/images/categories/wq.png"
 
 const CSS = `
   .cs-section {
@@ -203,6 +203,7 @@ export default function CategorySection() {
           <div className="cs-grid">
             {categories.map((cat) => {
               const accent = CATEGORY_ACCENTS[cat.name] ?? DEFAULT_ACCENT
+              const currentPoster = accent.poster || CATEGORY_POSTER
 
               return (
                 <div
@@ -218,7 +219,7 @@ export default function CategorySection() {
                 >
                   {/* Image */}
                   <img
-                    src={cat.icon || CATEGORY_POSTER}
+                    src={currentPoster}
                     alt={cat.name}
                     className="cs-img"
                     loading="lazy"
