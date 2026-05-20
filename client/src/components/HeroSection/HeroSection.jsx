@@ -37,6 +37,76 @@ const styles = {
     overflow: "hidden",
   },
 
+  // ========== SPLIT HERO LAYOUT ==========
+  splitWrapper: {
+    display: "flex",
+    flexDirection: "row",
+    gap: "8px",
+    alignItems: "stretch",
+    height: "600px",
+    maxWidth: "1500px",
+    margin: "0 auto",
+    padding: "0 20px",
+  },
+
+  splitWrapperMobile: {
+    flexDirection: "column",
+    maxWidth: "100%",
+    margin: "0",
+    padding: "0",
+    height: "auto",
+  },
+
+  carouselLeftColumn: {
+    flex: "1",
+    width: "auto",
+    position: "relative",
+    borderRadius: "12px",
+    overflow: "hidden",
+  },
+
+  carouselLeftColumnMobile: {
+    flex: "none",
+    width: "100%",
+  },
+
+  rightColumn: {
+    flex: "0 0 296px",
+    display: "flex",
+    flexDirection: "column",
+    gap: "8px",
+    height: "600px",
+  },
+
+  rightColumnMobile: {
+    flex: "1",
+    flexDirection: "row",
+    padding: "0 20px",
+    gap: "8px",
+    height: "auto",
+  },
+
+  sideBanner: {
+    flex: 1,
+    overflow: "hidden",
+    borderRadius: "12px",
+    cursor: "pointer",
+    display: "block",
+  },
+
+  sideBannerMobile: {
+    height: "140px",
+    borderRadius: "8px",
+  },
+
+  sideBannerImg: {
+    width: "100%",
+    height: "100%",
+    objectFit: "cover",
+    backgroundColor: '#F9F6F5',
+    display: "block",
+  },
+
   // ========== CAROUSEL SECTION ==========
   carouselOuter: {
     maxWidth: "1300px",
@@ -44,13 +114,26 @@ const styles = {
     padding: "0 20px",
   },
 
+  carouselOuterMobile: {
+    maxWidth: "100%",
+    margin: "0",
+    padding: "0",
+  },
+
   carouselWrapper: {
     position: "relative",
     width: "100%",
-    paddingBottom: "45%",
+    height: "600px",
+    paddingBottom: "0",
     backgroundColor: colors.lightBg,
     overflow: "hidden",
-    borderRadius: "16px",
+    borderRadius: "12px",
+  },
+
+  carouselWrapperMobile: {
+    paddingBottom: "62%",
+    borderRadius: "0",
+    height: "auto",
   },
 
   carouselContainer: {
@@ -69,6 +152,7 @@ const styles = {
     height: "100%",
     objectFit: "cover",
     objectPosition: "center",
+    backgroundColor: '#F9F6F5',
   },
 
   // Carousel Navigation Arrows
@@ -101,6 +185,20 @@ const styles = {
 
   rightArrow: {
     right: "20px",
+  },
+
+  arrowButtonMobile: {
+    width: "36px",
+    height: "36px",
+    fontSize: "1rem",
+  },
+
+  leftArrowMobile: {
+    left: "8px",
+  },
+
+  rightArrowMobile: {
+    right: "8px",
   },
 
   // Carousel Pagination Dots
@@ -166,28 +264,6 @@ const styles = {
     whiteSpace: "nowrap",
   },
 
-  carouselOuterMobile: {
-    padding: "0",
-  },
-  carouselWrapperMobile: {
-    paddingBottom: "62%",
-    borderRadius: "0",
-  },
-
-  arrowButtonMobile: {
-    width: "36px",
-    height: "36px",
-    fontSize: "1rem",
-  },
-
-  leftArrowMobile: {
-    left: "8px",
-  },
-
-  rightArrowMobile: {
-    right: "8px",
-  },
-
   // ── Mobile trust: 2×2 grid ──
   trustContainerMobile: {
     display: "grid",
@@ -202,11 +278,14 @@ const styles = {
   },
   trustItemMobile: {
     width: "100%",
-    padding: "0.875rem 0.75rem",
-    gap: "0.5rem",
+    height: "100%",
+    padding: "0.75rem 0.5rem",
+    gap: "0.35rem",
   },
   trustTextMobile: {
     fontSize: "0.75rem",
+    whiteSpace: "normal",
+    lineHeight: "1.2",
   },
 }
 
@@ -226,6 +305,12 @@ export default function HeroSection() {
     "/images/heroes/marufposterr.png",
     "/images/heroes/marufposterrrr.png",
     "/images/heroes/marufposterrrrr.png",
+  ]
+
+  // Side banners data
+  const sideBanners = [
+    { img: "/images/heroes/taw1.png", alt: "Banner 1", href: "#" },
+    { img: "/images/heroes/miz4.png", alt: "Banner 2", href: "#" },
   ]
 
   // Auto-advance carousel every 5 seconds
@@ -273,69 +358,98 @@ export default function HeroSection() {
 
   return (
     <section style={styles.masterWrapper}>
-      {/* CAROUSEL SECTION */}
-      <div style={{ ...styles.carouselOuter, ...(isMobile ? styles.carouselOuterMobile : {}) }}>
-        <div style={{ ...styles.carouselWrapper, ...(isMobile ? styles.carouselWrapperMobile : {}) }}>
-          {/* Carousel Image Container */}
-          <div style={styles.carouselContainer}>
-            <img
-              src={carouselImages[currentSlide]}
-              alt={`Carousel slide ${currentSlide + 1}`}
-              style={styles.carouselImage}
-            />
-          </div>
-
-          {/* Left Arrow */}
-          <button
+      {/* CAROUSEL + SIDE BANNERS SPLIT LAYOUT */}
+      <div style={{ ...styles.splitWrapper, ...(isMobile ? styles.splitWrapperMobile : {}) }}>
+        
+        {/* LEFT: CAROUSEL */}
+        <div
+          style={{
+            ...styles.carouselLeftColumn,
+            ...(isMobile ? styles.carouselLeftColumnMobile : {}),
+          }}
+        >
+          <div
             style={{
-              ...styles.arrowButton,
-              ...styles.leftArrow,
-              ...(isMobile ? styles.leftArrowMobile : {}),
-              ...(isMobile ? styles.arrowButtonMobile : {}),
-              ...(hoveredArrow === "left" ? styles.arrowButtonHover : {}),
+              ...styles.carouselOuter,
+              ...(isMobile ? styles.carouselOuterMobile : {}),
             }}
-            onClick={handlePrevSlide}
-            onMouseEnter={() => setHoveredArrow("left")}
-            onMouseLeave={() => setHoveredArrow(null)}
-            aria-label="Previous slide"
-            title="Previous slide"
           >
-            <FiChevronLeft />
-          </button>
+            <div style={{ ...styles.carouselWrapper, ...(isMobile ? styles.carouselWrapperMobile : {}) }}>
+              {/* Carousel Image Container */}
+              <div style={styles.carouselContainer}>
+                <img
+                  src={carouselImages[currentSlide]}
+                  alt={`Carousel slide ${currentSlide + 1}`}
+                  style={styles.carouselImage}
+                />
+              </div>
 
-          {/* Right Arrow */}
-          <button
-            style={{
-              ...styles.arrowButton,
-              ...styles.rightArrow,
-              ...(isMobile ? styles.rightArrowMobile : {}),
-              ...(isMobile ? styles.arrowButtonMobile : {}),
-              ...(hoveredArrow === "right" ? styles.arrowButtonHover : {}),
-            }}
-            onClick={handleNextSlide}
-            onMouseEnter={() => setHoveredArrow("right")}
-            onMouseLeave={() => setHoveredArrow(null)}
-            aria-label="Next slide"
-            title="Next slide"
-          >
-            <FiChevronRight />
-          </button>
-
-          {/* Pagination Dots */}
-          <div style={styles.dotsContainer}>
-            {carouselImages.map((_, index) => (
+              {/* Left Arrow */}
               <button
-                key={index}
                 style={{
-                  ...styles.dot,
-                  ...(currentSlide === index ? styles.dotActive : {}),
+                  ...styles.arrowButton,
+                  ...styles.leftArrow,
+                  ...(isMobile ? styles.leftArrowMobile : {}),
+                  ...(isMobile ? styles.arrowButtonMobile : {}),
+                  ...(hoveredArrow === "left" ? styles.arrowButtonHover : {}),
                 }}
-                onClick={() => handleDotClick(index)}
-                aria-label={`Go to slide ${index + 1}`}
-                title={`Slide ${index + 1}`}
-              />
-            ))}
+                onClick={handlePrevSlide}
+                onMouseEnter={() => setHoveredArrow("left")}
+                onMouseLeave={() => setHoveredArrow(null)}
+                aria-label="Previous slide"
+                title="Previous slide"
+              >
+                <FiChevronLeft />
+              </button>
+
+              {/* Right Arrow */}
+              <button
+                style={{
+                  ...styles.arrowButton,
+                  ...styles.rightArrow,
+                  ...(isMobile ? styles.rightArrowMobile : {}),
+                  ...(isMobile ? styles.arrowButtonMobile : {}),
+                  ...(hoveredArrow === "right" ? styles.arrowButtonHover : {}),
+                }}
+                onClick={handleNextSlide}
+                onMouseEnter={() => setHoveredArrow("right")}
+                onMouseLeave={() => setHoveredArrow(null)}
+                aria-label="Next slide"
+                title="Next slide"
+              >
+                <FiChevronRight />
+              </button>
+
+              {/* Pagination Dots */}
+              <div style={styles.dotsContainer}>
+                {carouselImages.map((_, index) => (
+                  <button
+                    key={index}
+                    style={{
+                      ...styles.dot,
+                      ...(currentSlide === index ? styles.dotActive : {}),
+                    }}
+                    onClick={() => handleDotClick(index)}
+                    aria-label={`Go to slide ${index + 1}`}
+                    title={`Slide ${index + 1}`}
+                  />
+                ))}
+              </div>
+            </div>
           </div>
+        </div>
+
+        {/* RIGHT: SIDE BANNERS */}
+        <div style={{ ...styles.rightColumn, ...(isMobile ? styles.rightColumnMobile : {}) }}>
+          {sideBanners.map((banner) => (
+            <a
+              key={banner.alt}
+              href={banner.href}
+              style={{ ...styles.sideBanner, ...(isMobile ? styles.sideBannerMobile : {}) }}
+            >
+              <img src={banner.img} alt={banner.alt} style={styles.sideBannerImg} />
+            </a>
+          ))}
         </div>
       </div>
 
@@ -350,10 +464,9 @@ export default function HeroSection() {
               ...(isTopRow   ? { borderBottom: "1px solid #e5e7eb" } : {}),
             } : {}
             return (
-              <>
-                {idx > 0 && !isMobile && <span key={`div-${feature.id}`} style={styles.trustDivider} />}
+              <div key={feature.id} style={{ display: "flex", alignItems: isMobile ? "stretch" : "center", height: isMobile ? "100%" : "auto", width: isMobile ? "100%" : "auto" }}>
+                {idx > 0 && !isMobile && <span style={styles.trustDivider} />}
                 <div
-                  key={feature.id}
                   style={{
                     ...styles.trustItem,
                     ...(isMobile ? styles.trustItemMobile : {}),
@@ -367,7 +480,7 @@ export default function HeroSection() {
                     {feature.text}
                   </span>
                 </div>
-              </>
+              </div>
             )
           })}
         </div>
