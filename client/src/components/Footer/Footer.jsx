@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react"
+﻿import { useState, useEffect } from "react"
 import { Link } from "react-router-dom"
 import {
   FaEnvelope,
@@ -472,7 +472,7 @@ export default function Footer() {
 
   const socialLinks = [
     { icon: FaFacebookF, href: "https://www.facebook.com/profile.php?id=61588924651033&rdid=RsNJoZfMCB4L6bLR&share_url=https%3A%2F%2Fwww.facebook.com%2Fshare%2F1DSMWEkxbR%2F#", label: "Facebook" },
-    { icon: FaInstagram, href: "#", label: "Instagram" },
+    { icon: FaInstagram, href: "https://www.instagram.com/p/DYeE2BaGvhs/?utm_source=ig_web_copy_link&igsh=MzRlODBiNWFlZA%3D%3D", label: "Instagram" },
     { icon: FaTwitter, href: "#", label: "Twitter" },
     { icon: FaYoutube, href: "#", label: "YouTube" },
     { icon: FaTiktok, href: "https://www.tiktok.com/@pepta.shopping?_r=1&_t=ZS-95wDQGbi04V", label: "TikTok" },
