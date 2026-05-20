@@ -305,7 +305,7 @@ export default function AboutPage() {
     {
       id: 4,
       title: "Fast Delivery",
-      text: "Quick turnaround times across Bangladesh",
+      text: "Quick turnaround times across World",
       icon: <FiTruck />,
     },
     {
@@ -338,7 +338,7 @@ export default function AboutPage() {
         <h1 style={heroStyles.title}>About Pepta</h1>
         <p style={heroStyles.subtitle}>
           Your trusted wholesale partner for premium products. We connect retailers with quality manufacturers
-          across Bangladesh, making wholesale simple, reliable, and profitable.
+          across World, making wholesale simple, reliable, and profitable.
         </p>
       </section>
 
