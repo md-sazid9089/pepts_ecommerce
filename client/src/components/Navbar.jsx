@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react"
 import { Link, useNavigate } from "react-router-dom"
 import { FiSearch, FiUser, FiShoppingCart, FiLogOut, FiPhone, FiMail } from "react-icons/fi"
-import { HiBars3, HiXMark, HiUser, HiShoppingCart, HiTruck } from "react-icons/hi2"
+import { HiBars3, HiXMark, HiUser, HiShoppingCart, HiTruck, HiMagnifyingGlass } from "react-icons/hi2"
 import { useAuth } from "@/context/AuthContext"
 import { useCart } from "@/context/CartContext"
 
@@ -287,6 +287,7 @@ export default function Navbar() {
   const { user, logout } = useAuth()
   const { totalItems } = useCart()
   const [searchQuery, setSearchQuery] = useState("")
+  const [searchOpen, setSearchOpen] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
   const [hoveredLinks, setHoveredLinks] = useState({})
@@ -311,6 +312,9 @@ export default function Navbar() {
     e.preventDefault()
     if (searchQuery.trim()) {
       navigate(`/search?q=${encodeURIComponent(searchQuery.trim())}`)
+      setSearchQuery('')
+      setSearchOpen(false)
+      setMenuOpen(false)
     }
   }
 
@@ -504,19 +508,81 @@ export default function Navbar() {
         </div>
       )}
 
-      {/* ── MOBILE: Header row — Logo left, Hamburger right ── */}
+      {/* ── MOBILE: Header row — Logo left, Search + Hamburger right ── */}
       {isMobile && (
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.7rem 1rem', backgroundColor: colors.mainBg }}>
           <Link to="/" style={{ display: 'block', textDecoration: 'none' }}>
             <img src="/images/products/logo.jpeg" alt="Pepta Logo" style={{ height: '46px', width: 'auto', objectFit: 'contain' }} />
           </Link>
-          <button
-            onClick={() => setMenuOpen(prev => !prev)}
-            style={{ background: 'none', border: 'none', cursor: 'pointer', color: colors.darkBrown, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0.5rem', fontSize: '1.6rem' }}
-            aria-label={menuOpen ? 'Close menu' : 'Open menu'}
-          >
-            {menuOpen ? <HiXMark /> : <HiBars3 />}
-          </button>
+          <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+            {/* Mobile Search Icon Button */}
+            <button
+              onClick={() => {
+                setSearchOpen(prev => !prev)
+                setMenuOpen(false)
+              }}
+              style={{ background: 'none', border: 'none', cursor: 'pointer', color: colors.darkBrown, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0.5rem', fontSize: '1.3rem' }}
+              aria-label="Toggle search"
+            >
+              {searchOpen ? <HiXMark /> : <HiMagnifyingGlass />}
+            </button>
+            {/* Hamburger Menu Button */}
+            <button
+              onClick={() => {
+                setMenuOpen(prev => !prev)
+                setSearchOpen(false)
+              }}
+              style={{ background: 'none', border: 'none', cursor: 'pointer', color: colors.darkBrown, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0.5rem', fontSize: '1.6rem' }}
+              aria-label={menuOpen ? 'Close menu' : 'Open menu'}
+            >
+              {menuOpen ? <HiXMark /> : <HiBars3 />}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* ── MOBILE: Expandable Search Bar ── */}
+      {isMobile && searchOpen && (
+        <div style={{ padding: '0.75rem 1rem', borderTop: `1px solid rgba(0,0,0,0.08)`, backgroundColor: colors.mainBg }}>
+          <form onSubmit={handleSearch} style={{ display: 'flex', gap: '0.5rem', width: '100%' }}>
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search products..."
+              autoFocus
+              style={{
+                flex: 1,
+                padding: '0.625rem 1rem',
+                border: `1px solid ${colors.darkBrown}`,
+                borderRadius: '50px',
+                fontSize: '0.9rem',
+                outline: 'none',
+                fontFamily: 'inherit',
+                color: colors.darkBrown,
+                backgroundColor: colors.mainBg,
+              }}
+            />
+            <button
+              type="submit"
+              style={{
+                padding: '0.625rem 1rem',
+                borderRadius: '50px',
+                backgroundColor: colors.darkBrown,
+                color: colors.mainBg,
+                border: 'none',
+                cursor: 'pointer',
+                fontSize: '1rem',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                minWidth: '44px',
+                transition: sharedStyles.transition,
+              }}
+            >
+              <HiMagnifyingGlass style={{ fontSize: '1rem' }} />
+            </button>
+          </form>
         </div>
       )}
 
