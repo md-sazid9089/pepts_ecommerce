@@ -1,4 +1,4 @@
-import { lazy, Suspense } from 'react'
+import { lazy, Suspense, useState, useEffect } from 'react'
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import ProtectedRoute, { UserProtectedRoute } from './components/ProtectedRoute'
 import { AuthProvider } from './context/AuthContext'
@@ -59,6 +59,70 @@ function PageLoader() {
   )
 }
 
+// ── Network Status Banner ───────────────────────────────────────────────────
+// Detects offline state and slow networks (2G / 3G) via the Network
+// Information API.  Shows a non-blocking banner so users know why pages are
+// slow — zero cost in the happy-path (renders null on fast connections).
+function NetworkStatus() {
+  const [isOnline, setIsOnline] = useState(navigator.onLine)
+  const [isSlowNetwork, setIsSlowNetwork] = useState(false)
+
+  useEffect(() => {
+    const handleOnline  = () => setIsOnline(true)
+    const handleOffline = () => setIsOnline(false)
+    window.addEventListener('online',  handleOnline)
+    window.addEventListener('offline', handleOffline)
+
+    // Network Information API (Chrome / Android WebView)
+    const conn = navigator.connection
+      || navigator.mozConnection
+      || navigator.webkitConnection
+    if (conn) {
+      const checkSpeed = () =>
+        setIsSlowNetwork(['slow-2g', '2g', '3g'].includes(conn.effectiveType))
+      checkSpeed()
+      conn.addEventListener('change', checkSpeed)
+      return () => {
+        window.removeEventListener('online',  handleOnline)
+        window.removeEventListener('offline', handleOffline)
+        conn.removeEventListener('change', checkSpeed)
+      }
+    }
+
+    return () => {
+      window.removeEventListener('online',  handleOnline)
+      window.removeEventListener('offline', handleOffline)
+    }
+  }, [])
+
+  if (isOnline && !isSlowNetwork) return null
+
+  return (
+    <div
+      role="status"
+      aria-live="polite"
+      style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        zIndex: 9999,
+        textAlign: 'center',
+        padding: '6px 12px',
+        fontSize: '12px',
+        fontWeight: 600,
+        letterSpacing: '0.2px',
+        backgroundColor: !isOnline ? '#EF4444' : '#FBBF24',
+        color:           !isOnline ? '#fff'    : '#1a1a1a',
+      }}
+    >
+      {!isOnline
+        ? '⚠ You are offline. Some features may not work.'
+        : '🐢 Slow network detected. Pages may take longer to load.'}
+    </div>
+  )
+}
+
 function AppInner() {
   const location = useLocation()
   const isAdminRoute = location.pathname.startsWith('/admin')
@@ -69,6 +133,8 @@ function AppInner() {
         <WishlistProvider>
           <ErrorBoundary>
             <div className="bg-white text-slate-900 flex flex-col min-h-screen">
+              {/* Fixed banner — shows on offline / slow-2g / 2g / 3g networks */}
+              <NetworkStatus />
               {!isAdminRoute && <Header />}
               <ScrollToTop />
 

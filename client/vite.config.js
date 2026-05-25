@@ -34,11 +34,15 @@ export default defineConfig({
   build: {
     outDir: 'dist',
     sourcemap: false,
+    target: 'es2015',          // wider browser support (older Android WebView etc.)
     minify: 'terser',
     terserOptions: {
       compress: {
         drop_console: true,  // Remove all console.* in production build
         drop_debugger: true,
+        // Belt-and-suspenders: also mark as pure so they're removed
+        // even when referenced indirectly through wrappers.
+        pure_funcs: ['console.log', 'console.info', 'console.debug', 'console.warn'],
       },
     },
     chunkSizeWarningLimit: 500,
