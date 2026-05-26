@@ -10,9 +10,10 @@
  * ============================================================================
  */
 
-// In production, we use the absolute URL to bypass Vercel rewrite issues
-// In development, we use empty string to use the Vite proxy
-const API_BASE_URL = import.meta.env.PROD ? (import.meta.env.VITE_API_URL || '') : ''
+// Backend API URL — always use production, with fallback
+const API_BASE_URL =
+  import.meta.env.VITE_API_URL ||
+  'https://pepta-api.vercel.app'
 
 export const apiConfig = {
   baseURL: API_BASE_URL,

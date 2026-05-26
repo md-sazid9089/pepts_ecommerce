@@ -14,20 +14,11 @@ export default defineConfig({
     },
   },
   server: {
-    port: 5173,
-    strictPort: true,
-    open: true,
-    // ── Dev proxy ─────────────────────────────────────────────────────────────
-    // Forwards every /api/* request to the Next.js API server so the browser
-    // only ever talks to localhost:5173.  SameSite=Strict cookies work because
-    // the origin never changes, and there are zero CORS preflight roundtrips.
-    //
-    // Production equivalent: Vercel rewrites in client/vercel.json.
     proxy: {
       '/api': {
-        target: 'http://localhost:3000',
+        target: 'https://pepta-api.vercel.app',
         changeOrigin: true,
-        secure: false,
+        secure: true,
       },
     },
   },
