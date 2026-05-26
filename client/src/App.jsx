@@ -60,34 +60,17 @@ function PageLoader() {
 }
 
 // ── Network Status Banner ───────────────────────────────────────────────────
-// Detects offline state and slow networks (2G / 3G) via the Network
-// Information API.  Shows a non-blocking banner so users know why pages are
-// slow — zero cost in the happy-path (renders null on fast connections).
+// Detects offline state via the Navigator.onLine API. Shows a non-blocking
+// banner when truly offline. API calls are NEVER blocked by network state.
 function NetworkStatus() {
   const [isOnline, setIsOnline] = useState(navigator.onLine)
-  const [isSlowNetwork, setIsSlowNetwork] = useState(false)
 
   useEffect(() => {
     const handleOnline  = () => setIsOnline(true)
     const handleOffline = () => setIsOnline(false)
+    
     window.addEventListener('online',  handleOnline)
     window.addEventListener('offline', handleOffline)
-
-    // Network Information API (Chrome / Android WebView)
-    const conn = navigator.connection
-      || navigator.mozConnection
-      || navigator.webkitConnection
-    if (conn) {
-      const checkSpeed = () =>
-        setIsSlowNetwork(['slow-2g', '2g', '3g'].includes(conn.effectiveType))
-      checkSpeed()
-      conn.addEventListener('change', checkSpeed)
-      return () => {
-        window.removeEventListener('online',  handleOnline)
-        window.removeEventListener('offline', handleOffline)
-        conn.removeEventListener('change', checkSpeed)
-      }
-    }
 
     return () => {
       window.removeEventListener('online',  handleOnline)
@@ -95,7 +78,8 @@ function NetworkStatus() {
     }
   }, [])
 
-  if (isOnline && !isSlowNetwork) return null
+  // Only show banner when actually offline
+  if (isOnline) return null
 
   return (
     <div
@@ -112,13 +96,11 @@ function NetworkStatus() {
         fontSize: '12px',
         fontWeight: 600,
         letterSpacing: '0.2px',
-        backgroundColor: !isOnline ? '#EF4444' : '#FBBF24',
-        color:           !isOnline ? '#fff'    : '#1a1a1a',
+        backgroundColor: '#EF4444',
+        color: '#fff',
       }}
     >
-      {!isOnline
-        ? '⚠ You are offline. Some features may not work.'
-        : '🐢 Slow network detected. Pages may take longer to load.'}
+      ⚠ You are offline. Some features may not work.
     </div>
   )
 }
@@ -133,7 +115,7 @@ function AppInner() {
         <WishlistProvider>
           <ErrorBoundary>
             <div className="bg-white text-slate-900 flex flex-col min-h-screen">
-              {/* Fixed banner — shows on offline / slow-2g / 2g / 3g networks */}
+              {/* Fixed banner — shows only when truly offline */}
               <NetworkStatus />
               {!isAdminRoute && <Header />}
               <ScrollToTop />
