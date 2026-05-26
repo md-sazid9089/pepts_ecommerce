@@ -62,8 +62,18 @@ export async function middleware(request) {
     })
   }
 
-  // ── 2. JWT Protection for /api/protected/* ────────────────────────────────
-  if (pathname.startsWith('/api/protected')) {
+  // ── 2. JWT Protection for admin & protected routes ─────────────────────────
+  // List of routes requiring JWT authentication
+  const protectedRoutes = [
+    '/api/protected',
+    '/api/orders',
+    '/api/inquiries',
+    '/api/admin',
+  ]
+  
+  const isProtectedRoute = protectedRoutes.some(route => pathname.startsWith(route))
+  
+  if (isProtectedRoute) {
     // Read from httpOnly cookie (preferred) — falls back to Authorization header
     const cookieToken = request.cookies.get('authToken')?.value
     const authHeader = request.headers.get('authorization')
