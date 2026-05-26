@@ -1021,11 +1021,18 @@ export default function AdminDashboard() {
   }, [activePage, fetchProducts])
 
   // ── Admin login gate — redirect to /admin/login if not authenticated ───
+  // IMPORTANT: Run navigation in useEffect, not during render to avoid React warning
+  useEffect(() => {
+    if (!adminUser) {
+      navigate('/admin/login', { replace: true })
+    }
+  }, [adminUser, navigate])
+  // ───────────────────────────────────────────────────────────────────────────
+  
+  // Return early to avoid rendering while redirect happens
   if (!adminUser) {
-    navigate('/admin/login', { replace: true })
     return null
   }
-  // ───────────────────────────────────────────────────────────────────────────
 
   return (
     <div style={{ ...styles.container, ...(isMobile ? styles.containerMobile : {}) }}>

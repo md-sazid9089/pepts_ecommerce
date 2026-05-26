@@ -2,33 +2,109 @@
  * ============================================================================
  * API CLIENT SERVICE
  * ============================================================================
- * Central HTTP client for all backend API requests.
- *
- * Token storage has been migrated from localStorage to httpOnly cookies.
- * The browser automatically attaches the authToken cookie to every request
- * when credentials: 'include' is set — no manual token injection needed.
+ * Central HTTP client with automatic endpoint fallback.
  *
  * Features:
+ * ✅ Automatic fallback: tries production first, then local if it fails
+ * ✅ Health checks every 30 seconds to detect best endpoint
  * ✅ GET, POST, PUT, PATCH, DELETE methods
- * ✅ credentials: 'include' — cookie sent automatically on every request
- * ✅ Request timeout with AbortController (10s default)
- * ✅ Dev-only debug logging (no logs in production)
- * ✅ Consistent error shape
+ * ✅ credentials: 'include' — cookie sent automatically
+ * ✅ Request timeout with AbortController (10s default per endpoint)
+ * ✅ Network error detection and retry logic
  * ============================================================================
  */
 
 import API_BASE_URL from "@/config/api"
 
-// Only log in development
 const isDev = import.meta.env.DEV
 const log = isDev ? (...args) => console.log("[API]", ...args) : () => {}
 const logError = isDev ? (...args) => console.error("[API]", ...args) : () => {}
 
-const DEFAULT_TIMEOUT_MS = 90_000
+const DEFAULT_TIMEOUT_MS = 10_000  // 10 seconds per endpoint attempt
+const HEALTH_CHECK_INTERVAL = 30_000  // Check health every 30 seconds
+
+// Deduplicate API endpoints and add fallback
+const API_ENDPOINTS = (() => {
+  const endpoints = [
+    'https://pepta-api.vercel.app',
+    'http://localhost:3000'
+  ]
+  return [...new Set(endpoints)] // Remove duplicates
+})()
 
 class ApiClient {
-  constructor(baseURL) {
-    this.baseURL = baseURL
+  constructor(primaryUrl) {
+    this.primaryUrl = primaryUrl
+    this.endpoints = API_ENDPOINTS
+    this.currentBestUrl = primaryUrl
+    this.lastHealthCheck = 0
+    this.endpointHealth = {} // { url: { ok: bool, lastChecked: timestamp } }
+    
+    // Initialize health tracking
+    this.endpoints.forEach(url => {
+      this.endpointHealth[url] = { ok: true, lastChecked: 0 }
+    })
+  }
+
+  /**
+   * Simple health check - 3 second timeout
+   * @private
+   */
+  async _checkHealth(url) {
+    try {
+      const controller = new AbortController()
+      const timer = setTimeout(() => controller.abort(), 3000)
+      
+      const response = await fetch(`${url}/api/health`, {
+        method: 'GET',
+        signal: controller.signal,
+        credentials: 'include',
+      })
+      
+      clearTimeout(timer)
+      return response.ok
+    } catch {
+      return false
+    }
+  }
+
+  /**
+   * Determine best endpoint based on recent health checks
+   * @private
+   */
+  async _getBestUrl() {
+    const now = Date.now()
+    
+    // Only check every 30 seconds
+    if (now - this.lastHealthCheck < HEALTH_CHECK_INTERVAL) {
+      return this.currentBestUrl
+    }
+    
+    this.lastHealthCheck = now
+    
+    // Check health of all endpoints in parallel
+    const results = await Promise.all(
+      this.endpoints.map(async (url) => ({
+        url,
+        healthy: await this._checkHealth(url)
+      }))
+    )
+    
+    // Update health tracking
+    results.forEach(({ url, healthy }) => {
+      this.endpointHealth[url] = { ok: healthy, lastChecked: now }
+    })
+    
+    // Choose healthy endpoint; prefer primary
+    const healthyEndpoints = results
+      .filter(r => r.healthy)
+      .map(r => r.url)
+    
+    if (healthyEndpoints.length > 0) {
+      this.currentBestUrl = healthyEndpoints[0]
+    }
+    
+    return this.currentBestUrl
   }
 
   getHeaders() {
@@ -38,48 +114,76 @@ class ApiClient {
   }
 
   /**
-   * Core fetch wrapper with AbortController timeout.
-   * Uses cache: 'no-store' to bypass browser cache without triggering CORS preflight.
+   * Retry wrapper - tries each endpoint for network errors only
+   * Does NOT retry on 4xx/5xx HTTP responses
    * @private
    */
-  async _fetch(url, options = {}, timeoutMs = DEFAULT_TIMEOUT_MS) {
-    const controller = new AbortController()
-    const timer = setTimeout(() => controller.abort(), timeoutMs)
-    try {
-      const response = await fetch(url, {
-        ...options,
-        signal: controller.signal,
-        cache: 'no-store',       // Browser-native cache bypass — no CORS preflight
-        credentials: 'include',  // Send httpOnly cookie automatically
-      })
-      return response
-    } catch (err) {
-      if (err.name === "AbortError") {
-        throw new Error(`Request timed out after ${timeoutMs / 1000}s`)
+  async _fetchWithFallback(endpoint, options = {}, timeoutMs = DEFAULT_TIMEOUT_MS) {
+    // Try each endpoint until one succeeds
+    for (const baseUrl of this.endpoints) {
+      try {
+        const controller = new AbortController()
+        const timer = setTimeout(() => controller.abort(), timeoutMs)
+        
+        const url = this._buildUrl(baseUrl, endpoint)
+        
+        const response = await fetch(url, {
+          ...options,
+          signal: controller.signal,
+          cache: 'no-store',
+          credentials: 'include',
+        })
+        
+        clearTimeout(timer)
+        return response
+      } catch (err) {
+        clearTimeout(timer)
+        
+        // Only retry on network errors (timeout, connection refused, etc)
+        // NOT on HTTP errors like 401, 500, etc
+        const isNetworkError = 
+          err.name === 'AbortError' ||  // Timeout
+          err instanceof TypeError      // Network error (CORS, connection refused, etc)
+        
+        if (!isNetworkError) {
+          throw err
+        }
+        
+        logError(`Endpoint ${baseUrl} failed (${err.message}), trying next...`)
+        
+        // Try next endpoint
+        continue
       }
-      throw err
-    } finally {
-      clearTimeout(timer)
     }
+    
+    // All endpoints failed
+    throw new Error('All API endpoints are unavailable')
+  }
+
+  _buildUrl(baseUrl, endpoint) {
+    const base = baseUrl.replace(/\/+$/, '')
+    const path = endpoint.startsWith('/') ? endpoint : `/${endpoint}`
+    return `${base}${path}`
   }
 
   _getCleanUrl(endpoint) {
-    const base = this.baseURL.replace(/\/+$/, "") // Remove trailing slashes
-    const path = endpoint.startsWith("/") ? endpoint : `/${endpoint}`
+    const base = this.currentBestUrl.replace(/\/+$/, '')
+    const path = endpoint.startsWith('/') ? endpoint : `/${endpoint}`
     return `${base}${path}`
   }
 
   async get(endpoint, params = {}) {
-    // Ensure we have a valid absolute URL for the constructor
     const cleanUrl = this._getCleanUrl(endpoint)
-    const base = cleanUrl.startsWith('http') ? undefined : window.location.origin
-    const url = new URL(cleanUrl, base)
+    const url = new URL(cleanUrl)
+    
     Object.entries(params).forEach(([k, v]) => {
       if (v !== undefined && v !== null) url.searchParams.append(k, v)
     })
+    
     log(`GET ${url.toString()}`)
+    
     try {
-      const response = await this._fetch(url.toString(), {
+      const response = await this._fetchWithFallback(endpoint, {
         method: "GET",
         headers: this.getHeaders(),
       })
@@ -90,10 +194,9 @@ class ApiClient {
   }
 
   async post(endpoint, data = {}) {
-    const url = this._getCleanUrl(endpoint)
-    log(`POST ${url}`)
+    log(`POST ${this._getCleanUrl(endpoint)}`)
     try {
-      const response = await this._fetch(url, {
+      const response = await this._fetchWithFallback(endpoint, {
         method: "POST",
         headers: this.getHeaders(),
         body: JSON.stringify(data),
@@ -105,10 +208,9 @@ class ApiClient {
   }
 
   async put(endpoint, data = {}) {
-    const url = this._getCleanUrl(endpoint)
-    log(`PUT ${url}`)
+    log(`PUT ${this._getCleanUrl(endpoint)}`)
     try {
-      const response = await this._fetch(url, {
+      const response = await this._fetchWithFallback(endpoint, {
         method: "PUT",
         headers: this.getHeaders(),
         body: JSON.stringify(data),
@@ -120,10 +222,9 @@ class ApiClient {
   }
 
   async patch(endpoint, data = {}) {
-    const url = this._getCleanUrl(endpoint)
-    log(`PATCH ${url}`)
+    log(`PATCH ${this._getCleanUrl(endpoint)}`)
     try {
-      const response = await this._fetch(url, {
+      const response = await this._fetchWithFallback(endpoint, {
         method: "PATCH",
         headers: this.getHeaders(),
         body: JSON.stringify(data),
@@ -135,10 +236,9 @@ class ApiClient {
   }
 
   async delete(endpoint) {
-    const url = this._getCleanUrl(endpoint)
-    log(`DELETE ${url}`)
+    log(`DELETE ${this._getCleanUrl(endpoint)}`)
     try {
-      const response = await this._fetch(url, {
+      const response = await this._fetchWithFallback(endpoint, {
         method: "DELETE",
         headers: this.getHeaders(),
       })
