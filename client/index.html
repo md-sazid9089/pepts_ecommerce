@@ -28,6 +28,13 @@
     href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
     rel="stylesheet" />
 
+  <!-- Slow-network resource hints: establish connections early so the first
+       API call and the first Cloudinary image don't pay a full TCP + TLS
+       handshake penalty (saves ~200-500 ms on 2G/3G). -->
+  <link rel="preconnect"  href="https://pepta-api.vercel.app" />
+  <link rel="preconnect"  href="https://res.cloudinary.com" />
+  <link rel="dns-prefetch" href="https://res.cloudinary.com" />
+
   <title>Pepta | Professional B2B Wholesale Marketplace</title>
 </head>
 

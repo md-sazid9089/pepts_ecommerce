@@ -447,6 +447,7 @@ function ProductCard({ product, onQuickView }) {
             alt={product.title || 'Product'}
             className="pc-image"
             loading="lazy"
+            decoding="async"
             onError={handleImageError}
           />
           <button

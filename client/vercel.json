@@ -11,7 +11,7 @@
     },
     {
       "src": "/api/(.*)",
-      "dest": "https://pepta-api.vercel.app/api/$1"
+      "dest": "https://pepts-ecommerce-version2.vercel.app/api/$1"
     },
     {
       "src": "/(.*)",
