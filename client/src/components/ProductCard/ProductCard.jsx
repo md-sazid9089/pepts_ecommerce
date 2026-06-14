@@ -2,421 +2,226 @@ import { useState, useCallback, memo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import { useCart } from '@/context/CartContext';
-import { useAuth } from '@/context/AuthContext';
+import { useWishlist } from '@/context/WishlistContext';
 import { imagePresets } from '@/utils/imageUtils';
 import { queryKeys } from '@/lib/queryKeys';
 import productsApi from '@/services/api/products.api';
-import { FiHeart, FiCheck, FiExternalLink, FiMessageSquare, FiEye } from 'react-icons/fi';
+import { FiHeart, FiShoppingCart } from 'react-icons/fi';
 import { FaStar } from 'react-icons/fa';
 
-/* ─── CSS ─────────────────────────────────────────────────────────────────── */
 const CSS = `
   .pc-card {
+    width: 100%;
+    height: 100%;
     background: #fff;
     border-radius: 12px;
-    overflow: hidden;
-    box-shadow: 0 2px 16px rgba(0,0,0,0.07);
     border: 1px solid #EAEAEA;
-    transition: box-shadow 0.28s ease, border-color 0.28s ease, transform 0.2s ease;
-    display: grid;
-    grid-template-columns: 300px 1fr;
-    min-height: 360px;
+    overflow: hidden;
     cursor: pointer;
-    position: relative;
+    display: flex;
+    flex-direction: column;
+    transition: box-shadow 0.24s ease, border-color 0.24s ease, transform 0.2s ease;
   }
   .pc-card:hover {
-    box-shadow: 0 10px 36px rgba(83,54,56,0.13);
-    border-color: #C9B8B9;
+    box-shadow: 0 10px 28px rgba(83,54,56,0.12);
+    border-color: #D8C8C9;
     transform: translateY(-2px);
   }
-
-  /* ── Image Side ── */
   .pc-image-section {
+    width: 100%;
+    aspect-ratio: 1 / 1;
     background: #F7F5F5;
-    display: flex;
-    align-items: center;
-    justify-content: center;
     overflow: hidden;
     position: relative;
-    padding: 0;
   }
   .pc-image {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    transition: transform 0.45s ease;
     display: block;
+    transition: transform 0.4s ease;
   }
   .pc-card:hover .pc-image {
-    transform: scale(1.06);
+    transform: scale(1.04);
   }
-
-  /* Wishlist button */
-  .pc-wish-btn {
-    position: absolute;
-    top: 14px;
-    right: 14px;
-    width: 34px;
-    height: 34px;
-    border-radius: 50%;
-    background: rgba(255,255,255,0.92);
-    border: 1px solid #E5E7EB;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: background 0.2s, border-color 0.2s, transform 0.2s;
-    z-index: 10;
-    backdrop-filter: blur(4px);
-  }
-  .pc-wish-btn:hover {
-    background: #fff;
-    border-color: #EF4444;
-    transform: scale(1.12);
-  }
-  .pc-wish-btn.wished {
-    background: #FEF2F2;
-    border-color: #EF4444;
-  }
-
-  /* Stock pill on image */
-  .pc-stock-pill {
-    position: absolute;
-    bottom: 12px;
-    left: 12px;
-    padding: 3px 10px;
-    border-radius: 20px;
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 0.4px;
-    backdrop-filter: blur(6px);
-  }
-  .pc-stock-pill.in-stock {
-    background: rgba(220,252,231,0.92);
-    color: #15803D;
-    border: 1px solid #BBF7D0;
-  }
-  .pc-stock-pill.out-stock {
-    background: rgba(254,226,226,0.92);
-    color: #B91C1C;
-    border: 1px solid #FECACA;
-  }
-
-  /* ── Content Side ── */
   .pc-content {
+    padding: 12px;
     display: flex;
     flex-direction: column;
-    padding: 22px 28px;
-    background: #fff;
+    flex: 1;
     min-width: 0;
   }
-
-  /* Supplier row */
-  .pc-supplier-row {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin-bottom: 6px;
-  }
-  .pc-supplier-name {
-    font-size: 13px;
-    font-weight: 600;
-    color: #533638;
-    display: flex;
-    align-items: center;
-    gap: 5px;
+  .pc-brand {
+    font-size: 11px;
+    color: #867671;
+    text-transform: uppercase;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    margin: 0 0 5px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
   }
-
-  /* Badge row */
-  .pc-badge-row {
-    display: flex;
-    gap: 6px;
-    flex-wrap: wrap;
-    margin-bottom: 10px;
-  }
-  .pc-badge {
-    font-size: 10px;
-    font-weight: 700;
-    padding: 2px 8px;
-    border-radius: 4px;
-    text-transform: uppercase;
-    letter-spacing: 0.3px;
-    display: flex;
-    align-items: center;
-    gap: 3px;
-  }
-  .pc-badge-blue  { background:#EBF5FF; color:#2563EB; border:1px solid #BFDBFE; }
-  .pc-badge-gray  { background:#F3F4F6; color:#4B5563; border:1px solid #E5E7EB; }
-  .pc-badge-green { background:#F0FDF4; color:#166534; border:1px solid #BBF7D0; }
-
-  /* Title */
   .pc-title {
-    font-size: 17px;
+    font-size: 14px;
     font-weight: 700;
-    color: #111;
-    margin: 0 0 12px;
-    line-height: 1.45;
+    color: #2F2424;
+    margin: 0 0 8px;
+    line-height: 1.35;
+    min-height: 38px;
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
   }
-
-  /* Price */
-  .pc-price-row { margin-bottom: 14px; }
-  .pc-price {
-    font-size: 22px;
-    font-weight: 800;
-    color: #111;
-    margin-right: 6px;
-  }
-  .pc-fob {
-    font-size: 12px;
-    color: #888;
-    font-weight: 500;
-  }
-  .pc-moq {
-    font-size: 14px;
-    font-weight: 600;
-    color: #444;
-    margin-top: 2px;
-  }
-
-  /* Spec grid */
-  .pc-specs {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 8px 16px;
-    padding: 12px 0;
-    border-top: 1px solid #F3F4F6;
-    margin-bottom: 10px;
-  }
-  .pc-spec-item {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 12px;
-    color: #666;
-  }
-  .pc-spec-dot {
-    width: 4px;
-    height: 4px;
-    border-radius: 50%;
-    background: #D1D5DB;
-    flex-shrink: 0;
-  }
-  .pc-spec-label { font-weight: 500; color: #999; }
-  .pc-spec-val   { font-weight: 600; color: #444; }
-
-  /* Rating */
   .pc-rating-row {
     display: flex;
     align-items: center;
-    gap: 6px;
-    font-size: 12px;
-    color: #888;
-    margin-bottom: 14px;
+    gap: 5px;
+    margin-bottom: 9px;
+    min-width: 0;
+  }
+  .pc-stars {
+    display: flex;
+    gap: 1px;
+    color: #F59E0B;
+    flex-shrink: 0;
+  }
+  .pc-rating-text {
+    font-size: 11px;
+    color: #867671;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .pc-price-row {
     margin-top: auto;
-    padding-top: 10px;
-    border-top: 1px dotted #EEE;
+    margin-bottom: 12px;
+    min-width: 0;
   }
-  .pc-stars { display:flex; gap:2px; }
-
-  /* Action buttons */
+  .pc-price {
+    display: block;
+    font-size: 18px;
+    font-weight: 800;
+    color: #2F2424;
+    line-height: 1.15;
+    overflow-wrap: anywhere;
+  }
   .pc-actions {
-    display: grid;
-    grid-template-columns: 1.3fr 1fr 1fr;
-    gap: 10px;
+    display: flex;
+    gap: 8px;
+    align-items: center;
   }
-  .pc-btn {
-    height: 42px;
+  .pc-add-btn {
+    flex: 1;
+    min-width: 0;
+    height: 40px;
+    border: none;
     border-radius: 8px;
+    background: #4A3535;
+    color: #fff;
     font-size: 13px;
     font-weight: 700;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 5px;
-    transition: all 0.2s ease;
-    text-transform: uppercase;
-    letter-spacing: 0.4px;
-    border: none;
-    white-space: nowrap;
+    gap: 6px;
+    transition: background 0.2s ease, opacity 0.2s ease;
   }
-  .pc-btn-inquiry {
-    background: #F5EDEC;
-    color: #533638;
-    border: 1.5px solid #C9B8B9;
+  .pc-add-btn:hover {
+    background: #5A3D3D;
   }
-  .pc-btn-inquiry:hover { background: #EAD9D9; }
-
-  .pc-btn-chat {
-    background: #F5EDEC;
-    color: #533638;
-    border: 1.5px solid #C9B8B9;
+  .pc-add-btn:disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
   }
-  .pc-btn-chat:hover { background: #EAD9D9; }
-
-  .pc-btn-view {
-    background: #F5EDEC;
-    color: #533638;
-    border: 1.5px solid #C9B8B9;
+  .pc-wish-btn {
+    width: 40px;
+    height: 40px;
+    flex: 0 0 40px;
+    border-radius: 8px;
+    background: #fff;
+    border: 1px solid #E8E3E0;
+    color: #4A3535;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
   }
-  .pc-btn-view:hover { background: #EAD9D9; }
-
-  /* ─── MOBILE ─────────────────────────────────────────── */
-  @media (max-width: 700px) {
-    .pc-card {
-      grid-template-columns: 1fr;
-      grid-template-rows: 220px auto;
-      min-height: unset;
-      border-radius: 14px;
-    }
-    .pc-image-section {
-      height: 220px;
-      width: 100%;
-    }
+  .pc-wish-btn:hover,
+  .pc-wish-btn.wished {
+    background: #FEF2F2;
+    border-color: #EF4444;
+    color: #EF4444;
+  }
+  @media (max-width: 520px) {
     .pc-content {
-      padding: 16px 18px;
+      padding: 10px;
     }
     .pc-title {
-      font-size: 15px;
-      margin-bottom: 10px;
+      font-size: 12px;
+      min-height: 33px;
+      margin-bottom: 7px;
     }
-    .pc-price { font-size: 20px; }
-    .pc-specs {
-      grid-template-columns: 1fr 1fr;
-      gap: 6px 12px;
+    .pc-brand,
+    .pc-rating-text {
+      font-size: 10px;
+    }
+    .pc-price {
+      font-size: 16px;
     }
     .pc-actions {
-      grid-template-columns: 1fr 1fr;
-      gap: 8px;
+      gap: 6px;
     }
-    /* On mobile, inquiry button spans full width */
-    .pc-btn-inquiry { grid-column: 1 / -1; }
-    .pc-btn { height: 40px; font-size: 12px; }
-  }
-
-  /* ─── SMALL MOBILE ───────────────────────────────────── */
-  @media (max-width: 420px) {
-    .pc-image-section { height: 190px; }
-    .pc-specs { display: none; } /* hide specs on very small, save space */
-    .pc-content { padding: 14px 14px; }
+    .pc-add-btn {
+      height: 36px;
+      font-size: 12px;
+      gap: 4px;
+    }
+    .pc-wish-btn {
+      width: 36px;
+      height: 36px;
+      flex-basis: 36px;
+    }
   }
 `;
 
-/* ─── Component ───────────────────────────────────────────────────────────── */
-function ProductCard({ product, onQuickView }) {
+function ProductCard({ product }) {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const { addToCart, items } = useCart();
-  const { user } = useAuth();
-  const [wished, setWished] = useState(false);
+  const { addToCart } = useCart();
+  const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
   const [imageError, setImageError] = useState(false);
+  const [cartBtnText, setCartBtnText] = useState('Add');
+  const [addingToCart, setAddingToCart] = useState(false);
 
   const FALLBACK_IMAGE = '/placeholder-product.jpg';
-  // Fix: read from images[] relation first (where Cloudinary uploads are stored),
-  // fall back to legacy imageUrl field on the Product model.
   const primaryImageUrl = product.images?.[0]?.url ?? product.imageUrl ?? null;
   const rawImageUrl = primaryImageUrl?.trim() ? primaryImageUrl : null;
   const displayImage = imageError
     ? FALLBACK_IMAGE
     : (imagePresets.thumbnail(rawImageUrl) || FALLBACK_IMAGE);
 
-  // Prefetch detail on hover for instant navigation
-  const handleMouseEnter = useCallback(() => {
-    if (product.id) {
-      queryClient.prefetchQuery({
-        queryKey: queryKeys.products.detail(product.id),
-        queryFn: async () => {
-          const response = await productsApi.getById(product.id)
-          if (!response.success) throw new Error(response.message)
-          return response.data
-        },
-        staleTime: 1000 * 60 * 2,
-      });
-    }
-  }, [product.id, queryClient]);
+  const title = product.title || product.name || 'Product';
+  const rating = Number(product.rating || 4.8);
+  const reviewCount = product.reviewCount || product.reviewsCount || 0;
+  const wished = isInWishlist(product.id);
 
-  // Supplier / meta
-  const supplier = {
-    name: product.brand || 'Verified Manufacturer',
-    rating: product.rating || 4.8,
-    reviews: product.reviewCount || 128,
-  };
-  const moq = product.moq ? `${product.moq} Piece(s)` : '1 Piece';
-  const inStock = product.stock > 0;
-
-  // Specs
-  let specifications = [];
-  try {
-    const specs = typeof product.specs === 'string' ? JSON.parse(product.specs) : product.specs;
-    if (specs && typeof specs === 'object') {
-      specifications = Object.entries(specs).slice(0, 4).map(([label, value]) => ({ label, value }));
-    }
-  } catch { /* ignore */ }
-
-  if (specifications.length === 0) {
-    specifications = [
-      { label: 'Material', value: 'Premium Grade' },
-      { label: 'Category', value: product.category || 'Wholesale' },
-      { label: 'Stock', value: inStock ? 'Available' : 'Out of Stock' },
-      { label: 'Source', value: product.brand || 'Direct Mfr' },
-    ];
-  }
-
-  // Button feedback state
-  const [cartBtnText, setCartBtnText] = useState('Add to Cart');
-  const [addingToCart, setAddingToCart] = useState(false);
-
-  // Handlers
-  const handleImageError = useCallback(() => setImageError(true), []);
-  const handleWish = useCallback((e) => { e.preventDefault(); e.stopPropagation(); setWished(w => !w); }, []);
-  const handleInquiry = useCallback((e) => { e.preventDefault(); e.stopPropagation(); navigate(`/contact?product=${product.id}`); }, [navigate, product.id]);
-  const handleChat = useCallback((e) => { e.preventDefault(); e.stopPropagation(); alert(`Chat about: ${product.title || product.name}`); }, [product.title, product.name]);
-  const handleView = useCallback((e) => { e.preventDefault(); e.stopPropagation(); navigate(`/product/${product.id}`); }, [navigate, product.id]);
-  
-  const handleAddToCart = useCallback((e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    
-    if (!user) {
-      navigate('/login');
-      return;
-    }
-    
-    try {
-      setAddingToCart(true);
-      addToCart(product, product.moq || 1);
-      setCartBtnText('Added!');
-      setTimeout(() => setCartBtnText('Add to Cart'), 1500);
-    } catch (err) {
-      alert(err.message);
-      setAddingToCart(false);
-    }
-  }, [addToCart, product, user, navigate]);
-
-  // Price display
-  const formatPrice = (p) => parseFloat(p || 0).toFixed(2)
-
-  const getPriceDisplay = (product) => {
-    // Priority 1: explicit priceMin / priceMax set by admin
+  const formatPrice = (p) => parseFloat(p || 0).toFixed(2);
+  const getPriceDisplay = () => {
     const hasMin = product.priceMin != null && product.priceMin !== '';
     const hasMax = product.priceMax != null && product.priceMax !== '';
     if (hasMin && hasMax) {
       const lo = parseFloat(product.priceMin);
       const hi = parseFloat(product.priceMax);
-      if (lo !== hi) return `US$${formatPrice(lo)} \u2013 ${formatPrice(hi)}`;
+      if (lo !== hi) return `US$${formatPrice(lo)} - ${formatPrice(hi)}`;
       return `US$${formatPrice(lo)}`;
     }
     if (hasMax) return `US$${formatPrice(product.priceMax)}`;
     if (hasMin) return `US$${formatPrice(product.priceMin)}`;
 
-    // Priority 2: fallback to bulkPrices range (existing logic)
     const bulkPriceValues = product.bulkPrices?.map(t => parseFloat(t.price)) || [];
     const minPrice = bulkPriceValues.length > 0
       ? Math.min(parseFloat(product.price || 0), ...bulkPriceValues)
@@ -425,118 +230,115 @@ function ProductCard({ product, onQuickView }) {
       ? Math.max(...bulkPriceValues)
       : parseFloat(product.price || 0);
     if (minPrice === maxPrice) return `US$${formatPrice(minPrice)}`;
-    return `US$${formatPrice(minPrice)} \u2013 ${formatPrice(maxPrice)}`;
-  }
+    return `US$${formatPrice(minPrice)} - ${formatPrice(maxPrice)}`;
+  };
 
-  const priceDisplay = getPriceDisplay(product);
+  const handleMouseEnter = useCallback(() => {
+    if (product.id) {
+      queryClient.prefetchQuery({
+        queryKey: queryKeys.products.detail(product.id),
+        queryFn: async () => {
+          const response = await productsApi.getById(product.id);
+          if (!response.success) throw new Error(response.message);
+          return response.data;
+        },
+        staleTime: 1000 * 60 * 2,
+      });
+    }
+  }, [product.id, queryClient]);
+
+  const handleNavigate = useCallback(() => {
+    navigate(`/product/${product.id}`);
+  }, [navigate, product.id]);
+
+  const handleImageError = useCallback(() => setImageError(true), []);
+
+  const handleWish = useCallback((e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (wished) {
+      removeFromWishlist(product.id);
+    } else {
+      addToWishlist(product);
+    }
+  }, [addToWishlist, removeFromWishlist, product, wished]);
+
+  const handleAddToCart = useCallback((e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    try {
+      setAddingToCart(true);
+      addToCart(product, product.moq || 1);
+      setCartBtnText('Added');
+      setTimeout(() => {
+        setCartBtnText('Add');
+        setAddingToCart(false);
+      }, 1200);
+    } catch (err) {
+      alert(err.message);
+      setAddingToCart(false);
+    }
+  }, [addToCart, product]);
 
   return (
     <>
       <style>{CSS}</style>
-      <div
+      <article
         className="pc-card"
         onMouseEnter={handleMouseEnter}
-        onClick={handleView}
-        role="article"
-        aria-label={product.title}
+        onClick={handleNavigate}
+        aria-label={title}
       >
-        {/* ── Image ── */}
         <div className="pc-image-section">
           <img
             src={displayImage}
-            alt={product.title || 'Product'}
+            alt={title}
             className="pc-image"
             loading="lazy"
             decoding="async"
             onError={handleImageError}
           />
-          <button
-            className={`pc-wish-btn${wished ? ' wished' : ''}`}
-            onClick={handleWish}
-            aria-label={wished ? 'Remove from wishlist' : 'Add to wishlist'}
-          >
-            <FiHeart size={16} fill={wished ? '#EF4444' : 'none'} color={wished ? '#EF4444' : '#666'} />
-          </button>
-          <span className={`pc-stock-pill ${inStock ? 'in-stock' : 'out-stock'}`}>
-            {inStock ? '● In Stock' : '○ Out of Stock'}
-          </span>
         </div>
 
-        {/* ── Content ── */}
         <div className="pc-content">
+          <p className="pc-brand">{product.brand || 'Pepta'}</p>
+          <h3 className="pc-title">{title}</h3>
 
-          {/* Supplier */}
-          <div className="pc-supplier-row">
-            <span className="pc-supplier-name">
-              <FiExternalLink size={13} color="#533638" />
-              {supplier.name}
-            </span>
-          </div>
-
-          {/* Badges */}
-          <div className="pc-badge-row">
-            <span className="pc-badge pc-badge-blue"><FiCheck size={9} /> Audited</span>
-            <span className="pc-badge pc-badge-gray">CE</span>
-            <span className="pc-badge pc-badge-gray">UKCA</span>
-            <span className="pc-badge pc-badge-green">Certified</span>
-          </div>
-
-          {/* Title */}
-          <h3 className="pc-title">{product.title || product.name}</h3>
-
-          {/* Price */}
-          <div className="pc-price-row">
-            <div>
-              <span className="pc-price">{priceDisplay}</span>
-              <span className="pc-fob">(FOB Price)</span>
-            </div>
-            <div className="pc-moq">{moq} (MOQ)</div>
-          </div>
-
-          {/* Specs */}
-          <div className="pc-specs">
-            {specifications.map((spec, idx) => (
-              <div key={idx} className="pc-spec-item">
-                <div className="pc-spec-dot" />
-                <span className="pc-spec-label">{spec.label}:</span>
-                <span className="pc-spec-val">{String(spec.value)}</span>
-              </div>
-            ))}
-          </div>
-
-          {/* Rating */}
           <div className="pc-rating-row">
-            <div className="pc-stars">
+            <div className="pc-stars" aria-label={`${rating.toFixed(1)} out of 5 stars`}>
               {[...Array(5)].map((_, i) => (
-                <FaStar key={i} size={11} color={i < Math.floor(supplier.rating) ? '#F59E0B' : '#E5E7EB'} />
+                <FaStar key={i} size={12} color={i < Math.floor(rating) ? '#F59E0B' : '#E5E7EB'} />
               ))}
             </div>
-            <span>{supplier.rating} ({supplier.reviews} reviews)</span>
+            <span className="pc-rating-text">({reviewCount} reviews)</span>
           </div>
 
-          {/* Actions */}
+          <div className="pc-price-row">
+            <span className="pc-price">{getPriceDisplay()}</span>
+          </div>
+
           <div className="pc-actions">
-            <button 
-              className="pc-btn pc-btn-inquiry" 
+            <button
+              type="button"
+              className="pc-add-btn"
               onClick={handleAddToCart}
               disabled={addingToCart}
-              style={{ opacity: addingToCart ? 0.6 : 1, cursor: addingToCart ? 'not-allowed' : 'pointer' }}
+              aria-label={`Add ${title} to cart`}
             >
-              <FiCheck size={14} />
-              {cartBtnText}
+              <FiShoppingCart size={16} />
+              <span>{cartBtnText}</span>
             </button>
-            <button className="pc-btn pc-btn-chat" onClick={handleChat}>
-              <FiMessageSquare size={14} />
-              Chat
-            </button>
-            <button className="pc-btn pc-btn-view" onClick={handleView}>
-              <FiEye size={14} />
-              View
+            <button
+              type="button"
+              className={`pc-wish-btn${wished ? ' wished' : ''}`}
+              onClick={handleWish}
+              aria-label={wished ? `Remove ${title} from wishlist` : `Add ${title} to wishlist`}
+            >
+              <FiHeart size={18} fill={wished ? 'currentColor' : 'none'} />
             </button>
           </div>
-
         </div>
-      </div>
+      </article>
     </>
   );
 }

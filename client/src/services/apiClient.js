@@ -203,11 +203,12 @@ class ApiClient {
     Object.entries(params).forEach(([k, v]) => {
       if (v !== undefined && v !== null) url.searchParams.append(k, v)
     })
+    const endpointWithQuery = `${endpoint}${url.search}`
     
     log(`GET ${url.toString()}`)
     
     try {
-      const response = await this._fetchWithFallback(endpoint, {
+      const response = await this._fetchWithFallback(endpointWithQuery, {
         method: "GET",
         headers: this.getHeaders(),
       })

@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useQuery, keepPreviousData } from '@tanstack/react-query';
 import productsApi from '@/services/api/products.api';
@@ -8,7 +9,39 @@ import { queryKeys } from '@/lib/queryKeys';
 import LoadingSpinner from '@/components/UI/LoadingSpinner';
 
 // ─── Constants ──────────────────────────────────────────────────────────────
-const LIMIT = 10;
+const ROWS_PER_PAGE = 10;
+
+function getProductsPerPage() {
+  if (typeof window === 'undefined') return ROWS_PER_PAGE * 4;
+  if (window.innerWidth >= 1024) return ROWS_PER_PAGE * 4;
+  if (window.innerWidth >= 768) return ROWS_PER_PAGE * 3;
+  return ROWS_PER_PAGE * 2;
+}
+
+const PRODUCTS_GRID_CSS = `
+  .products-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+    width: 100%;
+    padding-left: 16px;
+    padding-right: 16px;
+    box-sizing: border-box;
+  }
+  @media (min-width: 768px) {
+    .products-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 16px;
+      padding-left: 24px;
+      padding-right: 24px;
+    }
+  }
+  @media (min-width: 1024px) {
+    .products-grid {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+  }
+`;
 
 // ─── Styles ─────────────────────────────────────────────────────────────────
 const styles = {
@@ -114,9 +147,6 @@ const styles = {
     cursor: 'pointer',
   },
   grid: {
-    display: 'grid',
-    gridTemplateColumns: '1fr',
-    gap: '16px',
     width: '100%',
   },
   emptyState: {
@@ -207,10 +237,18 @@ function buildPageRange(current, total) {
 // ─── Component ───────────────────────────────────────────────────────────────
 export default function ProductsPage() {
   const [searchParams, setSearchParams] = useSearchParams();
+  const [productsPerPage, setProductsPerPage] = useState(getProductsPerPage);
   const searchQuery  = searchParams.get('search')   || '';
   const activeCategory = searchParams.get('category') || '';          // category name
   const page = Math.max(1, parseInt(searchParams.get('page') || '1', 10));
   const sortBy = searchParams.get('sort') || 'popular';
+
+  useEffect(() => {
+    const handleResize = () => setProductsPerPage(getProductsPerPage());
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   // ── Helper: update a single URL param, reset page to 1 unless explicitly kept ──
   function setParam(key, value, keepPage = false) {
@@ -260,13 +298,13 @@ export default function ProductsPage() {
   } = useQuery({
     queryKey: queryKeys.products.list({
       page,
-      limit: LIMIT,
+      limit: productsPerPage,
       search: searchQuery,
       category: activeCategory,
       ...sortFilters,
     }),
     queryFn: () =>
-      productsApi.getAll(page, LIMIT, {
+      productsApi.getAll(page, productsPerPage, {
         search:   searchQuery,
         category: activeCategory || undefined,
         ...sortFilters,
@@ -279,8 +317,8 @@ export default function ProductsPage() {
   const total      = pagination.total            ?? 0;
   const totalPages = pagination.totalPages       ?? 1;
 
-  const rangeStart = total === 0 ? 0 : (page - 1) * LIMIT + 1;
-  const rangeEnd   = Math.min(page * LIMIT, total);
+  const rangeStart = total === 0 ? 0 : (page - 1) * productsPerPage + 1;
+  const rangeEnd   = Math.min(page * productsPerPage, total);
   const error = isError ? (queryError?.message || 'Failed to load products') : null;
 
   const pageRange = buildPageRange(page, totalPages);
@@ -292,6 +330,7 @@ export default function ProductsPage() {
 
   return (
     <div style={styles.container}>
+      <style>{PRODUCTS_GRID_CSS}</style>
       {/* Page Header */}
       <div style={styles.pageHeader}>
         <div style={styles.headerContent}>
@@ -391,8 +430,11 @@ export default function ProductsPage() {
 
           {/* Skeleton — only shown while paginating (isFetching but data already exists) */}
           {isFetching && !isLoading && (
-            <div style={styles.grid}>
-              {Array.from({ length: LIMIT }).map((_, i) => (
+            <div
+              className="products-grid grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4 px-4 md:px-6"
+              style={styles.grid}
+            >
+              {Array.from({ length: productsPerPage }).map((_, i) => (
                 <ProductCardSkeleton key={i} />
               ))}
             </div>
@@ -400,7 +442,10 @@ export default function ProductsPage() {
 
           {/* Products Grid (dimmed while fetching next page) */}
           {!isLoading && products.length > 0 && (
-            <div style={isFetching ? { ...styles.grid, ...styles.loadingOverlay } : styles.grid}>
+            <div
+              className="products-grid grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4 px-4 md:px-6"
+              style={isFetching ? { ...styles.grid, ...styles.loadingOverlay } : styles.grid}
+            >
               {products.map(product => (
                 <ProductCard key={product.id} product={product} />
               ))}
