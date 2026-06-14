@@ -15,7 +15,7 @@ const CSS = `
     height: 100%;
     background: #F9F5F3;
     font-family: var(--font-sans);
-    border-radius: 12px;
+    border-radius: 0px;
     border: 1px solid #EAEAEA;
     overflow: hidden;
     cursor: pointer;

@@ -9,13 +9,113 @@ import LoadingSpinner from "@/components/UI/LoadingSpinner"
 
 // ─── Category accent colours ─────────────────────────────────────────────────
 const CATEGORY_ACCENTS = {
-  "Our Design":     { bg: "#FFF0F3", accent: "#F7B9C4", text: "#533638", emoji: "✨" },
-  "Custom Build":   { bg: "#F0F4FF", accent: "#93C5FD", text: "#1E3A8A", emoji: "🔧" },
-  "Popular":        { bg: "#FFF7ED", accent: "#FCD34D", text: "#92400E", emoji: "🔥" },
-  "Most Demanding": { bg: "#F0FDF4", accent: "#6EE7B7", text: "#065F46", emoji: "⚡" },
+  "Our Design":     { overlay: "rgba(83,54,56,0.55)",   badge: "#F7B9C4", badgeText: "#533638", poster: "/images/categories/wq.png" },
+  "Custom Build":   { overlay: "rgba(30,58,138,0.55)",  badge: "#93C5FD", badgeText: "#1E3A8A", poster: "/images/categories/panda6.jpg" },
+  "Popular":        { overlay: "rgba(120,53,15,0.55)",  badge: "#FCD34D", badgeText: "#78350F", poster: "/images/categories/wp4.png" },
+  "Most Demanding": { overlay: "rgba(6,78,59,0.55)",    badge: "#6EE7B7", badgeText: "#065F46", poster: "/images/categories/mos8.png" },
 }
+const DEFAULT_ACCENT = { overlay: "rgba(30,30,30,0.5)", badge: "#F7B9C4", badgeText: "#533638", poster: "/images/categories/mos8.png" }
+const CATEGORY_POSTER = "/images/categories/wq.png"
 
-const DEFAULT_ACCENT = { bg: "#F9F5F3", accent: "#F7B9C4", text: "#533638", emoji: "📦" }
+const CSS = `
+  /* ── Card ── */
+  .cs-card {
+    border-radius: 16px;
+    overflow: hidden;
+    cursor: pointer;
+    position: relative;
+    box-shadow: 0 4px 16px rgba(74,53,53,0.10);
+    transition: transform 0.28s ease, box-shadow 0.28s ease;
+    aspect-ratio: 3 / 4;
+    background: #f5edec;
+  }
+  .cs-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 12px 32px rgba(74,53,53,0.18);
+  }
+
+  /* ── Image ── */
+  .cs-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    display: block;
+    transition: transform 0.45s ease;
+  }
+  .cs-card:hover .cs-img { transform: scale(1.06); }
+
+  /* ── Gradient overlay ── */
+  .cs-overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: 1.25rem 1rem 1rem;
+    gap: 8px;
+    background: linear-gradient(
+      to top,
+      rgba(0,0,0,0.72) 0%,
+      rgba(0,0,0,0.35) 45%,
+      transparent 75%
+    );
+  }
+
+  /* ── Badge (category tag at top-left) ── */
+  .cs-badge {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    padding: 3px 10px;
+    border-radius: 20px;
+    backdrop-filter: blur(4px);
+  }
+
+  /* ── Bottom text ── */
+  .cs-name {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #fff;
+    margin: 0;
+    text-shadow: 0 1px 6px rgba(0,0,0,0.5);
+    line-height: 1.25;
+  }
+  .cs-count {
+    font-size: 0.8rem;
+    color: rgba(255,255,255,0.8);
+    margin: 0;
+  }
+  .cs-arrow {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.2);
+    backdrop-filter: blur(4px);
+    border: 1px solid rgba(255,255,255,0.35);
+    color: #fff;
+    font-size: 0.85rem;
+    align-self: flex-end;
+    transition: background 0.2s ease;
+    flex-shrink: 0;
+  }
+  .cs-card:hover .cs-arrow {
+    background: rgba(255,255,255,0.35);
+  }
+  .cs-footer {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 8px;
+  }
+`;
 
 const styles = {
   page: {
@@ -24,53 +124,7 @@ const styles = {
     fontFamily: "var(--font-sans)",
   },
 
-  // Hero
-  hero: {
-    background: "linear-gradient(135deg, #533638 0%, #3d2829 100%)",
-    color: "#ffffff",
-    padding: "4rem 2rem 3rem",
-    textAlign: "center",
-    position: "relative",
-    overflow: "hidden",
-  },
-  heroDeco: {
-    position: "absolute",
-    inset: 0,
-    background:
-      "radial-gradient(ellipse at 30% 50%, rgba(247,185,196,0.15) 0%, transparent 60%)," +
-      "radial-gradient(ellipse at 70% 50%, rgba(247,185,196,0.10) 0%, transparent 60%)",
-    pointerEvents: "none",
-  },
-  heroInner: {
-    maxWidth: "700px",
-    margin: "0 auto",
-    position: "relative",
-    zIndex: 1,
-  },
-  heroEyebrow: {
-    display: "inline-block",
-    backgroundColor: "rgba(247,185,196,0.2)",
-    color: "#F7B9C4",
-    border: "1px solid rgba(247,185,196,0.4)",
-    borderRadius: "20px",
-    padding: "4px 16px",
-    fontSize: "12px",
-    fontWeight: 600,
-    letterSpacing: "1px",
-    textTransform: "uppercase",
-    marginBottom: "1rem",
-  },
-  heroTitle: {
-    fontSize: "2.5rem",
-    fontWeight: 700,
-    margin: "0 0 0.75rem 0",
-    letterSpacing: "-0.5px",
-  },
-  heroSubtitle: {
-    fontSize: "1.05rem",
-    color: "rgba(255,255,255,0.75)",
-    margin: 0,
-  },
+
 
   // Content
   content: {
@@ -129,102 +183,7 @@ const styles = {
     gap: "1.5rem",
   },
 
-  // Category card
-  card: (hovered, accent) => ({
-    backgroundColor: "white",
-    borderRadius: "16px",
-    overflow: "hidden",
-    border: `1px solid ${hovered ? accent.accent : "#E2E8F0"}`,
-    boxShadow: hovered
-      ? `0 12px 32px rgba(0,0,0,0.12)`
-      : "0 2px 8px rgba(0,0,0,0.06)",
-    transform: hovered ? "translateY(-4px)" : "translateY(0)",
-    transition: "all 0.25s ease",
-    cursor: "pointer",
-    display: "flex",
-    flexDirection: "column",
-  }),
-  cardTop: {
-    position: "relative",
-    overflow: "hidden",
-    borderRadius: "14px 14px 0 0",
-  },
-  imageBox: (accent) => ({
-    width: "100%",
-    aspectRatio: "4 / 3",
-    overflow: "hidden",
-    position: "relative",
-    borderRadius: "14px 14px 0 0",
-    backgroundColor: accent.bg,
-  }),
-  imageBoxImg: {
-    width: "100%",
-    height: "100%",
-    objectFit: "cover",
-    objectPosition: "center",
-    display: "block",
-    transition: "transform 0.35s ease",
-  },
-  imageOverlay: (accent) => ({
-    position: "absolute",
-    inset: 0,
-    background: `linear-gradient(to top, ${accent.text}cc 0%, transparent 55%)`,
-    display: "flex",
-    flexDirection: "column",
-    justifyContent: "flex-end",
-    padding: "1rem 1rem 0.75rem",
-    gap: "6px",
-  }),
-  overlayName: {
-    fontSize: "1.05rem",
-    fontWeight: 700,
-    color: "#ffffff",
-    margin: 0,
-    textShadow: "0 1px 4px rgba(0,0,0,0.5)",
-  },
-  cardName: {
-    fontSize: "0.9rem",
-    fontWeight: 600,
-    color: "#533638",
-    margin: 0,
-    textAlign: "center",
-  },
-  productCountPill: (accent) => ({
-    display: "inline-flex",
-    alignItems: "center",
-    gap: "4px",
-    backgroundColor: accent.accent + "33",
-    color: accent.text,
-    border: `1px solid ${accent.accent}`,
-    borderRadius: "20px",
-    padding: "3px 12px",
-    fontSize: "12px",
-    fontWeight: 600,
-  }),
-  cardBottom: {
-    padding: "1rem 1.5rem",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "space-between",
-    borderTop: "1px solid #EAEAEA",
-    marginTop: "auto",
-  },
-  browseText: {
-    fontSize: "13px",
-    fontWeight: 600,
-    color: "#533638",
-  },
-  arrowCircle: (hovered, accent) => ({
-    width: "32px",
-    height: "32px",
-    borderRadius: "50%",
-    backgroundColor: hovered ? accent.accent : "#F9F5F3",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    transition: "background-color 0.2s ease",
-    flexShrink: 0,
-  }),
+
 
   // Empty state
   empty: {
@@ -255,7 +214,6 @@ const styles = {
 // ─── Component ────────────────────────────────────────────────────────────────
 export default function CategoriesPage() {
   const [searchTerm, setSearchTerm]   = useState("")
-  const [hoveredCard, setHoveredCard] = useState(null)
   const [focused, setFocused]         = useState(false)
   const navigate = useNavigate()
 
@@ -291,17 +249,8 @@ export default function CategoriesPage() {
 
   return (
     <div style={styles.page}>
-      {/* ── Hero ── */}
-      <div style={styles.hero}>
-        <div style={styles.heroDeco} />
-        <div style={styles.heroInner}>
-          <span style={styles.heroEyebrow}>Browse by Category</span>
-          <h1 style={styles.heroTitle}>Explore All Categories</h1>
-          <p style={styles.heroSubtitle}>
-            Browse our complete collection of premium wholesale products
-          </p>
-        </div>
-      </div>
+      <style>{CSS}</style>
+
 
       {/* ── Main Content ── */}
       <div style={styles.content}>
@@ -337,49 +286,48 @@ export default function CategoriesPage() {
         {filtered.length > 0 ? (
           <div style={styles.grid}>
             {filtered.map((cat) => {
-              const accent  = CATEGORY_ACCENTS[cat.name] ?? DEFAULT_ACCENT
-              const hovered = hoveredCard === cat.id
+              const accent = CATEGORY_ACCENTS[cat.name] ?? DEFAULT_ACCENT
+              const currentPoster = accent.poster || CATEGORY_POSTER
 
               return (
                 <div
                   key={cat.id}
-                  id={`category-card-${cat.id}`}
+                  className="cs-card"
+                  onClick={() => handleCategoryClick(cat.name)}
                   role="button"
                   tabIndex={0}
-                  aria-label={`Browse ${cat.name}`}
-                  style={styles.card(hovered, accent)}
-                  onMouseEnter={() => setHoveredCard(cat.id)}
-                  onMouseLeave={() => setHoveredCard(null)}
-                  onClick={() => handleCategoryClick(cat.name)}
-                  onKeyDown={(e) => e.key === "Enter" && handleCategoryClick(cat.name)}
+                  aria-label={`Shop ${cat.name}`}
+                  onKeyDown={(e) =>
+                    (e.key === "Enter" || e.key === " ") && handleCategoryClick(cat.name)
+                  }
                 >
-                  {/* Card top — image with overlay */}
-                  <div style={styles.cardTop}>
-                    <div style={styles.imageBox(accent)}>
-                      <img
-                        src={cat.icon || "/images/heroes/marufposterrr.png"}
-                        alt={cat.name}
-                        style={{
-                          ...styles.imageBoxImg,
-                          ...(hovered ? { transform: "scale(1.06)" } : {}),
-                        }}
-                        onError={(e) => { e.target.src = "/images/heroes/marufposterrr.png" }}
-                      />
-                      <div style={styles.imageOverlay(accent)}>
-                        <h3 style={styles.overlayName}>{cat.name}</h3>
-                        <span style={styles.productCountPill(accent)}>
-                          <FaTag style={{ fontSize: "10px" }} />
-                          {cat.productCount ?? 0} {cat.productCount === 1 ? "product" : "products"}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
+                  {/* Image */}
+                  <img
+                    src={currentPoster}
+                    alt={cat.name}
+                    className="cs-img"
+                    loading="lazy"
+                    onError={(e) => { e.target.src = CATEGORY_POSTER }}
+                  />
 
-                  {/* Card bottom — CTA */}
-                  <div style={styles.cardBottom}>
-                    <span style={styles.browseText}>Browse Category</span>
-                    <div style={styles.arrowCircle(hovered, accent)}>
-                      <FaArrowRight style={{ fontSize: "12px", color: "#533638" }} />
+                  {/* Top badge */}
+                  <span
+                    className="cs-badge"
+                    style={{ backgroundColor: accent.badge, color: accent.badgeText }}
+                  >
+                    {cat.name}
+                  </span>
+
+                  {/* Bottom overlay */}
+                  <div className="cs-overlay">
+                    <div className="cs-footer">
+                      <div>
+                        <p className="cs-name">{cat.name}</p>
+                        <p className="cs-count">
+                          {cat.productCount ?? 0} {cat.productCount === 1 ? "product" : "products"}
+                        </p>
+                      </div>
+                      <div className="cs-arrow">→</div>
                     </div>
                   </div>
                 </div>

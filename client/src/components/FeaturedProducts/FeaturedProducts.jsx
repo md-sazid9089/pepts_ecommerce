@@ -43,7 +43,7 @@ const CSS = `
   }
   .fp-view-all {
     background: none;
-    border: 1.5px solid #533638;
+    border: none;
     color: #533638;
     padding: 9px 20px;
     border-radius: 8px;
@@ -110,7 +110,7 @@ export default function FeaturedProducts() {
           {/* ── Header ── */}
           <div className="fp-header">
             <div className="fp-header-left">
-              <h2 className="fp-title">Featured Products</h2>
+              <h2 className="fp-title font-heading font-extrabold tracking-tight text-2xl md:text-3xl">Featured Products</h2>
               <p className="fp-subtitle">Our most popular picks loved by wholesale buyers</p>
             </div>
             <button

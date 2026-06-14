@@ -45,7 +45,6 @@ const styles = {
   },
   title: {
     fontSize: "2.5rem",
-    fontWeight: 700,
     color: colors.darkBrown,
     margin: 0,
     marginBottom: "0.5rem",
@@ -260,7 +259,7 @@ export default function NewArrivals() {
     return (
       <div style={styles.container}>
         <div style={styles.headerSection}>
-          <h2 style={styles.title}>New Arrivals</h2>
+          <h2 style={styles.title} className="font-heading font-extrabold tracking-tight text-2xl md:text-3xl">New Arrivals</h2>
           <p style={styles.subtitle}>Discover our latest products</p>
         </div>
         <ProductGridSkeleton count={4} />
@@ -272,7 +271,7 @@ export default function NewArrivals() {
     return (
       <div style={styles.container}>
         <div style={styles.headerSection}>
-          <h2 style={styles.title}>New Arrivals</h2>
+          <h2 style={styles.title} className="font-heading font-extrabold tracking-tight text-2xl md:text-3xl">New Arrivals</h2>
           <p style={styles.subtitle}>Discover our latest products</p>
         </div>
         <div style={styles.emptyState}>
@@ -288,7 +287,7 @@ export default function NewArrivals() {
       {/* Header Section */}
       <div style={{ ...styles.headerSection, display: 'flex', alignItems: 'center', justifyContent: 'space-between', textAlign: 'left', marginBottom: '2rem' }}>
         <div>
-          <h2 style={styles.title}>New Arrivals</h2>
+          <h2 style={styles.title} className="font-heading font-extrabold tracking-tight text-2xl md:text-3xl">New Arrivals</h2>
           <p style={styles.subtitle}>Discover our latest premium products</p>
         </div>
         <button
@@ -297,7 +296,7 @@ export default function NewArrivals() {
             padding: '0.6rem 1.25rem',
             backgroundColor: 'transparent',
             color: colors.darkBrown,
-            border: `2px solid ${colors.darkBrown}`,
+            border: `none`,
             borderRadius: '0.375rem',
             fontSize: '0.875rem',
             fontWeight: 700,

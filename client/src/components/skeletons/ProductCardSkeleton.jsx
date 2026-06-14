@@ -10,7 +10,7 @@ const CSS = `
   }
   .pcs-card {
     background: #fff;
-    border-radius: 12px;
+    border-radius: 0px;
     border: 1px solid #EAEAEA;
     overflow: hidden;
     display: flex;

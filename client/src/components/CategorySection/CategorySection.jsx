@@ -37,7 +37,7 @@ const CSS = `
   }
   .cs-view-all {
     background: transparent;
-    border: 2px solid #4A3535;
+    border: none;
     border-radius: 0.375rem;
     padding: 0.6rem 1.25rem;
     font-size: 0.875rem;
@@ -188,7 +188,7 @@ export default function CategorySection() {
       <style>{CSS}</style>
       <section className="cs-section">
         <div className="cs-header">
-          <h2 className="cs-title">Shop by Category</h2>
+          <h2 className="cs-title font-heading font-extrabold tracking-tight text-2xl md:text-3xl">Shop by Category</h2>
           <button
             className="cs-view-all"
             onClick={() => navigate("/categories")}
