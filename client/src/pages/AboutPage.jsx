@@ -338,7 +338,10 @@ export default function AboutPage() {
         <h1 style={heroStyles.title}>About Pepta</h1>
         <p style={heroStyles.subtitle}>
           Your trusted wholesale partner for premium products. We connect retailers with quality manufacturers
-          across World, making wholesale simple, reliable, and profitable.
+          across World, making wholesale simple, reliable, and profitable. Our team focuses on dependable sourcing,
+          clear communication, and practical order support from the first sample request to final delivery. Whether
+          you are restocking proven bestsellers or developing a custom product line, Pepta helps you move with more
+          confidence and fewer delays.
         </p>
       </section>
 
@@ -347,7 +350,10 @@ export default function AboutPage() {
         <div style={imageStyles.imageWrapper}>
           <img src="images/heroes/marufposterr.png" alt="Pepta Warehouse" style={imageStyles.image} />
         </div>
-        <p style={imageStyles.caption}>Serving retailers across Bangladesh with premium products and unmatched service</p>
+        <p style={imageStyles.caption}>
+          Serving retailers across Bangladesh with premium products, careful quality checks, and responsive support
+          for bulk orders, custom builds, and repeat supply needs.
+        </p>
       </section>
 
       {/* WHY CHOOSE US SECTION */}

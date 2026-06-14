@@ -423,7 +423,7 @@ export default function Navbar() {
         <div style={styles.headerRow}>
           <div style={styles.logoSection}>
             <Link to="/" style={{ display: 'block', cursor: 'pointer', textDecoration: 'none' }}>
-              <img src="/images/products/logo.jpeg" alt="Pepta Logo" style={{ height: "50px", width: "auto", objectFit: "contain" }} />
+              <img src="/images/products/logo.jpeg" alt="Pepta Logo" style={{ height: "68px", width: "auto", objectFit: "contain" }} />
             </Link>
           </div>
           <div style={styles.searchSection}>
@@ -512,7 +512,7 @@ export default function Navbar() {
       {isMobile && (
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.7rem 1rem', backgroundColor: colors.mainBg }}>
           <Link to="/" style={{ display: 'block', textDecoration: 'none' }}>
-            <img src="/images/products/logo.jpeg" alt="Pepta Logo" style={{ height: '46px', width: 'auto', objectFit: 'contain' }} />
+            <img src="/images/products/logo.jpeg" alt="Pepta Logo" style={{ height: '56px', width: 'auto', objectFit: 'contain' }} />
           </Link>
           <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
             {/* Mobile Search Icon Button */}

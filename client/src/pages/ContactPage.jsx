@@ -64,22 +64,22 @@ const ContactInfoSection = ({ contactInfoStyles }) => {
       id: 1,
       icon: FiMapPin,
       label: "Address",
-      value: "123 Business Plaza, Commerce City, CC 12345",
+      value: "Yangzhou, Jiangsu, China",
       link: "#",
     },
     {
       id: 2,
       icon: FiMail,
       label: "Email",
-      value: "business@company.com",
-      link: "mailto:business@company.com",
+      value: "peptadoll@gmail.com",
+      link: "mailto:peptadoll@gmail.com",
     },
     {
       id: 3,
       icon: FiPhone,
       label: "Phone",
-      value: "+1 (555) 123-4567 | Fax: +1 (555) 123-4568",
-      link: "tel:+15551234567",
+      value: "(+86) 18168023963",
+      link: "tel:+8618168023963",
     },
   ], [])
 
