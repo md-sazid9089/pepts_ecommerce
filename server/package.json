@@ -4,7 +4,7 @@
   "description": "Headless REST API for PEPTS E-Commerce using Next.js 14+ and Prisma",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev --webpack",
     "build": "prisma generate && next build",
     "start": "next start",
     "lint": "next lint",

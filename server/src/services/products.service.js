@@ -272,8 +272,14 @@ export async function createProduct(data) {
             unit: tier.unit || "per unit",
           }))
         } : undefined,
+        images: data.images ? {
+          create: data.images.map((url, index) => ({
+            url,
+            order: index
+          }))
+        } : undefined,
       },
-      include: { category: true, bulkPrices: true },
+      include: { category: true, bulkPrices: true, images: { orderBy: { order: "asc" } } },
     })
 
     return mapProduct(product)
@@ -338,8 +344,17 @@ export async function updateProduct(productId, data) {
             }))
           }
         }),
+        ...(data.images !== undefined && {
+          images: {
+            deleteMany: {},
+            create: data.images.map((url, index) => ({
+              url,
+              order: index
+            }))
+          }
+        }),
       },
-      include: { category: true, bulkPrices: true },
+      include: { category: true, bulkPrices: true, images: { orderBy: { order: "asc" } } },
     })
 
     return mapProduct(updated)

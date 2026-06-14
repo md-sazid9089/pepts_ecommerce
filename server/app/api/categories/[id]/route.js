@@ -67,15 +67,27 @@ export async function DELETE(request, { params }) {
       )
     }
 
-    // ── Safe to delete ───────────────────────────────────────────────────────
-    await prisma.category.update({
-      where: { id },
-      data:  { isActive: false },   // soft-delete; matches the existing pattern
-    })
+    // Check assigned products first:
+    const assignedCount = await prisma.product.count({
+      where: { categoryId: id }
+    });
 
-    return apiResponse.success(null, "Category deleted successfully")
+    if (assignedCount > 0) {
+      return Response.json({
+        success: false,
+        error: `Cannot delete — ${assignedCount} product(s) are assigned to this category. Please reassign them first.`
+      }, { status: 400 });
+    }
+
+    await prisma.category.delete({ where: { id } });
+
+    return Response.json({ success: true });
+
   } catch (error) {
-    console.error("DELETE /api/categories/:id error:", error)
-    return apiResponse.serverError("Failed to delete category", error)
+    console.error("DELETE /api/categories/[id] error:", error)
+    return Response.json(
+      { success: false, error: 'Delete failed' },
+      { status: 500 }
+    );
   }
 }

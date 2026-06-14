@@ -17,10 +17,11 @@ import prisma from "@/src/lib/prisma"
 import { verifyRequest } from "@/src/lib/verifyRequest"
 
 // Configure Cloudinary from environment variables
+// .trim() guards against \r\n line endings or accidental whitespace in .env
 cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key:    process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME?.trim(),
+  api_key:    process.env.CLOUDINARY_API_KEY?.trim(),
+  api_secret: process.env.CLOUDINARY_API_SECRET?.trim(),
 })
 
 // ─── POST /api/products/:id/upload-image ────────────────────────────────────
@@ -135,17 +136,16 @@ export async function POST(request, { params }) {
 
     console.log("[upload-image] all uploads done, saving to DB. urls:", uploadedUrls)
 
-    // Replace all existing images for this product in the DB
-    const deleted = await prisma.productImage.deleteMany({
-      where: { productId: id },   // id is Int — matches schema
+    // Find current number of images for this product to get the next order index
+    const currentCount = await prisma.productImage.count({
+      where: { productId: id }
     })
-    console.log("[upload-image] deleted old ProductImage records:", deleted.count)
 
     if (uploadedUrls.length > 0) {
       const created = await prisma.productImage.createMany({
         data: uploadedUrls.map((url, index) => ({
           url,
-          order:     index,
+          order:     currentCount + index,
           productId: id,   // id is already parseInt'd Int — matches schema
         })),
       })

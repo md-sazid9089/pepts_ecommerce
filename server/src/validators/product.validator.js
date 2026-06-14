@@ -58,6 +58,7 @@ export const createProductSchema = z.object({
 
   priceMin: z.number().nonnegative().nullable().optional(),
   priceMax: z.number().nonnegative().nullable().optional(),
+  images: z.array(z.string()).optional(),
 })
 
 export const updateProductSchema = z.object({
@@ -86,6 +87,7 @@ export const updateProductSchema = z.object({
 
   priceMin: z.number().nonnegative().nullable().optional(),
   priceMax: z.number().nonnegative().nullable().optional(),
+  images: z.array(z.string()).optional(),
 })
 
 export const productQuerySchema = z.object({

@@ -26,7 +26,7 @@ function buildAuthCookie(token) {
     `authToken=${token}`,
     'HttpOnly',
     ...(isProd ? ['Secure'] : []),
-    'SameSite=Strict',
+    'SameSite=Lax',  // Strict blocks cross-origin fetches (client port ≠ server port in dev)
     'Path=/',
     'Max-Age=86400',
   ]
