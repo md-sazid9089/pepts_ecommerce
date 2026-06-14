@@ -39,6 +39,7 @@ const PRODUCTS_GRID_CSS = `
   @media (min-width: 1024px) {
     .products-grid {
       grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
     }
   }
 `;

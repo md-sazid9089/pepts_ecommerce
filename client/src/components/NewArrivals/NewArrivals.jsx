@@ -18,7 +18,7 @@ const colors = {
 
 const CSS = `
   .na-products-grid {
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
   }
   @media (max-width: 600px) {
     .na-products-grid {
@@ -53,7 +53,7 @@ const styles = {
   },
   productsGrid: {
     display: "grid",
-    gap: "2rem",
+    gap: "1rem",
   },
   productCard: {
     backgroundColor: colors.lightBg,
@@ -73,7 +73,7 @@ const styles = {
   imageContainer: {
     position: "relative",
     width: "100%",
-    height: "250px",
+    height: "290px",
     backgroundColor: "#f5f5f5",
     display: "flex",
     alignItems: "center",
@@ -279,7 +279,7 @@ export default function NewArrivals() {
   }
 
   return (
-    <div style={styles.container}>
+    <div className="na-container" style={styles.container}>
       <style>{CSS}</style>
       {/* Header Section */}
       <div style={{ ...styles.headerSection, display: 'flex', alignItems: 'center', justifyContent: 'space-between', textAlign: 'left', marginBottom: '2rem' }}>
@@ -314,6 +314,7 @@ export default function NewArrivals() {
         {newProducts.map((product) => (
           <div
             key={product.id}
+            className="na-product-card"
             style={{
               ...styles.productCard,
               ...(hoveredCard === product.id ? styles.productCardHover : {}),
@@ -323,6 +324,7 @@ export default function NewArrivals() {
           >
             {/* Image Container */}
             <div 
+              className="na-image-container"
               style={styles.imageContainer}
               onClick={() => navigate(`/product/${product.id}`)}
             >
@@ -339,7 +341,7 @@ export default function NewArrivals() {
             </div>
 
             {/* Product Info */}
-            <div style={styles.productInfo}>
+            <div className="na-product-info" style={styles.productInfo}>
               <p style={styles.brand}>{product.brand || "Pepta"}</p>
               <h3 
                 style={{ ...styles.productName, cursor: 'pointer' }}
