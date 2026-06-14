@@ -20,16 +20,24 @@ const isDev = import.meta.env.DEV
 const log = isDev ? (...args) => console.log("[API]", ...args) : () => {}
 const logError = isDev ? (...args) => console.error("[API]", ...args) : () => {}
 
+/**
+ * Single source-of-truth for the localStorage token key.
+ * AdminLoginPage saves as 'token'; this must match exactly.
+ */
+export const TOKEN_KEY = 'token'
+
 const DEFAULT_TIMEOUT_MS = 10_000  // 10 seconds per endpoint attempt
 const HEALTH_CHECK_INTERVAL = 30_000  // Check health every 30 seconds
 
-// Deduplicate API endpoints and add fallback
+// Endpoints: production first, optional local fallback.
+// In dev  -> .env.local sets VITE_API_URL=https://pepta-api.vercel.app
+// In prod -> .env.production sets VITE_API_URL=https://pepta-api.vercel.app
 const API_ENDPOINTS = (() => {
-  const endpoints = [
-    'https://pepta-api.vercel.app',
-    'http://localhost:3000'
-  ]
-  return [...new Set(endpoints)] // Remove duplicates
+  const primaryUrl = import.meta.env.VITE_API_URL || 'https://pepta-api.vercel.app'
+  const fallbackUrl = import.meta.env.VITE_API_FALLBACK_URL
+  return fallbackUrl && fallbackUrl !== primaryUrl
+    ? [primaryUrl, fallbackUrl]
+    : [primaryUrl]
 })()
 
 class ApiClient {
@@ -107,9 +115,24 @@ class ApiClient {
     return this.currentBestUrl
   }
 
+  /**
+   * Retrieve the stored JWT (if any).
+   * Returns null when the user is not logged in.
+   */
+  static getToken() {
+    try {
+      return localStorage.getItem(TOKEN_KEY) || null
+    } catch {
+      return null
+    }
+  }
+
   getHeaders() {
+    const token = ApiClient.getToken()
     return {
       'Content-Type': 'application/json',
+      // Attach Bearer token when available so protected routes receive auth
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
     }
   }
 
@@ -121,9 +144,10 @@ class ApiClient {
   async _fetchWithFallback(endpoint, options = {}, timeoutMs = DEFAULT_TIMEOUT_MS) {
     // Try each endpoint until one succeeds
     for (const baseUrl of this.endpoints) {
+      let timer
       try {
         const controller = new AbortController()
-        const timer = setTimeout(() => controller.abort(), timeoutMs)
+        timer = setTimeout(() => controller.abort(), timeoutMs)
         
         const url = this._buildUrl(baseUrl, endpoint)
         
@@ -249,6 +273,20 @@ class ApiClient {
   }
 
   async _handleResponse(response) {
+    // Token expired or revoked — clear storage and redirect to login
+    if (response.status === 401) {
+      logError('401 Unauthorized — clearing stored token and redirecting to login')
+      try {
+        localStorage.removeItem(TOKEN_KEY)
+        localStorage.removeItem('pepta_admin_session')
+        localStorage.removeItem('pepta_wholesale_user')
+      } catch { /* ignore */ }
+      // Only redirect if currently on an admin route to avoid disrupting public pages
+      if (window.location.pathname.startsWith('/admin')) {
+        window.location.href = '/admin/login'
+      }
+    }
+
     let data
     try {
       data = await response.json()

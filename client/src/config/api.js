@@ -6,11 +6,13 @@
  * 
  * Environment Variables:
  * - VITE_API_URL: Backend API base URL (set in .env)
- * - Defaults to localhost:3000 for development
+ * - Defaults to production API for local development
  * ============================================================================
  */
 
-// Backend API URL — always use production, with fallback
+// Backend API URL - read from VITE_API_URL env var.
+// Local development uses the deployed API because the local backend cannot
+// connect to the production database from this network.
 const API_BASE_URL =
   import.meta.env.VITE_API_URL ||
   'https://pepta-api.vercel.app'

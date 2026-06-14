@@ -13,15 +13,6 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
     },
   },
-  server: {
-    proxy: {
-      '/api': {
-        target: 'https://pepta-api.vercel.app',
-        changeOrigin: true,
-        secure: true,
-      },
-    },
-  },
   build: {
     outDir: 'dist',
     sourcemap: false,
