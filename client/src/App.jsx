@@ -149,13 +149,35 @@ function AppInner() {
                     <Route path="/profile"         element={<UserProtectedRoute><ProfilePage /></UserProtectedRoute>} />
 
                     {/* Admin Routes */}
-                     <Route path="/admin"           element={<Navigate to="/admin/login" replace />} />
+                     <Route
+                       path="/admin"
+                       element={
+                         <ProtectedRoute requiredRole="admin">
+                           <ErrorBoundary>
+                             <AdminDashboard />
+                           </ErrorBoundary>
+                         </ProtectedRoute>
+                       }
+                     />
                      <Route path="/admin/login"     element={<AdminLoginPage />} />
-                     <Route path="/admin/dashboard" element={
-                       <ProtectedRoute>
-                         <AdminDashboard />
-                       </ProtectedRoute>
-                     } />
+                     <Route
+                       path="/admin/dashboard"
+                       element={
+                         <ProtectedRoute requiredRole="admin">
+                           <ErrorBoundary>
+                             <AdminDashboard />
+                           </ErrorBoundary>
+                         </ProtectedRoute>
+                       }
+                     />
+                     <Route
+                       path="/admin/*"
+                       element={
+                         <ProtectedRoute requiredRole="admin">
+                           <Navigate to="/admin" replace />
+                         </ProtectedRoute>
+                       }
+                     />
 
                     {/* 404 — must be last */}
                     <Route path="*"               element={<NotFoundPage />} />

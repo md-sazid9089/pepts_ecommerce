@@ -16,7 +16,7 @@
  * ============================================================================
  */
 
-import { Navigate } from 'react-router-dom'
+import { Navigate, useLocation } from 'react-router-dom'
 import { useAuth } from '@/context/AuthContext'
 
 // ── Shared loading spinner ───────────────────────────────────────────────────
@@ -48,17 +48,21 @@ function AuthLoader() {
 }
 
 // ── Admin-only guard ─────────────────────────────────────────────────────────
-export default function ProtectedRoute({ children }) {
+export default function ProtectedRoute({ children, requiredRole }) {
   const { user, isLoading } = useAuth()
+  const location = useLocation()
+  const isAuthenticated = !!user
 
   // Wait for AuthContext to hydrate from localStorage
   if (isLoading) return <AuthLoader />
 
-  // No token / not logged in → send to login
-  if (!user) return <Navigate to="/login" replace />
+  if (!isAuthenticated) {
+    return <Navigate to="/admin/login" state={{ from: location }} replace />;
+  }
 
-  // Logged in but not admin → send to homepage
-  if (user.role !== 'admin') return <Navigate to="/" replace />
+  if (requiredRole && user?.role?.toLowerCase() !== requiredRole.toLowerCase()) {
+    return <Navigate to="/" replace />;
+  }
 
   return children
 }

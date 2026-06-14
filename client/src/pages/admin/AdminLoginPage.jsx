@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { authApi } from '@/services/api'
-import apiClient from '@/services/apiClient'
+import { TOKEN_KEY } from '@/services/apiClient'
 
 const ADMIN_EMAIL = import.meta.env.VITE_ADMIN_EMAIL || ''
 
@@ -45,8 +45,13 @@ export default function AdminLoginPage() {
 
         const session = { ...userData, adminAt: Date.now() }
         localStorage.setItem('pepta_admin_session', JSON.stringify(session))
-        if (token) localStorage.setItem('token', token)
-        navigate('/admin/dashboard', { replace: true })
+        localStorage.setItem('pepta_wholesale_user', JSON.stringify(userData))
+        if (token) {
+          localStorage.setItem(TOKEN_KEY, token)
+        } else {
+          console.warn('[AdminLoginPage] Server did not return a token in res.data — check login route')
+        }
+        window.location.replace('/admin/dashboard')
         return
       }
 
