@@ -51,27 +51,6 @@ const styles = {
     minHeight: '100vh',
     paddingBottom: '40px',
   },
-  pageHeader: {
-    backgroundColor: 'white',
-    borderBottom: '3px solid #F7B9C4',
-    padding: '30px 20px',
-    textAlign: 'center',
-  },
-  headerContent: {
-    maxWidth: '1400px',
-    margin: '0 auto',
-  },
-  title: {
-    fontSize: '32px',
-    fontWeight: '700',
-    color: '#533638',
-    margin: '0 0 10px 0',
-  },
-  subtitle: {
-    fontSize: '14px',
-    color: '#A0AEC0',
-    margin: 0,
-  },
   contentWrapper: {
     maxWidth: '1400px',
     margin: '0 auto',
@@ -332,26 +311,6 @@ export default function ProductsPage() {
   return (
     <div style={styles.container}>
       <style>{PRODUCTS_GRID_CSS}</style>
-      {/* Page Header */}
-      <div style={styles.pageHeader}>
-        <div style={styles.headerContent}>
-          <h1 style={styles.title}>
-            {searchQuery
-              ? `Results for "${searchQuery}"`
-              : activeCategory
-              ? activeCategory
-              : 'All Products'}
-          </h1>
-          <p style={styles.subtitle}>
-            {isLoading
-              ? 'Loading products…'
-              : total > 0
-              ? `Showing ${rangeStart}–${rangeEnd} of ${total} products`
-              : 'No products found'}
-          </p>
-        </div>
-      </div>
-
       {/* Content */}
       <div style={styles.contentWrapper}>
         <main style={styles.mainContent}>
