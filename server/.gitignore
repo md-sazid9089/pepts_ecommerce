@@ -52,6 +52,8 @@ tmp/
 
 # Dev scratch/test scripts (never ship to production)
 scratch/
-.vercel
+test_*.js
+check_*.js
 
+# Vercel
 .vercel
