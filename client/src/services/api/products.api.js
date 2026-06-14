@@ -14,7 +14,7 @@
  * ============================================================================
  */
 
-import apiClient from "@/services/apiClient"
+import apiClient, { TOKEN_KEY } from "@/services/apiClient"
 
 export const productsApi = {
   /**
@@ -207,18 +207,25 @@ export const productsApi = {
    * Upload product images to Cloudinary (admin only)
    * @param {string} productId - Product ID
    * @param {File[]} files - Array of image files from file input
-   * @param {string} token - Admin JWT token
+   * @param {string} [_token] - Deprecated: token is now read from localStorage automatically
    * @returns {Promise<object>}
    */
-  uploadImage: async (productId, files, token) => {
+  uploadImage: async (productId, files, _token) => {
     try {
       const formData = new FormData()
       files.forEach(file => {
         formData.append("images", file)
       })
 
-      // Use the same base URL as the rest of the API client
-      const apiBase = import.meta.env.VITE_API_URL || "http://localhost:3000"
+      // Always use the apiClient's active best URL (handles Vercel ↔ localhost fallback)
+      const apiBase = apiClient.currentBestUrl.replace(/\/+$/, '')
+
+      // Read token from localStorage — same key that AdminLoginPage writes
+      const token = localStorage.getItem(TOKEN_KEY) || _token
+
+      if (!token) {
+        return { success: false, message: 'Authentication token missing. Please log in again.' }
+      }
 
       // 60s timeout for image uploads (Cloudinary can be slow)
       const controller = new AbortController()
@@ -268,11 +275,12 @@ export const productsApi = {
   /**
    * Remove product image (admin only)
    * @param {string} productId - Product ID
-   * @param {string} token - Admin JWT token
+   * @param {string} [_token] - Deprecated: token is now read from localStorage automatically
    */
-  removeImage: async (productId, token) => {
+  removeImage: async (productId, _token) => {
     try {
-      const apiBase = import.meta.env.VITE_API_URL || "http://localhost:3000"
+      const apiBase = apiClient.currentBestUrl.replace(/\/+$/, '')
+      const token = localStorage.getItem(TOKEN_KEY) || _token
       const res = await fetch(`${apiBase}/api/products/${productId}/upload-image`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },

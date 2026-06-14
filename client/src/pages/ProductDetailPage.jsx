@@ -35,7 +35,7 @@ const RESPONSIVE_CSS = `
 import { useParams, useNavigate } from "react-router-dom"
 import { useQuery } from '@tanstack/react-query'
 import { queryKeys } from '@/lib/queryKeys'
-import { imagePresets } from '@/utils/imageUtils'
+import { optimizeCloudinaryUrl } from '@/utils/imageUtils'
 import ProductDetailSkeleton from '@/components/skeletons/ProductDetailSkeleton'
 import {
   FaChevronLeft,
@@ -582,7 +582,7 @@ export default function ProductDetailPage() {
     setInquiryStatus({ loading: true, success: false, error: "" })
     
     try {
-      const apiBase = import.meta.env.VITE_API_URL || "http://localhost:3000"
+      const apiBase = import.meta.env.VITE_API_URL || "https://pepta-api.vercel.app"
       const token = localStorage.getItem("authToken")
       
       const res = await fetch(`${apiBase}/api/inquiries`, {
@@ -725,7 +725,7 @@ export default function ProductDetailPage() {
             {(() => {
 
               const raw = images[currentImageIndex] || product?.imageUrl || product?.image || '';
-              const src = (raw && typeof raw === 'string' && raw.trim() !== '') ? imagePresets.detail(raw) : '';
+              const src = (raw && typeof raw === 'string' && raw.trim() !== '') ? optimizeCloudinaryUrl(raw, { width: 600, height: 600, quality: 'auto:good' }) : '';
               
               if (!src) {
                  return <div className="bg-gray-200 w-full h-full rounded-xl animate-pulse" />;
@@ -768,7 +768,7 @@ export default function ProductDetailPage() {
               >
                 {(() => {
                   const raw = (image && image.trim() !== '') ? image : '/placeholder-product.jpg';
-                  const thumbSrc = imagePresets.admin(raw);
+                  const thumbSrc = optimizeCloudinaryUrl(raw, { width: 120, height: 120, quality: 'auto:low' });
                   return <img loading="lazy" decoding="async" src={thumbSrc} alt={`${product.name} ${index + 1}`} style={styles.thumbImg} />;
                 })()}
               </button>
@@ -898,7 +898,7 @@ export default function ProductDetailPage() {
             </div>
             <div style={styles.statCard}>
               <p style={styles.statLabel}>Location</p>
-              <p style={styles.statValue}>Yiwu, Zhejiang</p>
+              <p style={styles.statValue}>Yangzhou,Jiangsu,China</p>
             </div>
           </div>
 

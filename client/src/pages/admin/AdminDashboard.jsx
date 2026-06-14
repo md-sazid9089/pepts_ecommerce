@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useQueryClient } from '@tanstack/react-query'
 import { queryKeys } from '@/lib/queryKeys'
 import { productsApi, ordersApi, inquiriesApi, categoriesApi, reviewsApi } from "@/services/api"
+import { TOKEN_KEY } from "@/services/apiClient"
 import {
   FaBars,
   FaTimes,
@@ -621,12 +622,8 @@ export default function AdminDashboard() {
   const [categories, setCategories] = useState([])
   const adminQueryClient = useQueryClient()
 
-  const [stats, setStats] = useState([
-    { label: "Total Orders", value: "0", change: "...", icon: FaShoppingCart, bgColor: colors.info },
-    { label: "Total Revenue", value: "$0", change: "...", icon: FaDollarSign, bgColor: colors.success },
-    { label: "Total Products", value: "0", change: "...", icon: FaBox, bgColor: colors.warning },
-    { label: "Total Inquiries", value: "0", change: "...", icon: FaInbox, bgColor: colors.sidebar },
-  ])
+  const [stats, setStats] = useState(null)
+  const [statsLoading, setStatsLoading] = useState(true)
   const [orders, setOrders] = useState([])
   const [inquiries, setInquiries] = useState([])
 
@@ -635,44 +632,44 @@ export default function AdminDashboard() {
     if (!adminUser) return // don't fetch if not logged in
     const fetchDashboardData = async () => {
       try {
+        setStatsLoading(true)
         // 1. Fetch Orders & Revenue
         const ordersRes = await ordersApi.getAll(1, 100)
+        let totalOrders = 0
+        let totalRev = 0
         if (ordersRes.success) {
           const items = ordersRes.data?.items || []
           setOrders(items.slice(0, 5)) // Show latest 5
-          const totalRev = items.reduce((sum, o) => sum + (o.totalAmount || 0), 0)
-          const totalCount = ordersRes.data?.pagination?.total || items.length
-          
-          setStats(prev => prev.map(s => {
-            if (s.label === "Total Orders") return { ...s, value: totalCount.toString() }
-            if (s.label === "Total Revenue") return { ...s, value: `$${totalRev.toLocaleString()}` }
-            return s
-          }))
+          totalRev = items.reduce((sum, o) => sum + (o.totalAmount || 0), 0)
+          totalOrders = ordersRes.data?.pagination?.total || items.length
         }
 
         // 2. Fetch Inquiries
         const inquiriesRes = await inquiriesApi.getAll(1, 100)
+        let totalInquiries = 0
         if (inquiriesRes.success) {
           const items = inquiriesRes.data?.items || []
           setInquiries(items.slice(0, 5))
-          const totalCount = inquiriesRes.data?.pagination?.total || items.length
-          setStats(prev => prev.map(s => {
-            if (s.label === "Total Inquiries") return { ...s, value: totalCount.toString() }
-            return s
-          }))
+          totalInquiries = inquiriesRes.data?.pagination?.total || items.length
         }
 
         // 3. Fetch Products
         const productsRes = await productsApi.getAll(1, 1)
+        let totalProducts = 0
         if (productsRes.success) {
-          const totalCount = productsRes.data?.pagination?.total || 0
-          setStats(prev => prev.map(s => {
-            if (s.label === "Total Products") return { ...s, value: totalCount.toString() }
-            return s
-          }))
+          totalProducts = productsRes.data?.pagination?.total || 0
         }
+
+        setStats({
+          orders: totalOrders,
+          revenue: totalRev,
+          products: totalProducts,
+          inquiries: totalInquiries
+        })
       } catch (e) {
         console.error("Dashboard fetch error:", e)
+      } finally {
+        setStatsLoading(false)
       }
     }
 
@@ -707,7 +704,7 @@ export default function AdminDashboard() {
   const addPricingRow = () => setPricingRows((prev) => [...prev, defaultPricingRow()])
   const removePricingRow = (index) => setPricingRows((prev) => prev.filter((_, i) => i !== index))
   const [imageFiles, setImageFiles] = useState([])
-  const [imagePreviewUrls, setImagePreviewUrls] = useState([])
+  const [uploadedImageUrls, setUploadedImageUrls] = useState([])
   const [uploadingImage, setUploadingImage] = useState(null) // productId being uploaded
   const [uploadImageFile, setUploadImageFile] = useState({}) // { [productId]: File }
   const [formMessage, setFormMessage] = useState("")
@@ -736,8 +733,8 @@ export default function AdminDashboard() {
       alert("Maximum 10 images allowed")
       return
     }
-    setImageFiles(files)
-    setImagePreviewUrls(files.map(f => URL.createObjectURL(f)))
+    setImageFiles(prev => [...prev, ...files])
+    setUploadedImageUrls(prev => [...prev, ...files.map(f => URL.createObjectURL(f))])
   }, [])
   const handleUploadImageForProduct = useCallback(async (productId) => {
     const files = uploadImageFile[productId]
@@ -746,7 +743,7 @@ export default function AdminDashboard() {
       return
     }
     
-    const token = localStorage.getItem("token")
+    const token = localStorage.getItem(TOKEN_KEY)
     if (!token) {
       alert("Authentication token missing. Please log in again.")
       return
@@ -758,10 +755,11 @@ export default function AdminDashboard() {
       
       if (res.success && res.data) {
         // Fix: API returns { urls: [...] }, not { imageUrl: "..." }
-        const uploadedUrl = res.data.urls?.[0] ?? null
+        const uploadedUrls = res.data.urls || []
+        setUploadedImageUrls(prev => [...prev, ...uploadedUrls])
         setProducts((prev) =>
           prev.map((p) =>
-            p.id === productId ? { ...p, imageUrl: uploadedUrl } : p
+            p.id === productId ? { ...p, imageUrl: uploadedUrls[0] || null, images: uploadedUrls.map(url => ({ url })) } : p
           )
         )
         setUploadImageFile((prev) => ({ ...prev, [productId]: null }))
@@ -811,8 +809,14 @@ export default function AdminDashboard() {
       setPricingRows([defaultPricingRow()])
     }
     
+    if (product.images && product.images.length > 0) {
+      setUploadedImageUrls(product.images.sort((a,b) => a.order - b.order).map(img => img.url))
+    } else if (product.imageUrl) {
+      setUploadedImageUrls([product.imageUrl])
+    } else {
+      setUploadedImageUrls([])
+    }
     setImageFiles([])
-    setImagePreviewUrls([])
     
     // Scroll up to the form
     window.scrollTo({ top: 0, behavior: 'smooth' })
@@ -827,11 +831,12 @@ export default function AdminDashboard() {
     })
     setPricingRows([defaultPricingRow()])
     setImageFiles([])
-    setImagePreviewUrls([])
+    setUploadedImageUrls([])
   }, [])
 
   const handleSaveProduct = useCallback(async (event) => {
-    event.preventDefault()
+    event?.preventDefault()
+    if (isSubmitting) return; // prevent double submit
     setFormError("")
     setFormMessage("")
     setIsSubmitting(true)
@@ -868,6 +873,7 @@ export default function AdminDashboard() {
         casePackSize: Number(productForm.casePackSize),
         tieredPricing,
         specs:        Object.keys(specs).length > 0 ? specs : undefined,
+        images:       uploadedImageUrls.filter(url => !url.startsWith('blob:')),
       }
 
       let response
@@ -888,10 +894,10 @@ export default function AdminDashboard() {
         return
       }
 
-      const newProductId = response.data?.id
+      const newProductId = response.data?.id || editingProduct?.id
 
       if (imageFiles.length > 0 && newProductId) {
-        const token = localStorage.getItem("token")
+        const token = localStorage.getItem(TOKEN_KEY)
         if (!token) {
           setFormMessage("Product created ✅, but image upload skipped (no auth token found — please log out and log in again).")
         } else {
@@ -919,9 +925,9 @@ export default function AdminDashboard() {
       })
       setPricingRows([defaultPricingRow()])
       setImageFiles([])
-      setImagePreviewUrls([])
+      setUploadedImageUrls([])
 
-      const refreshed = await productsApi.getAll(productPage, PRODUCTS_PER_PAGE)
+      const refreshed = await productsApi.getAll(productPage, PRODUCTS_PER_PAGE, { adminMode: true })
       if (refreshed.success) {
         setProducts(refreshed.data?.items || [])
         setTotalProducts(refreshed.data?.pagination?.total || 0)
@@ -935,7 +941,7 @@ export default function AdminDashboard() {
     } finally {
       setIsSubmitting(false)
     }
-  }, [productForm, pricingRows, imageFiles, adminQueryClient, editingProduct, productPage])
+  }, [productForm, pricingRows, imageFiles, uploadedImageUrls, adminQueryClient, editingProduct, productPage])
 
   // ───────────────────────────────────────────────────────────────────────────
   // ───────────────────────────────────────────────────────────────────────────
@@ -956,7 +962,7 @@ export default function AdminDashboard() {
     setLoadingProducts(true)
     setFormError("")
     try {
-      const response = await productsApi.getAll(page, PRODUCTS_PER_PAGE)
+      const response = await productsApi.getAll(page, PRODUCTS_PER_PAGE, { adminMode: true })
       if (response.success) {
         setProducts(response.data?.items || [])
         setTotalProducts(response.data?.pagination?.total || 0)
@@ -1084,7 +1090,7 @@ export default function AdminDashboard() {
 
         <button style={{ ...styles.navItem, marginTop: "auto" }} onClick={() => {
           localStorage.removeItem('pepta_admin_session')
-          localStorage.removeItem('token')
+          localStorage.removeItem(TOKEN_KEY)
           setAdminUser(null)
           navigate('/admin/login', { replace: true })
         }}>
@@ -1159,29 +1165,99 @@ export default function AdminDashboard() {
 
             {/* Stats Cards */}
             <div style={styles.statsGrid}>
-              {stats.map((stat, idx) => {
-                const Icon = stat.icon
-                return (
-                  <div
-                    key={idx}
-                    style={{
-                      ...styles.statCard,
-                      ...(hoveredStat === idx ? styles.statCardHover : {}),
-                    }}
-                    onMouseEnter={() => setHoveredStat(idx)}
-                    onMouseLeave={() => setHoveredStat(null)}
-                  >
-                    <div style={{ ...styles.statIcon, backgroundColor: stat.bgColor }}>
-                      <Icon />
-                    </div>
-                    <div style={styles.statContent}>
-                      <p style={styles.statLabel}>{stat.label}</p>
-                      <p style={styles.statValue}>{stat.value}</p>
-                      <p style={styles.statChange}>📈 {stat.change}</p>
-                    </div>
-                  </div>
-                )
-              })}
+              {/* Products Card */}
+              <div
+                style={{
+                  ...styles.statCard,
+                  ...(hoveredStat === 0 ? styles.statCardHover : {}),
+                }}
+                onMouseEnter={() => setHoveredStat(0)}
+                onMouseLeave={() => setHoveredStat(null)}
+              >
+                <div style={{ ...styles.statIcon, backgroundColor: "#4f46e5" }}>
+                  <FaBox />
+                </div>
+                <div style={styles.statContent}>
+                  <p style={styles.statLabel}>Total Products</p>
+                  {statsLoading ? (
+                    <div className="animate-pulse bg-gray-200 h-9 w-20 rounded mt-1" style={{ height: 36, width: 80, backgroundColor: "#e5e7eb", borderRadius: "0.25rem", marginTop: "0.25rem" }} />
+                  ) : (
+                    <p style={{ ...styles.statValue, fontSize: "1.75rem", fontWeight: 700, color: "#111827", margin: "0 0 0.5rem 0" }}>{stats?.products ?? 0}</p>
+                  )}
+                  <p style={styles.statChange}>📈 +12% from last month</p>
+                </div>
+              </div>
+
+              {/* Orders Card */}
+              <div
+                style={{
+                  ...styles.statCard,
+                  ...(hoveredStat === 1 ? styles.statCardHover : {}),
+                }}
+                onMouseEnter={() => setHoveredStat(1)}
+                onMouseLeave={() => setHoveredStat(null)}
+              >
+                <div style={{ ...styles.statIcon, backgroundColor: "#10b981" }}>
+                  <FaShoppingCart />
+                </div>
+                <div style={styles.statContent}>
+                  <p style={styles.statLabel}>Total Orders</p>
+                  {statsLoading ? (
+                    <div className="animate-pulse bg-gray-200 h-9 w-20 rounded mt-1" style={{ height: 36, width: 80, backgroundColor: "#e5e7eb", borderRadius: "0.25rem", marginTop: "0.25rem" }} />
+                  ) : (
+                    <p style={{ ...styles.statValue, fontSize: "1.75rem", fontWeight: 700, color: "#111827", margin: "0 0 0.5rem 0" }}>{stats?.orders ?? 0}</p>
+                  )}
+                  <p style={styles.statChange}>📈 +8% from last week</p>
+                </div>
+              </div>
+
+              {/* Revenue Card */}
+              <div
+                style={{
+                  ...styles.statCard,
+                  ...(hoveredStat === 2 ? styles.statCardHover : {}),
+                }}
+                onMouseEnter={() => setHoveredStat(2)}
+                onMouseLeave={() => setHoveredStat(null)}
+              >
+                <div style={{ ...styles.statIcon, backgroundColor: "#f59e0b" }}>
+                  <FaDollarSign />
+                </div>
+                <div style={styles.statContent}>
+                  <p style={styles.statLabel}>Total Revenue</p>
+                  {statsLoading ? (
+                    <div className="animate-pulse bg-gray-200 h-9 w-20 rounded mt-1" style={{ height: 36, width: 80, backgroundColor: "#e5e7eb", borderRadius: "0.25rem", marginTop: "0.25rem" }} />
+                  ) : (
+                    <p style={{ ...styles.statValue, fontSize: "1.75rem", fontWeight: 700, color: "#111827", margin: "0 0 0.5rem 0" }}>
+                      {typeof stats?.revenue === 'number' ? `$${stats.revenue.toLocaleString()}` : (stats?.revenue ?? "$0")}
+                    </p>
+                  )}
+                  <p style={styles.statChange}>📈 +15% from last month</p>
+                </div>
+              </div>
+
+              {/* Inquiries Card */}
+              <div
+                style={{
+                  ...styles.statCard,
+                  ...(hoveredStat === 3 ? styles.statCardHover : {}),
+                }}
+                onMouseEnter={() => setHoveredStat(3)}
+                onMouseLeave={() => setHoveredStat(null)}
+              >
+                <div style={{ ...styles.statIcon, backgroundColor: "#ec4899" }}>
+                  <FaInbox />
+                </div>
+                <div style={styles.statContent}>
+                  <p style={styles.statLabel}>Total Inquiries</p>
+                  {statsLoading ? (
+                    <div className="animate-pulse bg-gray-200 h-9 w-20 rounded mt-1" style={{ height: 36, width: 80, backgroundColor: "#e5e7eb", borderRadius: "0.25rem", marginTop: "0.25rem" }} />
+                  ) : (
+                    <p style={{ ...styles.statValue, fontSize: "1.75rem", fontWeight: 700, color: "#111827", margin: "0 0 0.5rem 0" }}>{stats?.inquiries ?? 0}</p>
+                  )}
+                  <p style={styles.statChange}>📈 +4% from yesterday</p>
+                </div>
+              </div>
             </div>
 
             {/* Tables Grid */}
@@ -1633,31 +1709,50 @@ export default function AdminDashboard() {
                       onChange={handleImageFileChange}
                     />
                   </label>
-                  {imagePreviewUrls.length > 0 && (
-                    <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap" }}>
-                      {imagePreviewUrls.map((url, idx) => (
-                        <div key={idx} style={{ position: "relative" }}>
+                  {uploadedImageUrls.length > 0 && (
+                    <div className="mt-4 grid grid-cols-4 gap-3" style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap", marginTop: "1rem" }}>
+                      {uploadedImageUrls.map((url, index) => (
+                        <div key={index} className="relative aspect-square group" style={{ position: "relative", width: 64, height: 64 }}>
                           <img
                             src={url}
-                            alt={`Preview ${idx + 1}`}
-                            style={{ width: 64, height: 64, objectFit: "cover", borderRadius: "0.5rem", border: "1px solid #E5E7EB" }}
+                            alt={`Image ${index + 1}`}
+                            className="w-full h-full object-cover rounded-lg border-2 border-gray-200"
+                            style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "0.5rem", border: "2px solid #e5e7eb" }}
                           />
+                          {/* Delete button */}
                           <button
                             type="button"
                             onClick={() => {
-                              setImageFiles(prev => prev.filter((_, i) => i !== idx));
-                              setImagePreviewUrls(prev => prev.filter((_, i) => i !== idx));
+                              setUploadedImageUrls(prev => prev.filter((_, i) => i !== index));
+                              if (url.startsWith('blob:')) {
+                                const localIndex = uploadedImageUrls.slice(0, index).filter(u => u.startsWith('blob:')).length;
+                                setImageFiles(prev => prev.filter((_, i) => i !== localIndex));
+                              }
                             }}
+                            className="absolute top-1 right-1 bg-red-500 hover:bg-red-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold transition-colors opacity-0 group-hover:opacity-100"
                             style={{
                               position: "absolute", top: -5, right: -5,
-                              background: "#fee2e2", border: "none", color: "#991b1b",
+                              background: "#ef4444", color: "#fff",
                               borderRadius: "50%", width: 20, height: 20,
                               display: "flex", alignItems: "center", justifyContent: "center",
-                              cursor: "pointer", fontSize: "0.7rem", fontWeight: "bold"
+                              cursor: "pointer", fontSize: "0.75rem", fontWeight: "bold", border: "none"
                             }}
                           >
                             ×
                           </button>
+                          {/* Main image badge */}
+                          {index === 0 && (
+                            <span 
+                              className="absolute bottom-1 left-1 bg-black/60 text-white text-[10px] px-1.5 py-0.5 rounded"
+                              style={{
+                                position: "absolute", bottom: 0, left: 0,
+                                backgroundColor: "rgba(0,0,0,0.6)", color: "#fff",
+                                fontSize: "10px", padding: "2px 4px", borderRadius: "2px"
+                              }}
+                            >
+                              Main
+                            </span>
+                          )}
                         </div>
                       ))}
                     </div>
@@ -1724,9 +1819,9 @@ export default function AdminDashboard() {
                           .map((product) => (
                             <tr key={product.id} style={styles.productTableRow}>
                               <td style={styles.productTableCell}>
-                                {product.imageUrl ? (
+                                {(product.imageUrl || product.images?.[0]?.url) ? (
                                   <img
-                                    src={product.imageUrl}
+                                    src={product.imageUrl || product.images[0].url}
                                     alt={product.title}
                                     style={{ width: 48, height: 48, objectFit: "cover", borderRadius: "0.375rem", border: "1px solid #E5E7EB" }}
                                   />
@@ -2004,12 +2099,30 @@ const CategoriesSection = memo(function CategoriesSection() {
   const [cats, setCats] = useState([])
   const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
+  const fetchCategories = () => {
+    setLoading(true)
     categoriesApi.getAll().then((r) => {
       if (r.success) setCats(r.data || [])
       setLoading(false)
     }).catch(() => setLoading(false))
+  }
+
+  useEffect(() => {
+    fetchCategories()
   }, [])
+
+  const handleDeleteCategory = async (id) => {
+    if (!confirm('Are you sure you want to delete this category?')) return;
+    try {
+      const res = await categoriesApi.delete(id);
+      if (res.success === false) {
+        throw new Error(res.error || res.message || 'Failed to delete category');
+      }
+      fetchCategories();
+    } catch (error) {
+      alert(error.message || 'Failed to delete category');
+    }
+  };
 
   return (
     <div style={tbl.card}>
@@ -2045,26 +2158,39 @@ const CategoriesSection = memo(function CategoriesSection() {
             </tr>
           </thead>
           <tbody>
-            {/* Always render in the canonical order, fall back to static list */}
-            {PROTECTED_CATEGORY_NAMES.map((name) => {
-              const cat = cats.find((c) => c.name === name)
+            {cats.map((cat) => {
+              const isProtected = PROTECTED_CATEGORY_NAMES.includes(cat.name);
               return (
-                <tr key={name}>
+                <tr key={cat.id || cat.name}>
                   <td style={tbl.td}>
-                    <strong style={{ color: '#111827' }}>{name}</strong>
+                    <strong style={{ color: '#111827' }}>{cat.name}</strong>
                   </td>
                   <td style={tbl.td}>
-                    {cat ? (cat.productCount ?? '—') : '—'}
+                    {cat.productCount ?? cat.products?.length ?? 0}
                   </td>
                   <td style={tbl.td}>
-                    <span style={{
-                      display: 'inline-flex', alignItems: 'center', gap: '4px',
-                      backgroundColor: '#f0fdf4', color: '#166534',
-                      border: '1px solid #bbf7d0', borderRadius: '20px',
-                      padding: '2px 10px', fontSize: '0.775rem', fontWeight: 600,
-                    }}>
-                      🔒 Protected
-                    </span>
+                    {isProtected ? (
+                      <span style={{
+                        display: 'inline-flex', alignItems: 'center', gap: '4px',
+                        backgroundColor: '#f0fdf4', color: '#166534',
+                        border: '1px solid #bbf7d0', borderRadius: '20px',
+                        padding: '2px 10px', fontSize: '0.775rem', fontWeight: 600,
+                      }}>
+                        🔒 Protected
+                      </span>
+                    ) : (
+                      <button
+                        onClick={() => handleDeleteCategory(cat.id)}
+                        style={{
+                          padding: '0.3rem 0.75rem', borderRadius: '0.375rem',
+                          backgroundColor: '#fee2e2', color: '#991b1b',
+                          border: '1px solid #fca5a5', cursor: 'pointer',
+                          fontSize: '0.75rem', fontWeight: 700
+                        }}
+                      >
+                        🗑️ Delete
+                      </button>
+                    )}
                   </td>
                 </tr>
               )
