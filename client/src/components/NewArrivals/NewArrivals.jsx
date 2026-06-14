@@ -16,6 +16,18 @@ const colors = {
   lightGray: "#E8E3E0",
 }
 
+const CSS = `
+  .na-products-grid {
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  }
+  @media (max-width: 600px) {
+    .na-products-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+  }
+`
+
 const styles = {
   container: {
     backgroundColor: colors.white,
@@ -41,7 +53,6 @@ const styles = {
   },
   productsGrid: {
     display: "grid",
-    gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
     gap: "2rem",
   },
   productCard: {
@@ -269,6 +280,7 @@ export default function NewArrivals() {
 
   return (
     <div style={styles.container}>
+      <style>{CSS}</style>
       {/* Header Section */}
       <div style={{ ...styles.headerSection, display: 'flex', alignItems: 'center', justifyContent: 'space-between', textAlign: 'left', marginBottom: '2rem' }}>
         <div>
@@ -298,7 +310,7 @@ export default function NewArrivals() {
       </div>
 
       {/* Products Grid */}
-      <div style={styles.productsGrid}>
+      <div className="na-products-grid" style={styles.productsGrid}>
         {newProducts.map((product) => (
           <div
             key={product.id}

@@ -13,8 +13,8 @@ import ProductCardSkeleton from '@/components/skeletons/ProductCardSkeleton'
 /* ─── Inline styles — no new classes ───────────────────────────────────────── */
 const CSS = `
   .fp-section {
-    background: #F5EDEC;
-    padding: 3rem 1.5rem;
+    background: #fff;
+    padding: 4rem 2rem;
   }
   .fp-inner {
     max-width: 1400px;
@@ -29,21 +29,6 @@ const CSS = `
     flex-wrap: wrap;
   }
   .fp-header-left { display: flex; flex-direction: column; gap: 6px; }
-  .fp-eyebrow {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    background: rgba(83,54,56,0.08);
-    color: #533638;
-    border: 1px solid rgba(83,54,56,0.2);
-    border-radius: 20px;
-    padding: 3px 12px;
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 0.8px;
-    text-transform: uppercase;
-    width: fit-content;
-  }
   .fp-title {
     font-size: 1.75rem;
     font-weight: 800;
@@ -77,20 +62,25 @@ const CSS = `
     color: white;
   }
   .fp-grid {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 2rem;
   }
   .fp-skeleton-grid {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 2rem;
   }
 
   @media (max-width: 600px) {
     .fp-section { padding: 2rem 1rem; }
     .fp-title   { font-size: 1.4rem; }
     .fp-header  { align-items: flex-start; }
+    .fp-grid,
+    .fp-skeleton-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
   }
 `
 
@@ -120,7 +110,6 @@ export default function FeaturedProducts() {
           {/* ── Header ── */}
           <div className="fp-header">
             <div className="fp-header-left">
-              <span className="fp-eyebrow">⚡ Most Demanding</span>
               <h2 className="fp-title">Featured Products</h2>
               <p className="fp-subtitle">Our most popular picks loved by wholesale buyers</p>
             </div>
