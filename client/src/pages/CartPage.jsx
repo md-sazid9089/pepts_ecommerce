@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom"
 import { useCart } from "@/context/CartContext"
 import {
   FaTrash,
-  FaChevronRight,
   FaMinus,
   FaPlus,
   FaBox,
@@ -30,27 +29,6 @@ const styles = {
   headerContent: {
     maxWidth: "1400px",
     margin: "0 auto",
-  },
-  breadcrumb: {
-    display: "flex",
-    alignItems: "center",
-    gap: "0.5rem",
-    fontSize: "0.875rem",
-    color: "#6b7280",
-    marginBottom: "1rem",
-  },
-  breadcrumbLink: {
-    color: "#1e293b",
-    textDecoration: "none",
-    cursor: "pointer",
-    transition: "color 0.2s ease",
-  },
-  breadcrumbLinkHover: {
-    color: "#0f172a",
-  },
-  breadcrumbActive: {
-    color: "#111827",
-    fontWeight: 500,
   },
   pageTitle: {
     fontSize: "2rem",
@@ -805,18 +783,6 @@ export default function CartPage() {
       {/* Header */}
       <div style={styles.header}>
         <div style={styles.headerContent}>
-          <div style={styles.breadcrumb}>
-            <span
-              style={styles.breadcrumbLink}
-              onClick={() => navigate("/")}
-              onMouseEnter={(e) => Object.assign(e.target.style, styles.breadcrumbLinkHover)}
-              onMouseLeave={(e) => (e.target.style.color = "#1e293b")}
-            >
-              Home
-            </span>
-            <FaChevronRight style={{ fontSize: "0.625rem", color: "#d1d5db" }} />
-            <span style={styles.breadcrumbActive}>Wholesale Cart</span>
-          </div>
           <h1 style={styles.pageTitle}>Wholesale Order Summary</h1>
           <p style={{ marginTop: "0.75rem", color: "#475569", maxWidth: "760px", fontSize: "0.95rem" }}>
             Manage your MOQ-driven cart, verify bulk discounts, and request a custom quote before finalizing your order.

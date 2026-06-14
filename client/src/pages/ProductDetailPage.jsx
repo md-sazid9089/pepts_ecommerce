@@ -1,7 +1,6 @@
 import { useState, useEffect, useMemo, useCallback } from "react"
 
 const RESPONSIVE_CSS = `
-  .pdp-breadcrumb { padding: 0.85rem 1.25rem; display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap; font-size: 0.85rem; color: #475569; background: #fff; border-bottom: 1px solid #e2e8f0; }
   .pdp-header { max-width: 1400px; margin: 0 auto; padding: 1.5rem 1.25rem 0; }
   .pdp-header h1 { margin: 0; font-size: clamp(1.35rem, 4vw, 2rem); font-weight: 700; line-height: 1.1; }
   .pdp-header p { margin: 0.75rem 0 0; max-width: 760px; color: #64748b; font-size: 0.95rem; line-height: 1.75; }
@@ -20,7 +19,6 @@ const RESPONSIVE_CSS = `
     .pdp-image-card { min-height: 380px; }
   }
   @media (max-width: 640px) {
-    .pdp-breadcrumb { padding: 0.65rem 1rem; font-size: 0.8rem; }
     .pdp-header { padding: 1rem 1rem 0; }
     .pdp-layout { padding: 0 0.75rem; margin-top: 1rem; margin-bottom: 5rem; gap: 1rem; }
     .pdp-image-card { min-height: 280px; border-radius: 0.75rem; }
@@ -55,23 +53,6 @@ const styles = {
     backgroundColor: "#f8fafc",
     color: "#0f172a",
     fontFamily: "Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
-  },
-  breadcrumb: {
-    padding: "1rem 2rem",
-    display: "flex",
-    alignItems: "center",
-    gap: "0.5rem",
-    fontSize: "0.9rem",
-    color: "#475569",
-    backgroundColor: "#ffffff",
-    borderBottom: "1px solid #e2e8f0",
-  },
-  breadcrumbLink: {
-    color: "#0f172a",
-    cursor: "pointer",
-  },
-  breadcrumbActive: {
-    color: "#475569",
   },
   header: {
     maxWidth: "1400px",
@@ -706,13 +687,6 @@ export default function ProductDetailPage() {
   return (
     <div style={styles.pageContainer}>
       <style>{RESPONSIVE_CSS}</style>
-      <div className="pdp-breadcrumb">
-        <span style={styles.breadcrumbLink} onClick={() => navigate("/")}>Home</span>
-        <span>›</span>
-        <span style={styles.breadcrumbLink} onClick={() => navigate("/categories")}>Categories</span>
-        <span>›</span>
-        <span style={styles.breadcrumbActive}>{product.category || "Product"}</span>
-      </div>
 
       <div className="pdp-header">
         <h1>{product.title}</h1>

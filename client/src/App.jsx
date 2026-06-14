@@ -10,6 +10,7 @@ import ErrorBoundary from './components/ErrorBoundary'
 import Header from './components/Header/Header'
 import Footer from './components/Footer/Footer'
 import ScrollToTop from './components/ScrollToTop'
+import Breadcrumb from './components/Breadcrumb'
 
 // ── Lazy-loaded page chunks ─────────────────────────────────────────────────
 // Each page becomes its own split chunk → smaller initial bundle
@@ -118,6 +119,7 @@ function AppInner() {
               {/* Fixed banner — shows only when truly offline */}
               <NetworkStatus />
               {!isAdminRoute && <Header />}
+              {!isAdminRoute && <Breadcrumb />}
               <ScrollToTop />
 
               <main className="grow flex flex-col">
