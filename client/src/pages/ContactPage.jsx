@@ -13,7 +13,7 @@ import LoadingSpinner from "../components/UI/LoadingSpinner"
 // ====================================
 const colors = {
   darkBrown: "#533638",
-  lightBg: "#F5EDEC",
+  lightBg: "#ffffff",
   white: "#FFFFFF",
   mutedBrown: "#8B6F6F",
   success: "#10B981",
@@ -464,7 +464,7 @@ const ContactPage = () => {
       marginBottom: "50px",
     },
     card: {
-      backgroundColor: colors.white,
+      backgroundColor: "#F9F5F3",
       padding: "30px",
       borderRadius: "12px",
       boxShadow: `0 4px 12px ${colors.shadowColor}`,

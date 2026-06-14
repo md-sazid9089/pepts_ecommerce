@@ -16,7 +16,7 @@ import {
 const styles = {
   pageContainer: {
     minHeight: "100vh",
-    background: "#f9fafb",
+    background: "#ffffff",
     fontFamily: "var(--font-sans)",
   },
 
@@ -65,7 +65,7 @@ const styles = {
     gridTemplateColumns: "100px 1fr",
     gap: "1rem",
     padding: "1.5rem",
-    backgroundColor: "#ffffff",
+    backgroundColor: "#F9F5F3",
     borderRadius: "0.75rem",
     border: "1px solid #e5e7eb",
     transition: "all 0.2s ease",
@@ -573,7 +573,7 @@ const styles = {
   },
 
   recommendationCard: {
-    backgroundColor: "#ffffff",
+    backgroundColor: "#F9F5F3",
     borderRadius: "0.75rem",
     overflow: "hidden",
     border: "1px solid #e5e7eb",

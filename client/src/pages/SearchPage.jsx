@@ -8,7 +8,7 @@ import { FiSearch, FiArrowLeft, FiFilter } from 'react-icons/fi'
 
 const styles = {
   container: {
-    backgroundColor: '#F5EDEC',
+    backgroundColor: '#ffffff',
     minHeight: '100vh',
     paddingBottom: '60px',
   },

@@ -13,7 +13,7 @@ const CSS = `
   .pc-card {
     width: 100%;
     height: 100%;
-    background: #fff;
+    background: #F9F5F3;
     font-family: var(--font-sans);
     border-radius: 12px;
     border: 1px solid #EAEAEA;

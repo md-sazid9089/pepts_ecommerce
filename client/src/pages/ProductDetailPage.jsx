@@ -50,7 +50,7 @@ import { useAuth } from "@/context/AuthContext"
 const styles = {
   pageContainer: {
     minHeight: "100vh",
-    backgroundColor: "#f8fafc",
+    backgroundColor: "#ffffff",
     color: "#0f172a",
     fontFamily: "var(--font-sans)",
   },

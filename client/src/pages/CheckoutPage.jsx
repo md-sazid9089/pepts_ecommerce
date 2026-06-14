@@ -113,7 +113,7 @@ export default function CheckoutPage() {
     page: { minHeight: '70vh', padding: '2rem 1.5rem', maxWidth: 1200, margin: '0 auto' },
     title: { fontSize: '1.75rem', fontWeight: 700, color: '#0f172a', marginBottom: '1.5rem' },
     grid: { display: 'grid', gridTemplateColumns: '1fr 400px', gap: '2rem', alignItems: 'start' },
-    card: { background: '#fff', borderRadius: '1rem', border: '1px solid #e2e8f0', padding: '1.75rem', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' },
+    card: { background: '#F9F5F3', borderRadius: '1rem', border: '1px solid #e2e8f0', padding: '1.75rem', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' },
     label: { display: 'block', fontSize: '0.875rem', fontWeight: 600, color: '#475569', marginBottom: '0.375rem', marginTop: '1rem' },
     input: { width: '100%', padding: '0.75rem 1rem', borderRadius: '0.5rem', border: '1px solid #e2e8f0', fontSize: '0.95rem', outline: 'none', fontFamily: 'inherit', boxSizing: 'border-box' },
     row: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' },

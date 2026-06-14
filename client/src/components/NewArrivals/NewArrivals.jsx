@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom"
 import { useQuery } from "@tanstack/react-query"
 import productsApi from "@/services/api/products.api"
 import ProductGridSkeleton from "@/components/skeletons/ProductGridSkeleton"
+import ProductCard from "@/components/ProductCard/ProductCard"
 import { formatPrice } from "@/data/utils/pricing"
 import { FiStar, FiShoppingCart, FiHeart } from "react-icons/fi"
 
@@ -21,6 +22,9 @@ const CSS = `
     grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
   }
   @media (max-width: 600px) {
+    .na-container {
+      padding: 2rem 1rem !important;
+    }
     .na-products-grid {
       grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: 12px;
@@ -312,116 +316,7 @@ export default function NewArrivals() {
       {/* Products Grid */}
       <div className="na-products-grid" style={styles.productsGrid}>
         {newProducts.map((product) => (
-          <div
-            key={product.id}
-            className="na-product-card"
-            style={{
-              ...styles.productCard,
-              ...(hoveredCard === product.id ? styles.productCardHover : {}),
-            }}
-            onMouseEnter={() => setHoveredCard(product.id)}
-            onMouseLeave={() => setHoveredCard(null)}
-          >
-            {/* Image Container */}
-            <div 
-              className="na-image-container"
-              style={styles.imageContainer}
-              onClick={() => navigate(`/product/${product.id}`)}
-            >
-              <img
-                src={product.imageUrl || "/images/placeholder.png"}
-                alt={product.title}
-                style={styles.productImage}
-                onError={(e) => { e.target.src = "/images/placeholder.png" }}
-              />
-              {product.isNew && <div style={styles.newBadge}>New</div>}
-              {product.discount > 0 && (
-                <div style={styles.discountBadge}>-{product.discount}%</div>
-              )}
-            </div>
-
-            {/* Product Info */}
-            <div className="na-product-info" style={styles.productInfo}>
-              <p style={styles.brand}>{product.brand || "Pepta"}</p>
-              <h3 
-                style={{ ...styles.productName, cursor: 'pointer' }}
-                onClick={() => navigate(`/product/${product.id}`)}
-              >
-                {product.title}
-              </h3>
-
-              {/* Rating */}
-              <div style={styles.ratingSection}>
-                {renderStars(product.rating)}
-                <span style={styles.ratingText}>
-                  ({product.reviewsCount || 0} reviews)
-                </span>
-              </div>
-
-              {/* Price */}
-              <div style={styles.priceSection}>
-                <span style={styles.price}>{formatPrice(product.price)}</span>
-                {product.oldPrice && (
-                  <span style={styles.originalPrice}>
-                    {formatPrice(product.oldPrice)}
-                  </span>
-                )}
-              </div>
-
-              {/* Action Buttons */}
-              <div style={styles.actionButtons}>
-                <button
-                  style={{
-                    ...styles.addToCartBtn,
-                    ...(hoveredButtons[`cart-${product.id}`]
-                      ? styles.addToCartBtnHover
-                      : {}),
-                  }}
-                  onMouseEnter={() =>
-                    setHoveredButtons({
-                      ...hoveredButtons,
-                      [`cart-${product.id}`]: true,
-                    })
-                  }
-                  onMouseLeave={() =>
-                    setHoveredButtons({
-                      ...hoveredButtons,
-                      [`cart-${product.id}`]: false,
-                    })
-                  }
-                  onClick={() => handleAddToCart(product.id)}
-                  aria-label={`Add ${product.name} to cart`}
-                >
-                  <FiShoppingCart size={18} />
-                  <span>Add</span>
-                </button>
-                <button
-                  style={{
-                    ...styles.wishlistBtn,
-                    ...(hoveredButtons[`wish-${product.id}`]
-                      ? styles.wishlistBtnHover
-                      : {}),
-                  }}
-                  onMouseEnter={() =>
-                    setHoveredButtons({
-                      ...hoveredButtons,
-                      [`wish-${product.id}`]: true,
-                    })
-                  }
-                  onMouseLeave={() =>
-                    setHoveredButtons({
-                      ...hoveredButtons,
-                      [`wish-${product.id}`]: false,
-                    })
-                  }
-                  onClick={() => handleWishlist(product.id)}
-                  aria-label={`Add ${product.name} to wishlist`}
-                >
-                  <FiHeart size={20} />
-                </button>
-              </div>
-            </div>
-          </div>
+          <ProductCard key={product.id} product={product} />
         ))}
       </div>
     </div>

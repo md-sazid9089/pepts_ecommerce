@@ -11,7 +11,7 @@ const colors = {
   logoBrown: "#5A3D3D",
   logoOrange: "#5A3D3D",
   white: "#FFFFFF",
-  lightBg: "#F9F6F5",
+  lightBg: "#FFFFFF",
   iconBg: "#F4F4F4",
   mutedBrown: "#867671",
   accentText: "#333333",
@@ -103,7 +103,7 @@ const styles = {
     width: "100%",
     height: "100%",
     objectFit: "cover",
-    backgroundColor: '#F9F6F5',
+    backgroundColor: '#FFFFFF',
     display: "block",
   },
 
@@ -152,7 +152,7 @@ const styles = {
     height: "100%",
     objectFit: "cover",
     objectPosition: "center",
-    backgroundColor: '#F9F6F5',
+    backgroundColor: '#FFFFFF',
   },
 
   // Carousel Navigation Arrows

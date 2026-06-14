@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from "react"
+import { useState, useEffect } from "react"
 import { Link } from "react-router-dom"
 import {
   FaEnvelope,
@@ -456,9 +456,10 @@ export default function Footer() {
   ]
 
   const categoriesLinks = [
-    { label: "Dolls", href: "#" },
-    { label: "Stuffed Toys", href: "#" },
-    { label: "Anime Action Figures", href: "#" },
+    { label: "Our Design", href: "/products?category=Our Design" },
+    { label: "Custom Build", href: "/products?category=Custom Build" },
+    { label: "Popular", href: "/products?category=Popular" },
+    { label: "Most Demanding", href: "/products?category=Most Demanding" },
   ]
 
   const supportLinks = [
@@ -644,8 +645,8 @@ export default function Footer() {
           <ul style={styles.links}>
             {categoriesLinks.map((link, index) => (
               <li key={index}>
-                <a
-                  href={link.href}
+                <Link
+                  to={link.href}
                   style={{
                     ...styles.link,
                     ...(hoveredLinks[`categories-${index}`] ? styles.linkHover : {}),
@@ -658,7 +659,7 @@ export default function Footer() {
                   }
                 >
                   {link.label}
-                </a>
+                </Link>
               </li>
             ))}
           </ul>

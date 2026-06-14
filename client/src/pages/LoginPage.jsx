@@ -9,7 +9,7 @@ const styles = {
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    background: "linear-gradient(135deg, #f9fafb 0%, #ffffff 100%)",
+    background: "linear-gradient(135deg, #ffffff 0%, #ffffff 100%)",
     padding: "1rem",
     fontFamily: "var(--font-sans)",
   },
@@ -93,7 +93,7 @@ const styles = {
 
   // Form Card
   formCard: {
-    background: "#ffffff",
+    background: "#F9F5F3",
     borderRadius: "0.75rem",
     padding: "2.5rem",
     boxShadow: "0 10px 40px rgba(0, 0, 0, 0.08)",

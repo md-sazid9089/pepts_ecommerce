@@ -8,7 +8,7 @@ const styles = {
   nav: (backgroundColor) => ({
     width: '100%',
     backgroundColor,
-    borderBottom: '1px solid rgba(148, 163, 184, 0.18)',
+    borderBottom: 'none',
   }),
   inner: {
     maxWidth: '1400px',

@@ -5,8 +5,8 @@ import LoadingSpinner from "../components/UI/LoadingSpinner"
 
 const colors = {
   darkBrown: "#4A3535",
-  lightBg: "#F5EDEC",
-  softBg: "#F9F6F5",
+  lightBg: "#ffffff",
+  softBg: "#ffffff",
   logoOrange: "#5A3D3D",
   mutedBrown: "#8B6F6F",
   ctaBg: "#533638",
@@ -104,7 +104,7 @@ const whyChooseStyles = {
     gap: "30px",
   },
   card: {
-    backgroundColor: colors.white,
+    backgroundColor: "#F9F5F3",
     padding: "35px 30px",
     borderRadius: "12px",
     boxShadow: `0 4px 15px ${colors.shadowColor}`,
@@ -168,7 +168,7 @@ const howWeWorkStyles = {
     gap: "25px",
   },
   stepCard: {
-    backgroundColor: colors.white,
+    backgroundColor: "#F9F5F3",
     padding: "30px",
     borderRadius: "12px",
     textAlign: "center",

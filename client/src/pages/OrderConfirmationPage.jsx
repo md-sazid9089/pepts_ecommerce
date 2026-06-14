@@ -24,7 +24,7 @@ export default function OrderConfirmationPage() {
     title: { fontSize: '2rem', fontWeight: 700, color: '#0f172a', marginBottom: '0.5rem' },
     subtitle: { fontSize: '1rem', color: '#64748b', marginBottom: '2rem', lineHeight: 1.6 },
     orderDetails: { 
-      background: '#f8fafc', 
+      background: '#F9F5F3', 
       borderRadius: '1rem', 
       padding: '1.5rem',
       marginBottom: '2rem',

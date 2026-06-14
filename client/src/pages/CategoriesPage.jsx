@@ -15,12 +15,12 @@ const CATEGORY_ACCENTS = {
   "Most Demanding": { bg: "#F0FDF4", accent: "#6EE7B7", text: "#065F46", emoji: "⚡" },
 }
 
-const DEFAULT_ACCENT = { bg: "#F5EDEC", accent: "#F7B9C4", text: "#533638", emoji: "📦" }
+const DEFAULT_ACCENT = { bg: "#F9F5F3", accent: "#F7B9C4", text: "#533638", emoji: "📦" }
 
 const styles = {
   page: {
     minHeight: "100vh",
-    backgroundColor: "#F5EDEC",
+    backgroundColor: "#ffffff",
     fontFamily: "var(--font-sans)",
   },
 
@@ -206,7 +206,7 @@ const styles = {
     display: "flex",
     alignItems: "center",
     justifyContent: "space-between",
-    borderTop: "1px solid #F5EDEC",
+    borderTop: "1px solid #EAEAEA",
     marginTop: "auto",
   },
   browseText: {
@@ -218,7 +218,7 @@ const styles = {
     width: "32px",
     height: "32px",
     borderRadius: "50%",
-    backgroundColor: hovered ? accent.accent : "#F5EDEC",
+    backgroundColor: hovered ? accent.accent : "#F9F5F3",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",

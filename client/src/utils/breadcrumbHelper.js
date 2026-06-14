@@ -22,7 +22,7 @@ export function shouldShowBreadcrumb(pathname) {
 }
 
 export function getBreadcrumbBackground(pathname) {
-  if (pathname === '/products') return '#F5EDEC'
+  if (pathname === '/products') return '#ffffff'
   if (pathname === '/cart') return '#f9fafb'
   if (pathname.startsWith('/product/')) return '#f8fafc'
   return '#ffffff'

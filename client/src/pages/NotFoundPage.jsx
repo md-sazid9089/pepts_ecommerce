@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom'
  * Colors (existing theme):
  *   Primary:    #533638 (maroon)
  *   Accent:     #F7B9C4 (rose pink)
- *   Background: #F5EDEC (warm cream)
+ *   Background: #ffffff (white)
  *   Muted text: #867671
  */
 
@@ -16,7 +16,7 @@ export default function NotFoundPage() {
     <main
       style={{
         minHeight: '100vh',
-        backgroundColor: '#F5EDEC',
+        backgroundColor: '#ffffff',
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',

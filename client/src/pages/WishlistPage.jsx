@@ -22,7 +22,7 @@ export default function WishlistPage() {
     emptyText: { color: '#6b7280', marginBottom: '1.5rem' },
     browseBtn: { display: 'inline-block', padding: '0.75rem 2rem', borderRadius: '0.75rem', background: '#533638', color: '#fff', fontWeight: 600, textDecoration: 'none' },
     grid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '1.5rem' },
-    card: { background: '#fff', borderRadius: '1rem', border: '1px solid #e5e7eb', overflow: 'hidden', boxShadow: '0 2px 8px rgba(0,0,0,0.06)', transition: 'box-shadow 0.2s' },
+    card: { background: '#F9F5F3', borderRadius: '1rem', border: '1px solid #e5e7eb', overflow: 'hidden', boxShadow: '0 2px 8px rgba(0,0,0,0.06)', transition: 'box-shadow 0.2s' },
     cardImg: { width: '100%', height: 200, objectFit: 'cover', background: '#f3f4f6', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '3rem', color: '#9ca3af' },
     cardBody: { padding: '1rem' },
     cardTitle: { fontWeight: 700, color: '#111827', marginBottom: '0.25rem', fontSize: '0.95rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' },

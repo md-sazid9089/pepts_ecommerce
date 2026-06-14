@@ -24,16 +24,16 @@ const PRODUCTS_GRID_CSS = `
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 12px;
     width: 100%;
-    padding-left: 16px;
-    padding-right: 16px;
+    padding-left: 4px;
+    padding-right: 4px;
     box-sizing: border-box;
   }
   @media (min-width: 768px) {
     .products-grid {
       grid-template-columns: repeat(3, minmax(0, 1fr));
       gap: 16px;
-      padding-left: 24px;
-      padding-right: 24px;
+      padding-left: 8px;
+      padding-right: 8px;
     }
   }
   @media (min-width: 1024px) {
@@ -47,14 +47,14 @@ const PRODUCTS_GRID_CSS = `
 // ─── Styles ─────────────────────────────────────────────────────────────────
 const styles = {
   container: {
-    backgroundColor: '#F5EDEC',
+    backgroundColor: '#ffffff',
     minHeight: '100vh',
     paddingBottom: '40px',
   },
   contentWrapper: {
     maxWidth: '1400px',
     margin: '0 auto',
-    padding: '20px',
+    padding: '8px 12px',
     display: 'grid',
     gridTemplateColumns: '1fr',
     gap: '20px',
@@ -66,33 +66,32 @@ const styles = {
   },
   // ── Category filter bar ──
   categoryBar: {
-    backgroundColor: 'white',
-    borderRadius: '8px',
-    border: '1px solid #F5EDEC',
-    padding: '12px 16px',
+    backgroundColor: 'transparent',
+    borderBottom: 'none',
+    padding: '16px 16px',
     display: 'flex',
     alignItems: 'center',
-    gap: '8px',
+    gap: '12px',
     flexWrap: 'wrap',
   },
   categoryLabel: {
-    fontSize: '12px',
-    fontWeight: '700',
-    color: '#533638',
+    fontSize: '14px',
+    fontWeight: '500',
+    color: '#6B7280', // text-gray-500
     textTransform: 'uppercase',
     letterSpacing: '0.5px',
     marginRight: '4px',
     flexShrink: 0,
   },
   categoryBtn: (active) => ({
-    padding: '7px 16px',
-    borderRadius: '20px',
+    padding: '6px 16px',
+    borderRadius: '9999px',
     border: active ? 'none' : '1px solid #E2E8F0',
-    fontSize: '13px',
-    fontWeight: active ? '700' : '500',
+    fontSize: '14px',
+    fontWeight: '500',
     cursor: 'pointer',
-    backgroundColor: active ? '#533638' : 'white',
-    color: active ? 'white' : '#533638',
+    backgroundColor: active ? '#1F2937' : 'white',
+    color: active ? 'white' : '#374151',
     transition: 'all 0.2s ease',
     whiteSpace: 'nowrap',
   }),
@@ -102,15 +101,13 @@ const styles = {
     justifyContent: 'space-between',
     alignItems: 'center',
     gap: '15px',
-    backgroundColor: 'white',
-    padding: '15px',
-    borderRadius: '8px',
-    border: '1px solid #F5EDEC',
+    backgroundColor: 'transparent',
+    padding: '12px 16px',
   },
   filterSummary: {
-    fontSize: '13px',
-    color: '#667C7F',
-    fontWeight: '500',
+    fontSize: '14px',
+    color: '#6B7280',
+    fontWeight: '400',
   },
   sortControl: {
     display: 'flex',
@@ -146,17 +143,17 @@ const styles = {
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
-    gap: '12px',
-    margin: '20px 0',
-    padding: '15px',
-    backgroundColor: '#F8FAFC',
-    borderRadius: '16px',
-    border: '1px solid #E2E8F0',
+    gap: '16px',
+    marginTop: '32px',
+    marginBottom: '16px',
+    padding: '0',
+    backgroundColor: 'transparent',
+    border: 'none',
   },
   rangeText: {
-    fontSize: '13px',
-    color: '#667C7F',
-    fontWeight: '500',
+    fontSize: '14px',
+    color: '#6B7280',
+    fontWeight: '400',
   },
   pagination: {
     display: 'flex',
@@ -164,19 +161,18 @@ const styles = {
     gap: '8px',
     flexWrap: 'wrap',
     justifyContent: 'center',
-    marginTop: '4px',
   },
   pageBtn: (active, disabled) => ({
-    minWidth: '38px',
-    height: '38px',
-    padding: '0 10px',
-    border: active ? 'none' : '1px solid #E2E8F0',
-    borderRadius: '6px',
-    fontSize: '13px',
-    fontWeight: active ? '700' : '500',
+    minWidth: '36px',
+    height: '36px',
+    padding: '0 8px',
+    border: active ? 'none' : disabled ? 'none' : '1px solid #E2E8F0',
+    borderRadius: '8px',
+    fontSize: '14px',
+    fontWeight: active ? '600' : '500',
     cursor: disabled ? 'not-allowed' : 'pointer',
-    backgroundColor: active ? '#533638' : disabled ? '#F9F9F9' : 'white',
-    color: active ? 'white' : disabled ? '#CBD5E0' : '#533638',
+    backgroundColor: active ? '#1F2937' : 'transparent',
+    color: active ? 'white' : disabled ? '#9CA3AF' : '#374151',
     transition: 'all 0.2s ease',
     display: 'flex',
     alignItems: 'center',
@@ -184,8 +180,8 @@ const styles = {
     userSelect: 'none',
   }),
   ellipsis: {
-    minWidth: '38px',
-    height: '38px',
+    minWidth: '36px',
+    height: '36px',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
@@ -359,8 +355,8 @@ export default function ProductsPage() {
             <div style={styles.filterSummary}>
               {!isLoading && total > 0 && (
                 <>
-                  Showing <strong>{rangeStart}–{rangeEnd}</strong> of <strong>{total}</strong> products
-                  {activeCategory && <> in <strong>{activeCategory}</strong></>}
+                  Showing <span style={{ fontWeight: '600', color: '#374151' }}>{rangeStart}–{rangeEnd}</span> of <span style={{ fontWeight: '600', color: '#374151' }}>{total}</span> products
+                  {activeCategory && <> in <span style={{ fontWeight: '600', color: '#374151' }}>{activeCategory}</span></>}
                 </>
               )}
               {isLoading && 'Loading…'}
@@ -453,7 +449,11 @@ export default function ProductsPage() {
                   aria-label="Previous page"
                   disabled={page <= 1}
                   onClick={() => goToPage(page - 1)}
-                  style={styles.pageBtn(false, page <= 1)}
+                  style={{
+                    ...styles.pageBtn(false, page <= 1),
+                    border: 'none',
+                    padding: '8px 16px',
+                  }}
                 >
                   ‹ Prev
                 </button>
@@ -480,7 +480,11 @@ export default function ProductsPage() {
                   aria-label="Next page"
                   disabled={page >= totalPages}
                   onClick={() => goToPage(page + 1)}
-                  style={styles.pageBtn(false, page >= totalPages)}
+                  style={{
+                    ...styles.pageBtn(false, page >= totalPages),
+                    border: 'none',
+                    padding: '8px 16px',
+                  }}
                 >
                   Next ›
                 </button>

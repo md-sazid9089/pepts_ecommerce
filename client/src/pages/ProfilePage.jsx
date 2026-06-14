@@ -20,7 +20,7 @@ export default function ProfilePage() {
   const s = {
     page: { minHeight: '60vh', padding: '2rem 1.5rem', maxWidth: 800, margin: '0 auto' },
     title: { fontSize: '1.75rem', fontWeight: 700, color: '#533638', marginBottom: '1.5rem' },
-    card: { background: '#fff', borderRadius: '1rem', border: '1px solid #e5e7eb', padding: '2rem', boxShadow: '0 2px 8px rgba(0,0,0,0.06)', marginBottom: '1.5rem' },
+    card: { background: '#F9F5F3', borderRadius: '1rem', border: '1px solid #e5e7eb', padding: '2rem', boxShadow: '0 2px 8px rgba(0,0,0,0.06)', marginBottom: '1.5rem' },
     avatar: { width: 80, height: 80, borderRadius: '50%', background: '#533638', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '2rem', fontWeight: 700, marginBottom: '1rem' },
     name: { fontSize: '1.5rem', fontWeight: 700, color: '#111827', margin: '0 0 0.25rem 0' },
     email: { color: '#6b7280', fontSize: '0.95rem', margin: 0 },
