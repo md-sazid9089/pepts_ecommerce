@@ -27,7 +27,7 @@ const themeColors = {
 }
 
 const sharedStyles = {
-  fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif",
+  fontFamily: "var(--font-sans)",
   transition: "all 0.3s ease",
 }
 

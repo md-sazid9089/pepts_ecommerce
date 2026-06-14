@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo, useCallback } from "react"
 
 const RESPONSIVE_CSS = `
   .pdp-header { max-width: 1400px; margin: 0 auto; padding: 1.5rem 1.25rem 0; }
-  .pdp-header h1 { margin: 0; font-size: clamp(1.35rem, 4vw, 2rem); font-weight: 700; line-height: 1.1; }
+  .pdp-header h1 { margin: 0; font-family: var(--font-display); font-size: clamp(1.35rem, 4vw, 2rem); font-weight: 700; line-height: 1.1; }
   .pdp-header p { margin: 0.75rem 0 0; max-width: 760px; color: #64748b; font-size: 0.95rem; line-height: 1.75; }
   .pdp-layout { max-width: 1800px; margin: 1.5rem auto 3rem; padding: 0 1.25rem; display: grid; grid-template-columns: 1.55fr 0.7fr; gap: 2rem; align-items: start; }
   .pdp-gallery { display: flex; flex-direction: column; gap: 1rem; }
@@ -52,7 +52,7 @@ const styles = {
     minHeight: "100vh",
     backgroundColor: "#f8fafc",
     color: "#0f172a",
-    fontFamily: "Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+    fontFamily: "var(--font-sans)",
   },
   header: {
     maxWidth: "1400px",
@@ -211,13 +211,17 @@ const styles = {
     fontWeight: 700,
   },
   priceValue: {
+    fontFamily: "var(--font-numeric)",
     fontSize: "2.5rem",
     fontWeight: 800,
     color: "#0f172a",
+    fontVariantNumeric: "tabular-nums",
   },
   priceRange: {
+    fontFamily: "var(--font-numeric)",
     color: "#64748b",
     fontSize: "0.95rem",
+    fontVariantNumeric: "tabular-nums",
   },
   moqBadge: {
     display: "inline-flex",
@@ -254,6 +258,8 @@ const styles = {
     color: "#0f172a",
     fontSize: "1.1rem",
     fontWeight: 700,
+    fontFamily: "var(--font-numeric)",
+    fontVariantNumeric: "tabular-nums",
   },
   richerActions: {
     display: "grid",
@@ -390,6 +396,8 @@ const styles = {
     fontSize: "0.95rem",
     fontWeight: 700,
     textAlign: "right",
+    fontFamily: "var(--font-numeric)",
+    fontVariantNumeric: "tabular-nums",
   },
   stickyBar: {
     position: "fixed",
@@ -799,7 +807,7 @@ export default function ProductDetailPage() {
           {/* Tiered Pricing Table */}
           {product?.bulkPrices && product.bulkPrices.length > 0 && (
             <div style={{ marginTop: "1rem", border: "1px solid #e2e8f0", borderRadius: "0.75rem", overflow: "hidden" }}>
-              <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.85rem" }}>
+              <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.85rem", fontFamily: "var(--font-numeric)", fontVariantNumeric: "tabular-nums" }}>
                 <thead>
                   <tr style={{ backgroundColor: "#f8fafc", borderBottom: "1px solid #e2e8f0" }}>
                     <th style={{ padding: "0.75rem", textAlign: "left", color: "#475569" }}>Quantity</th>

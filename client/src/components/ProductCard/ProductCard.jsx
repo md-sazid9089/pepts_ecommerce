@@ -14,6 +14,7 @@ const CSS = `
     width: 100%;
     height: 100%;
     background: #fff;
+    font-family: var(--font-sans);
     border-radius: 12px;
     border: 1px solid #EAEAEA;
     overflow: hidden;
@@ -101,11 +102,13 @@ const CSS = `
   }
   .pc-price {
     display: block;
+    font-family: var(--font-numeric);
     font-size: 18px;
     font-weight: 800;
     color: #2F2424;
     line-height: 1.15;
     overflow-wrap: anywhere;
+    font-variant-numeric: tabular-nums;
   }
   .pc-actions {
     display: flex;

@@ -17,7 +17,7 @@ const styles = {
   pageContainer: {
     minHeight: "100vh",
     background: "#f9fafb",
-    fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif",
+    fontFamily: "var(--font-sans)",
   },
 
   // Header
@@ -134,12 +134,16 @@ const styles = {
   },
 
   cartItemPrice: {
+    fontFamily: "var(--font-numeric)",
+    fontVariantNumeric: "tabular-nums",
     fontSize: "1.25rem",
     fontWeight: 700,
     color: "#111827",
   },
 
   cartItemOriginalPrice: {
+    fontFamily: "var(--font-numeric)",
+    fontVariantNumeric: "tabular-nums",
     fontSize: "0.875rem",
     color: "#9ca3af",
     textDecoration: "line-through",
@@ -291,6 +295,8 @@ const styles = {
   summaryRowValue: {
     color: "#111827",
     fontWeight: 500,
+    fontFamily: "var(--font-numeric)",
+    fontVariantNumeric: "tabular-nums",
   },
 
   summaryTotal: {
@@ -312,6 +318,8 @@ const styles = {
 
   summaryTotalValue: {
     color: "#1e293b",
+    fontFamily: "var(--font-numeric)",
+    fontVariantNumeric: "tabular-nums",
   },
 
   // Promo Code
@@ -597,6 +605,8 @@ const styles = {
   },
 
   recommendationPrice: {
+    fontFamily: "var(--font-numeric)",
+    fontVariantNumeric: "tabular-nums",
     fontSize: "1rem",
     fontWeight: 700,
     color: "#1e293b",

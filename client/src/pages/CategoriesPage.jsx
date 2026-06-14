@@ -21,7 +21,7 @@ const styles = {
   page: {
     minHeight: "100vh",
     backgroundColor: "#F5EDEC",
-    fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+    fontFamily: "var(--font-sans)",
   },
 
   // Hero

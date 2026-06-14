@@ -20,7 +20,7 @@ const styles = {
     maxWidth: '1000px',
     margin: '2rem auto',
     padding: '0 1.5rem',
-    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
+    fontFamily: 'var(--font-sans)',
   },
   profileHeader: {
     display: 'flex',

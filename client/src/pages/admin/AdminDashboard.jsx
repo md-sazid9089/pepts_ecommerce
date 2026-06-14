@@ -50,7 +50,7 @@ const styles = {
     gridTemplateRows: "60px 1fr",
     minHeight: "100vh",
     backgroundColor: colors.background,
-    fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif",
+    fontFamily: "var(--font-sans)",
   },
   containerMobile: {
     gridTemplateColumns: "1fr",
@@ -83,7 +83,8 @@ const styles = {
 
   logo: {
     fontSize: "1.5rem",
-    fontWeight: 700,
+    fontWeight: 800,
+    fontFamily: "var(--font-display)",
     color: colors.sidebarActive,
     marginBottom: "0.5rem",
     cursor: "pointer",
@@ -317,6 +318,8 @@ const styles = {
     fontWeight: 700,
     color: colors.text,
     margin: "0 0 0.5rem 0",
+    fontFamily: "var(--font-numeric)",
+    fontVariantNumeric: "tabular-nums",
   },
 
   statChange: {

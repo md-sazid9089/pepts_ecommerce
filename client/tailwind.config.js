@@ -90,8 +90,9 @@ const config = {
          TYPOGRAPHY
          ───────────────────────────────────────── */
       fontFamily: {
-        sans: ['var(--font-inter)', 'Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'],
-        display: ['var(--font-jakarta)', 'Plus Jakarta Sans', 'ui-sans-serif', 'sans-serif'],
+        sans: ['Plus Jakarta Sans', 'system-ui', 'sans-serif'],
+        display: ['Plus Jakarta Sans', 'system-ui', 'sans-serif'],
+        numeric: ['Inter', 'system-ui', 'sans-serif'],
         mono: ['JetBrains Mono', 'ui-monospace', 'monospace'],
       },
 

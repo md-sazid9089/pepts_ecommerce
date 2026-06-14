@@ -11,7 +11,7 @@ const styles = {
     justifyContent: "center",
     background: "linear-gradient(135deg, #f9fafb 0%, #ffffff 100%)",
     padding: "1rem",
-    fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif",
+    fontFamily: "var(--font-sans)",
   },
   contentWrapper: {
     display: "grid",

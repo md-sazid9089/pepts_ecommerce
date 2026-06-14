@@ -20,7 +20,7 @@ const colors = {
 }
 
 const sharedStyles = {
-  fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif",
+  fontFamily: "var(--font-sans)",
   transition: "all 0.3s ease",
 }
 
@@ -92,10 +92,11 @@ const styles = {
   },
   logoText: {
     fontSize: "1.75rem",
-    fontWeight: 700,
+    fontWeight: 800,
+    fontFamily: "var(--font-display)",
     color: colors.logoOrange,
     margin: 0,
-    letterSpacing: "1px",
+    letterSpacing: "0px",
   },
   logoSubtext: {
     fontSize: "0.65rem",
@@ -233,6 +234,7 @@ const styles = {
   navLink: {
     fontSize: "0.95rem",
     fontWeight: 700,
+    fontFamily: "var(--font-sans)",
     color: colors.darkBrown,
     textDecoration: "none",
     cursor: "pointer",

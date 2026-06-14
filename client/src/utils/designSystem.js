@@ -32,8 +32,9 @@ export const DESIGN_SYSTEM = {
   // TYPOGRAPHY - Professional & Readable
   typography: {
     fontFamily: {
-      body: 'Inter, system-ui, -apple-system, sans-serif',
-      display: 'Plus Jakarta Sans, system-ui, -apple-system, sans-serif',
+      body: 'var(--font-sans)',
+      display: 'var(--font-display)',
+      numeric: 'var(--font-numeric)',
     },
     sizes: {
       xs: '0.75rem', // 12px

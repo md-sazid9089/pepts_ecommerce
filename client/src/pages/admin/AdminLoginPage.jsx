@@ -67,7 +67,7 @@ export default function AdminLoginPage() {
     <div style={{
       minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center',
       background: 'linear-gradient(135deg, #F5EDEC 0%, #f0e0de 100%)',
-      fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+      fontFamily: "var(--font-sans)",
       padding: '1rem',
     }}>
       <div style={{

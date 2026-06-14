@@ -22,7 +22,7 @@ export default function NotFoundPage() {
         alignItems: 'center',
         justifyContent: 'center',
         padding: '2rem 1rem',
-        fontFamily: "Inter, 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif",
+        fontFamily: "var(--font-sans)",
         textAlign: 'center',
       }}
     >
