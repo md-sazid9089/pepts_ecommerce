@@ -27,8 +27,6 @@ model Product {
   title        String
   description  String
   price        Float
-  priceMin     Float?   // minimum price of range
-  priceMax     Float?   // maximum price of range
   stock        Int            @default(0)
   categoryId   String
   isActive     Boolean        @default(true)
@@ -39,6 +37,8 @@ model Product {
   brand        String?
   casePackSize Int?
   moq          Int            @default(1)
+  priceMax     Float?
+  priceMin     Float?
   bulkPrices   BulkPrice[]
   orderItems   OrderItem[]
   category     Category       @relation(fields: [categoryId], references: [id], onDelete: Cascade)
@@ -83,7 +83,6 @@ model Order {
   userId          String
   status          String      @default("pending")
   totalAmount     Float
-  paymentIntentId String?     @unique
   createdAt       DateTime    @default(now())
   updatedAt       DateTime    @updatedAt
   companyName     String?
@@ -92,6 +91,7 @@ model Order {
   contactPhone    String?
   notes           String?     @db.Text
   shippingAddress String?     @db.Text
+  paymentIntentId String?     @unique
   user            User        @relation(fields: [userId], references: [id], onDelete: Cascade)
   items           OrderItem[]
 
@@ -147,19 +147,6 @@ model Review {
 
   @@index([productId, status])
   @@index([productId], map: "Review_productId_fkey")
-}
-
-model PromoCode {
-  id           String    @id @default(cuid())
-  code         String    @unique
-  discount     Float
-  discountType String    @default("percentage")
-  maxUses      Int?
-  usedCount    Int       @default(0)
-  expiresAt    DateTime?
-  isActive     Boolean   @default(true)
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
 }
 
 model ProductImage {

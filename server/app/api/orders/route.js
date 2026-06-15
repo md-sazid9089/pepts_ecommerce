@@ -18,8 +18,8 @@ const createOrderSchema = z.object({
   items: z
     .array(
       z.object({
-        productId: z.string().min(1, "productId is required"),
-        quantity: z.number().int().positive("quantity must be > 0"),
+        productId: z.coerce.number().int().positive("productId must be a valid integer"),
+        quantity: z.coerce.number().int().positive("quantity must be > 0"),
       })
     )
     .min(1, "Order must have at least one item"),

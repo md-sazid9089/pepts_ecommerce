@@ -15,11 +15,11 @@ import { createReviewSchema } from "@/src/validators/review.validator"
 export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url)
-    const productId = searchParams.get("productId")
+    const productId = parseInt(searchParams.get("productId") ?? "", 10)
 
-    if (!productId) {
+    if (isNaN(productId)) {
       return apiResponse.validationError("Validation failed", {
-        productId: "productId query parameter is required",
+        productId: "Valid productId query parameter is required",
       })
     }
 

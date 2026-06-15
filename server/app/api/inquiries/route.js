@@ -24,6 +24,15 @@ export async function POST(request) {
       return apiResponse.error("Invalid JSON in request body", 400)
     }
 
+    body = {
+      ...body,
+      companyName: body.companyName ?? body.name ?? "Website inquiry",
+      contactEmail: body.contactEmail ?? body.email,
+      productId: body.productId != null ? String(body.productId) : undefined,
+      productName: body.productName ?? (body.productId != null ? `Product ${body.productId}` : "General inquiry"),
+      requestedQuantity: body.requestedQuantity ?? body.quantity ?? 1,
+    }
+
     const parsed = createInquirySchema.safeParse(body)
     if (!parsed.success) {
       const errors = {}

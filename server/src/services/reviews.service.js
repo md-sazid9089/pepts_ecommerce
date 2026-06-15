@@ -31,7 +31,7 @@ export async function createReview(data) {
       data: {
         productId: data.productId,
         rating: data.rating,
-        title: data.title,
+        title: data.title || "Product review",
         comment: data.comment,
         email: data.email || null,
         status: "pending",
@@ -45,7 +45,7 @@ export async function createReview(data) {
 
 /**
  * Get approved reviews for a product
- * @param {string} productId
+ * @param {number} productId
  * @param {number} page
  * @param {number} pageSize
  * @returns {Promise<{ items: Array, total: number, averageRating: number }>}

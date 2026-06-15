@@ -8,6 +8,7 @@
 
 import apiResponse from "@/src/utils/apiResponse"
 import prisma from "@/src/lib/prisma"
+import { verifyRequest } from "@/src/lib/verifyRequest"
 
 // ── The only 4 categories that exist in this platform (case-sensitive) ──────
 const PROTECTED_CATEGORIES = ["Our Design", "Custom Build", "Popular", "Most Demanding"]
@@ -46,6 +47,10 @@ export async function GET() {
 
 export async function POST(request) {
   try {
+    const user = verifyRequest(request)
+    if (!user) return apiResponse.unauthorized("Authentication required")
+    if (user.role !== "admin") return apiResponse.forbidden("Admin access required")
+
     const body = await request.json().catch(() => null)
     if (!body?.name?.trim()) {
       return apiResponse.error("Category name is required", 400)
@@ -68,10 +73,9 @@ export async function POST(request) {
       },
     })
 
-    return apiResponse.success(
+    return apiResponse.created(
       { id: category.id, name: category.name },
-      "Category upserted successfully",
-      200
+      "Category upserted successfully"
     )
   } catch (error) {
     console.error("POST /api/categories error:", error)

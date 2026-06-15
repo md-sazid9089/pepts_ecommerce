@@ -204,7 +204,7 @@ export async function getAll(page = 1, pageSize = 20, filters = {}) {
 
 /**
  * Get a single product by ID with full detail (bulk pricing + reviews).
- * @param {string} productId
+ * @param {number} productId
  * @returns {Promise<object|null>}
  */
 export async function getById(productId) {
@@ -290,7 +290,7 @@ export async function createProduct(data) {
 
 /**
  * Update an existing product.
- * @param {string} productId
+ * @param {number} productId
  * @param {object} data - validated update fields
  * @returns {Promise<object>} updated product
  */
@@ -366,7 +366,7 @@ export async function updateProduct(productId, data) {
 
 /**
  * Soft-delete a product by setting isActive = false.
- * @param {string} productId
+ * @param {number} productId
  * @returns {Promise<object>} updated product
  */
 export async function deleteProduct(productId) {
@@ -417,7 +417,7 @@ export async function getBulkPricing(productId) {
 /**
  * Upsert a bulk pricing tier for a product (admin).
  * @param {string} productId
- * @param {{ minQuantity: number, price: number, discount?: number }} data
+ * @param {{ minQuantity: number, maxQuantity?: number, price: number, discount?: number }} data
  * @returns {Promise<object>}
  */
 export async function upsertBulkPrice(productId, data) {
@@ -431,10 +431,15 @@ export async function upsertBulkPrice(productId, data) {
 
     return await prisma.bulkPrice.upsert({
       where: { productId_minQuantity: { productId, minQuantity: data.minQuantity } },
-      update: { price: data.price, discount: data.discount ?? null },
+      update: {
+        price: data.price,
+        maxQuantity: data.maxQuantity ?? null,
+        discount: data.discount ?? null,
+      },
       create: {
         productId,
         minQuantity: data.minQuantity,
+        maxQuantity: data.maxQuantity ?? null,
         price: data.price,
         discount: data.discount ?? null,
       },

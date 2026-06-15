@@ -46,7 +46,7 @@ export const createInquirySchema = z.object({
 })
 
 export const updateInquirySchema = z.object({
-  status: z.enum(["new", "replied", "converted", "lost"]).optional(),
+  status: z.enum(["new", "replied", "converted", "lost", "resolved"]).optional(),
   notes: z.string().trim().max(2000).optional(),
   assignedTo: z.string().optional(),
 })

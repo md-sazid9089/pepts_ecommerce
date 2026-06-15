@@ -71,7 +71,8 @@ export async function middleware(request) {
     '/api/admin',
   ]
   
-  const isProtectedRoute = protectedRoutes.some(route => pathname.startsWith(route))
+  const isPublicInquiryPost = pathname === '/api/inquiries' && request.method === 'POST'
+  const isProtectedRoute = !isPublicInquiryPost && protectedRoutes.some(route => pathname.startsWith(route))
   
   if (isProtectedRoute) {
     // Read from httpOnly cookie (preferred) — falls back to Authorization header

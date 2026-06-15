@@ -15,21 +15,25 @@ import { verifyRequest } from "@/src/lib/verifyRequest"
 
 const bulkPriceSchema = z.object({
   minQuantity: z
-    .number({ required_error: "minQuantity is required" })
+    .coerce.number({ required_error: "minQuantity is required" })
     .int()
     .positive("minQuantity must be > 0"),
+  maxQuantity: z.coerce.number().int().positive().optional(),
   price: z
-    .number({ required_error: "price is required" })
+    .coerce.number({ required_error: "price is required" })
     .nonnegative("price must be >= 0"),
-  discount: z.number().nonnegative().optional(),
+  discount: z.coerce.number().nonnegative().optional(),
 })
 
 // ─── GET /api/bulk-pricing/:productId ───────────────────────────────────────
 
 export async function GET(request, { params }) {
   try {
-    const { productId } = await params
-    if (!productId) return apiResponse.error("Invalid product ID", 400)
+    const { productId: rawProductId } = await params
+    const productId = parseInt(rawProductId, 10)
+    if (isNaN(productId)) return apiResponse.validationError("Validation failed", {
+      productId: "Valid product ID is required",
+    })
 
     const tiers = await productsService.getBulkPricing(productId)
     return apiResponse.success({ productId, tiers }, "Bulk pricing fetched successfully")
@@ -48,8 +52,11 @@ export async function POST(request, { params }) {
     if (!user) return apiResponse.unauthorized("Authentication required")
     if (user.role !== "admin") return apiResponse.forbidden("Admin access required")
 
-    const { productId } = await params
-    if (!productId) return apiResponse.error("Invalid product ID", 400)
+    const { productId: rawProductId } = await params
+    const productId = parseInt(rawProductId, 10)
+    if (isNaN(productId)) return apiResponse.validationError("Validation failed", {
+      productId: "Valid product ID is required",
+    })
 
     let body
     try {

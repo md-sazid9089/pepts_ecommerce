@@ -47,8 +47,7 @@ export async function POST(request) {
 
     const { user, token } = await authService.register(parsed.data)
 
-    // Return user data in body — token lives in httpOnly cookie only
-    const res = apiResponse.created({ user }, "Account created successfully")
+    const res = apiResponse.created({ user, token }, "Account created successfully")
     res.headers.set('Set-Cookie', buildAuthCookie(token))
     return res
   } catch (error) {
